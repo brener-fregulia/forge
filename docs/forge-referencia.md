@@ -58,6 +58,23 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 
 > **Nota:** RAID do Cold Storage (HDDs) ainda a definir. Candidatos: RAID5 (espaço útil ~75%), RAID6 (redundância dupla), ou ZFS RAIDZ2.
 
+## Drivers customizados do servidor
+
+### TP-Link Archer T2U Plus (rtl8821au)
+Adaptador WiFi USB. Driver não vem no kernel padrão do Debian 13.
+
+**Source versionado em:** `/opt/forge/drivers/rtl8821au/`
+**Versão:** 5.12.5.2 (instalado via DKMS)
+
+**Reinstalação após formatação do servidor:**
+\`\`\`bash
+apt install dkms build-essential linux-headers-$(uname -r) -y
+cd /opt/forge/drivers/rtl8821au
+sudo ./install-driver.sh
+\`\`\`
+
+O DKMS recompila o módulo automaticamente em cada atualização de kernel.
+
 ---
 
 ## Arquitetura de storage
