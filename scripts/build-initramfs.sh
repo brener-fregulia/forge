@@ -10,7 +10,6 @@ TFTP_DIR="/srv/tftp"
 WEBSOCAT_BIN="$PROJECT_ROOT/build/websocat"
 AGENT_SCRIPT="$PROJECT_ROOT/agent/forge-agent.sh"
 
-# Fontes Alpine (já devem existir no /srv/tftp)
 ALPINE_INITRAMFS_BASE="$TFTP_DIR/alpine-initramfs"
 ALPINE_MODLOOP="$TFTP_DIR/alpine-modloop"
 KERNEL_VERSION="6.18.7-0-lts"
@@ -48,42 +47,62 @@ sudo cp "/mnt/modloop/modules/$KERNEL_VERSION/modules."* \
 
 sudo umount /mnt/modloop
 
-# 5. Copia binários FORGE para o initramfs
+# 5. Copia binários FORGE
 echo ">>> Copiando websocat e forge-agent"
 cp "$WEBSOCAT_BIN" usr/bin/websocat
 cp "$AGENT_SCRIPT" usr/bin/forge-agent
 chmod +x usr/bin/websocat usr/bin/forge-agent
 
-# 6. Patcha o /init para copiar binários e iniciar agent no sysroot
+# 6. Patcha o /init
 echo ">>> Patchando /init"
 python3 << 'PYEOF'
+import re
+
 with open('init', 'r') as f:
     content = f.read()
 
-# Remove qualquer injeção FORGE anterior
-import re
-content = re.sub(r'\n# FORGE Agent.*?(?=\nexec switch_root)', '\n', content, flags=re.DOTALL)
+# 6.1 Remove qualquer injeção FORGE anterior (limpeza)
+content = re.sub(r'\n# FORGE Agent.*?(?=\nif \[ ! -x)', '\n', content, flags=re.DOTALL)
+content = re.sub(r'\necho "###### FORGE INITRAMFS LOADED.*?\n', '\n', content)
 
-target = 'exec switch_root $switch_root_opts $sysroot $chart_init "$KOPT_init" $KOPT_init_args'
+# 6.2 Adiciona marcador visível no console logo no início (após shebang)
+marker = '\necho "###### FORGE INITRAMFS LOADED ######" > /dev/console 2>&1\n'
+shebang_end = content.find('\n')
+content = content[:shebang_end] + marker + content[shebang_end:]
 
-inject = '''# FORGE Agent — copia binarios para o sysroot e roda agent direto no initramfs
-mkdir -p "$sysroot"/usr/bin
-cp /usr/bin/websocat "$sysroot"/usr/bin/websocat 2>/dev/null
-cp /usr/bin/forge-agent "$sysroot"/usr/bin/forge-agent 2>/dev/null
-chmod +x "$sysroot"/usr/bin/websocat "$sysroot"/usr/bin/forge-agent 2>/dev/null
-# Inicia agent como background no contexto atual do initramfs
-# (esse Alpine netboot nao faz switch_root real, fica rodando aqui mesmo)
+# 6.3 Injeta o agent ANTES da verificação que cai no recovery_shell
+target = 'if [ ! -x "${sysroot}${KOPT_init}" ]; then'
+
+inject = '''# FORGE Agent — debug + start ANTES do switch_root falhar
+echo "###### FORGE: chegou no ponto de injecao ######" > /dev/console 2>&1
+
+{
+    echo "=== FORGE INIT DEBUG ==="
+    echo "PWD: $(pwd)"
+    echo "sysroot: $sysroot"
+    echo "--- ls /usr/bin ---"
+    ls -la /usr/bin/forge-agent /usr/bin/websocat 2>&1
+    echo "--- ip route ---"
+    ip route 2>&1
+    echo "--- ip a ---"
+    ip a 2>&1
+    echo "=== END FORGE INIT DEBUG ==="
+} 2>&1 | nc -w 2 192.168.100.1 9997 2>/dev/null || true
+
+# Inicia o agent em background no contexto do initramfs
+# Sobrevive mesmo se cair no recovery_shell
 setsid /usr/bin/forge-agent > /tmp/forge-agent.log 2>&1 < /dev/null &
 
 '''
 
 idx = content.rfind(target)
 if idx == -1:
-    print("ERRO: linha alvo não encontrada"); exit(1)
+    print("ERRO: linha alvo nao encontrada"); exit(1)
 content = content[:idx] + inject + content[idx:]
 
 with open('init', 'w') as f:
     f.write(content)
+
 print("OK: /init patchado")
 PYEOF
 
