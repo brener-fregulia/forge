@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}FORGE — Dashboard{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Clientes conectados</h2>
+    <div id="clients-grid" class="grid">
+        {% if not clients %}
+        <p class="empty" id="empty-state">Nenhum cliente conectado. Aguardando boot PXE…</p>
+        {% endif %}
+        {% for c in clients %}
+        <a href="/client/{{ c.mac }}" class="client-card" data-mac="{{ c.mac }}">
+            <div class="card-header">
+                <span class="status status-{{ c.status }}">{{ c.status }}</span>
+                <span class="mac">{{ c.mac }}</span>
+            </div>
+            <div class="card-body">
+                <div class="hostname">{{ c.hostname or "—" }}</div>
+                <div class="ip">{{ c.ip }}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ c.progress }}%"></div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

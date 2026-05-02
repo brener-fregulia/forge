@@ -40,9 +40,12 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 ### Estado atual
 | Dispositivo | Tipo | Uso |
 |---|---|---|
-| Beelink Mini S | Celeron N5095, 16GB RAM | Servidor principal |
-| `sda` M.2 256GB | NVMe | OS Debian 13 |
-| `sdb` SATA 240GB | SSD | `/srv` — ISOs, tftp, scripts, backup temporário |
+| PC servidor | AMD Ryzen 5 3350G, 2×8GB RAM | Servidor principal |
+| `nvme0n1` NVMe 256GB | NVMe | OS Debian 13 + ISOs + tftp + scripts + SDIO + `/tmp` + `/var` |
+| SSD SATA 240GB | SSD | Hot Cache (sozinho por ora; RAID1 futuro com 2º SSD) |
+| 2× HDD 512GB | HDD | Cold Storage (sem RAID inicialmente; RAID1 futuro) |
+
+**Cliente PXE atual:** Beelink Mini S (Celeron N5095, 16GB RAM) com Windows 11 instalado — usado para testar backup/deploy.
 
 ### Hardware alvo (roadmap)
 | Componente | Especificação | Justificativa |

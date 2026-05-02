@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}FORGE — {{ client.mac }}{% endblock %}
+
+{% block content %}
+<section>
+    <h2>{{ client.hostname or client.mac }}</h2>
+    <div class="meta">
+        <div><strong>MAC:</strong> {{ client.mac }}</div>
+        <div><strong>IP:</strong> {{ client.ip }}</div>
+        <div><strong>Status:</strong> <span class="status status-{{ client.status }}">{{ client.status }}</span></div>
+    </div>
+
+    <h3>Hardware</h3>
+    <pre id="hw">{{ client.hardware }}</pre>
+
+    <h3>Discos</h3>
+    <pre id="disks">{{ client.disks }}</pre>
+
+    <h3>Usuários Windows</h3>
+    <pre id="users">{{ client.users }}</pre>
+
+    <h3>Enviar comando</h3>
+    <form id="cmd-form">
+        <input type="text" id="cmd-input" placeholder="ex: ip addr show" autocomplete="off">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <h3>Log</h3>
+    <pre id="log">{{ client.log_tail | join('\n') }}</pre>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.CLIENT_MAC = "{{ client.mac }}";
+</script>
+<script src="/static/js/client.js"></script>
+{% endblock %}

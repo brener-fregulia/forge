@@ -4,3 +4,5 @@ __pycache__/
 *.pyo
 .env
 *.log
+build/initramfs-work/
+build/*.tmp
