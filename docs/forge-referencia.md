@@ -333,9 +333,12 @@ comando_qualquer | nc 192.168.100.1 9999
 - ✅ `ntfsclone` disponível no initramfs
 
 ### Pipeline de deploy
-- ⬜ FORGE Agent (agente Alpine com WebSocket)
-- ⬜ FORGE Server (painel FastAPI + WebSocket)
-- ⬜ Inventário automático de hardware/usuários
+- ✅ FORGE Agent (agente Alpine com WebSocket)
+- ✅ FORGE Server (painel FastAPI + WebSocket)
+- ✅ Inventário automático de hardware/discos
+- ✅ Comandos bidirecionais (servidor → agent → output no dashboard)
+- ✅ Detecção automática de desconexão (heartbeat 5s/3s)
+- ⬜ Inventário de usuários Windows em partições NTFS
 - ⬜ Backup seletivo via ntfsclone → hot cache
 - ⬜ Compactação zstd → cold storage
 - ⬜ Formatação e particionamento
@@ -344,6 +347,13 @@ comando_qualquer | nc 192.168.100.1 9999
 - ⬜ Debloat
 - ⬜ Restauração do backup
 - ⬜ Ciclo de vida automatizado (30 dias → deleção)
+
+## Roadmap do dashboard
+
+- ⬜ Console de comandos estilo terminal (prompt + histórico + clear)
+- ⬜ Terminal interativo real (xterm.js + sessão shell persistente) — pós-MVP
+- ⬜ Botões de ação para cada estágio do deploy
+- ⬜ Indicador de progresso por etapa
 
 ### Ambiente de desenvolvimento
 - ⬜ VSCode Remote-SSH configurado
