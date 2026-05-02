@@ -29,13 +29,14 @@ function renderAll(clients) {
 }
 
 function upsertClient(c) {
+    const empty = grid.querySelector(".empty");
+    if (empty) empty.remove();
+
     const existing = grid.querySelector(`[data-mac="${c.mac}"]`);
     const html = renderCard(c);
     if (existing) {
         existing.outerHTML = html;
     } else {
-        const empty = document.getElementById("empty-state");
-        if (empty) empty.remove();
         grid.insertAdjacentHTML("beforeend", html);
     }
 }

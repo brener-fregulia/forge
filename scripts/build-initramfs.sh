@@ -66,19 +66,14 @@ content = re.sub(r'\n# FORGE Agent.*?(?=\nexec switch_root)', '\n', content, fla
 
 target = 'exec switch_root $switch_root_opts $sysroot $chart_init "$KOPT_init" $KOPT_init_args'
 
-inject = '''# FORGE Agent — copia binários e inicia agent no sysroot
+inject = '''# FORGE Agent — copia binarios para o sysroot e roda agent direto no initramfs
 mkdir -p "$sysroot"/usr/bin
-cp /usr/bin/websocat "$sysroot"/usr/bin/websocat
-cp /usr/bin/forge-agent "$sysroot"/usr/bin/forge-agent
-chmod +x "$sysroot"/usr/bin/websocat "$sysroot"/usr/bin/forge-agent
-mkdir -p "$sysroot"/etc/local.d
-cat > "$sysroot"/etc/local.d/forge.start <<'FORGE_START'
-#!/bin/sh
-/usr/bin/forge-agent > /tmp/forge-agent.log 2>&1 &
-FORGE_START
-chmod +x "$sysroot"/etc/local.d/forge.start
-mkdir -p "$sysroot"/etc/runlevels/default
-ln -sf /etc/init.d/local "$sysroot"/etc/runlevels/default/local 2>/dev/null
+cp /usr/bin/websocat "$sysroot"/usr/bin/websocat 2>/dev/null
+cp /usr/bin/forge-agent "$sysroot"/usr/bin/forge-agent 2>/dev/null
+chmod +x "$sysroot"/usr/bin/websocat "$sysroot"/usr/bin/forge-agent 2>/dev/null
+# Inicia agent como background no contexto atual do initramfs
+# (esse Alpine netboot nao faz switch_root real, fica rodando aqui mesmo)
+setsid /usr/bin/forge-agent > /tmp/forge-agent.log 2>&1 < /dev/null &
 
 '''
 
