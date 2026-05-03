@@ -1,23 +1,13 @@
-// FORGE Dashboard — atualizações em tempo real via WebSocket
+import { createWS } from "./lib/ws.js";
 
-const ws = new WebSocket(`ws://${location.host}/ws/dashboard`);
 const grid = document.getElementById("clients-grid");
 
-ws.onopen = () => console.log("[FORGE] Dashboard WS conectado");
-ws.onclose = () => console.log("[FORGE] Dashboard WS desconectado");
-ws.onerror = (e) => console.error("[FORGE] WS erro:", e);
-
-ws.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
-
-    if (msg.type === "snapshot") {
-        renderAll(msg.clients);
-    } else if (msg.type === "client_connected" || msg.type === "client_update") {
-        upsertClient(msg.client);
-    } else if (msg.type === "client_disconnected") {
-        removeClient(msg.mac);
-    }
-};
+createWS("/ws/dashboard", {
+    snapshot:           ({ clients }) => renderAll(clients),
+    client_connected:   ({ client }) => upsertClient(client),
+    client_update:      ({ client }) => upsertClient(client),
+    client_disconnected:({ mac })    => removeClient(mac),
+});
 
 function renderAll(clients) {
     grid.innerHTML = "";
@@ -29,23 +19,17 @@ function renderAll(clients) {
 }
 
 function upsertClient(c) {
-    const empty = grid.querySelector(".empty");
-    if (empty) empty.remove();
-
+    grid.querySelector(".empty")?.remove();
     const existing = grid.querySelector(`[data-mac="${c.mac}"]`);
     const html = renderCard(c);
-    if (existing) {
-        existing.outerHTML = html;
-    } else {
-        grid.insertAdjacentHTML("beforeend", html);
-    }
+    if (existing) existing.outerHTML = html;
+    else grid.insertAdjacentHTML("beforeend", html);
 }
 
 function removeClient(mac) {
-    const card = grid.querySelector(`[data-mac="${mac}"]`);
-    if (card) card.remove();
+    grid.querySelector(`[data-mac="${mac}"]`)?.remove();
     if (!grid.children.length) {
-        grid.innerHTML = '<p class="empty" id="empty-state">Nenhum cliente conectado. Aguardando boot PXE…</p>';
+        grid.innerHTML = '<p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>';
     }
 }
 
