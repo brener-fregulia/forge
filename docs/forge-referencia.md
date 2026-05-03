@@ -55,6 +55,8 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 | SSD SATA ×2 | A definir | Hot Cache em RAID1 |
 | HDD ×2 inicial | 2× Seagate Ironwolf PRO NAS 4TB | Cold Storage |
 | HDD ×4 futuro | 4× Seagate Ironwolf PRO NAS 4TB | Expansão Cold Storage |
+| NIC 10GbE | Intel X520-DA2 (2× SFP+, PCIe 2.0 x8) | Roda em PCIe 3.0 x8 no slot x16 do B450M — sem conflito com NVMe; requer cabos DAC SFP+ |
+| Switch gerenciável | MikroTik CSS326-24G-2S+RM | 24× GbE + 2× SFP+, SNMP v1/v2c, SwOS — habilita detecção de portas e WoL futuro |
 
 > RAID do Cold Storage ainda a definir. Candidatos: RAID5, RAID6 ou ZFS RAIDZ2.
 
@@ -370,6 +372,9 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 - ⬜ Botões de ação (Inventariar / Backup / Format / Install / Restore)
 - ⬜ Indicador de progresso por etapa
 - ⬜ Aviso visual para disco com sinais de degradação (SMART)
+- ⬜ Detecção de portas do switch via SNMP (CSS326 + IF-MIB) — link up/down por porta
+- ⬜ Wake-on-LAN via FORGE dashboard — requer switch gerenciável + MAC conhecido
+- ⬜ ARP scan + leases dnsmasq para detectar dispositivos ligados não-Alpine
 
 ### Hardware
 - ⬜ Segundo SSD SATA (RAID1 hot cache)
