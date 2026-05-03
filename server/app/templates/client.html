@@ -10,13 +10,13 @@
         <div><strong>Status:</strong> <span class="status status-{{ client.status }}">{{ client.status }}</span></div>
     </div>
 
-    <h3>Hardware</h3>
+    <h3>Hardware <button class="btn-small btn-copy" data-target="hw">Copiar</button></h3>
     <pre id="hw">{{ client.hardware }}</pre>
 
-    <h3>Discos</h3>
+    <h3>Discos <button class="btn-small btn-copy" data-target="disks">Copiar</button></h3>
     <pre id="disks">{{ client.disks }}</pre>
 
-    <h3>Usuários Windows</h3>
+    <h3>Usuários Windows <button class="btn-small btn-copy" data-target="users">Copiar</button></h3>
     <pre id="users">{{ client.users }}</pre>
 
     <h3>Enviar comando</h3>
@@ -25,7 +25,11 @@
         <button type="submit">Enviar</button>
     </form>
 
-    <h3>Log <button id="clear-log-btn" class="btn-small">Limpar</button></h3>
+    <h3>
+        Log
+        <button id="clear-log-btn" class="btn-small">Limpar</button>
+        <button class="btn-small btn-copy" data-target="log">Copiar</button>
+    </h3>
     <pre id="log">{{ client.log_tail | join('\n') }}</pre>
 </section>
 {% endblock %}

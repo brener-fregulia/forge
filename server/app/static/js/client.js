@@ -45,3 +45,25 @@ document.getElementById("clear-log-btn").addEventListener("click", async () => {
     const res = await fetch(`/api/clients/${mac}/log/clear`, {method: "POST"});
     if (!res.ok) alert("Erro ao limpar log");
 });
+
+// Botões "Copiar" — copia conteúdo do <pre> alvo para o clipboard
+document.querySelectorAll(".btn-copy").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const targetId = btn.dataset.target;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        try {
+            await navigator.clipboard.writeText(target.textContent);
+            const originalText = btn.textContent;
+            btn.textContent = "Copiado!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove("copied");
+            }, 1200);
+        } catch (err) {
+            alert("Erro ao copiar: " + err);
+        }
+    });
+});
