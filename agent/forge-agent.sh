@@ -66,7 +66,33 @@ done
 DISKS_INNER=$(cat $DISKS_TMP | sed 's/,$//')
 DISKS="[$DISKS_INNER]"
 
-INVENTORY="{\"type\":\"inventory\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"disks\":$DISKS,\"users\":[]}"
+# Enriquece DISKS com dados SMART (apenas para discos físicos, não partições)
+DISKS_WITH_SMART_TMP=/tmp/forge-disks-smart.tmp
+> $DISKS_WITH_SMART_TMP
+
+# Lista apenas nomes de discos físicos (type=disk)
+PHYSICAL_DISKS=$(lsblk -b -n -d -o NAME 2>/dev/null)
+
+# Para cada disco físico, coleta SMART
+SMART_JSON_TMP=/tmp/forge-smart.json
+> $SMART_JSON_TMP
+echo "{" >> $SMART_JSON_TMP
+FIRST_SMART=1
+for disk in $PHYSICAL_DISKS; do
+    SMART_DATA=$(smartctl -H -A -j "/dev/$disk" 2>/dev/null)
+    if [ -n "$SMART_DATA" ]; then
+        # Remove quebras de linha e escapa para virar valor JSON
+        SMART_ESC=$(echo "$SMART_DATA" | tr -d '\n' | sed 's/"/\\"/g')
+        [ "$FIRST_SMART" = "1" ] && FIRST_SMART=0 || echo "," >> $SMART_JSON_TMP
+        echo "\"$disk\":\"$SMART_ESC\"" >> $SMART_JSON_TMP
+    fi
+done
+echo "}" >> $SMART_JSON_TMP
+
+# Em vez de embedar SMART em cada disco (complexo), envia separado
+SMART_JSON=$(cat $SMART_JSON_TMP | tr -d '\n')
+
+INVENTORY="{\"type\":\"inventory\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":[]}"
 
 WS_URL="ws://$SERVER_IP:$SERVER_PORT/ws/agent/$MAC"
 

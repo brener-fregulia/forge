@@ -20,6 +20,7 @@ class Client:
         self.users: list[dict[str, Any]] = []
         self.progress: int = 0
         self.log: list[str] = []
+        self.smart: dict[str, Any] = {}
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -33,6 +34,7 @@ class Client:
             "hardware": self.hardware,
             "disks": self.disks,
             "users": self.users,
+            "smart": self.smart,
             "log_tail": self.log[-20:],
         }
 

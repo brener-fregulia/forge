@@ -18,7 +18,7 @@ ws.onmessage = (event) => {
         els.disks.textContent = JSON.stringify(c.disks, null, 2);
         els.users.textContent = JSON.stringify(c.users, null, 2);
         els.log.textContent = (c.log_tail || []).join("\n");
-        renderDisks(c.disks);
+        renderDisks(c.disks, c.smart);
     }
 };
 document.getElementById("cmd-form").addEventListener("submit", async (e) => {
@@ -81,7 +81,7 @@ function formatBytes(bytes) {
     return n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2) + " " + units[i];
 }
 
-function renderDisks(disks) {
+function renderDisks(disks, smart) {
     const container = document.getElementById("disks-rendered");
     if (!container) return;
     if (!disks || !disks.length) {
@@ -89,7 +89,7 @@ function renderDisks(disks) {
         return;
     }
 
-    let html = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Filesystem</th><th>Identificação</th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Filesystem</th><th>Saúde</th><th>Identificação</th></tr></thead><tbody>';
     for (const d of disks) {
         const isPart = d.type === "part";
         const cls = isPart ? "disk-part" : "disk-main";
@@ -98,7 +98,25 @@ function renderDisks(disks) {
         const fsClass = fs === "ntfs" ? "fs-ntfs" : (fs ? "fs-other" : "");
         const fsBadge = fs ? `<span class="fs-badge ${fsClass}">${fs}</span>` : "—";
 
-        // Identificação: vendor + model + serial (só para discos físicos)
+        // Saúde SMART (apenas discos físicos)
+        let health = "—";
+        if (!isPart && smart && smart[d.name]) {
+            const s = smart[d.name];
+            const passed = s.smart_status?.passed;
+            const tempCurrent = s.temperature?.current;
+            if (passed === true) {
+                health = `<span class="health-badge health-ok">OK</span>`;
+            } else if (passed === false) {
+                health = `<span class="health-badge health-fail">FAIL</span>`;
+            } else {
+                health = `<span class="health-badge health-unknown">?</span>`;
+            }
+            if (tempCurrent != null) {
+                health += ` <span class="health-temp">${tempCurrent}°C</span>`;
+            }
+        }
+
+        // Identificação
         let ident = "—";
         if (!isPart) {
             const parts = [];
@@ -114,6 +132,7 @@ function renderDisks(disks) {
             <td>${d.type}</td>
             <td>${formatBytes(d.size)}</td>
             <td>${fsBadge}</td>
+            <td>${health}</td>
             <td>${ident}</td>
         </tr>`;
     }
@@ -133,7 +152,8 @@ function tryInitialRender() {
         } catch {
             disks = JSON.parse(disksRaw.replace(/'/g, '"'));
         }
-        renderDisks(disks);
+        // No render inicial, smart vem do server, então só pega via WebSocket update
+        renderDisks(disks, {});
     } catch (e) {
         console.warn("Erro ao renderizar discos iniciais:", e);
     }

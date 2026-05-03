@@ -43,6 +43,18 @@ async def ws_agent(websocket: WebSocket, mac: str):
                 client.hardware = msg.get("hardware", {})
                 client.disks = msg.get("disks", [])
                 client.users = msg.get("users", [])
+                # SMART vem como dict {disk_name: json_string}; parseia cada um
+                smart_raw = msg.get("smart", {}) or {}
+                parsed_smart = {}
+                for disk_name, smart_str in smart_raw.items():
+                    if isinstance(smart_str, str):
+                        try:
+                            parsed_smart[disk_name] = json.loads(smart_str)
+                        except json.JSONDecodeError:
+                            parsed_smart[disk_name] = {"error": "parse_failed"}
+                    else:
+                        parsed_smart[disk_name] = smart_str
+                client.smart = parsed_smart
                 client.status = "ready"
             elif msg_type == "status":
                 client.status = msg.get("status", client.status)

@@ -51,12 +51,11 @@ sudo cp "/mnt/modloop/modules/$KERNEL_VERSION/modules."* \
 
 sudo umount /mnt/modloop
 
-# 4.5 Adiciona lsblk Alpine + libs musl necessárias
-echo ">>> Adicionando lsblk Alpine + libs"
+# 4.5 Adiciona binários Alpine (musl) + libs necessárias
+echo ">>> Adicionando lsblk + smartctl"
 APK_DIR="$PROJECT_ROOT/build"
 
-# Pacotes a extrair: lsblk e suas dependências
-APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid"
+APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++"
 
 EXTRACT_DIR=$(mktemp -d)
 for apk in $APKS; do
@@ -68,25 +67,18 @@ for apk in $APKS; do
     tar -xzf "$APK_FILE" -C "$EXTRACT_DIR" 2>/dev/null || true
 done
 
-# Copia o binário lsblk
-if [ -f "$EXTRACT_DIR/bin/lsblk" ]; then
-    cp "$EXTRACT_DIR/bin/lsblk" usr/bin/lsblk
-    chmod +x usr/bin/lsblk
-    echo "    lsblk Alpine instalado"
-fi
+# Copia binários
+[ -f "$EXTRACT_DIR/bin/lsblk" ]         && cp "$EXTRACT_DIR/bin/lsblk"         usr/bin/lsblk         && chmod +x usr/bin/lsblk         && echo "    + lsblk"
+[ -f "$EXTRACT_DIR/usr/sbin/smartctl" ] && cp "$EXTRACT_DIR/usr/sbin/smartctl" usr/sbin/smartctl     && chmod +x usr/sbin/smartctl     && echo "    + smartctl"
 
-# Copia todas as libs (.so*)
+# Copia libs (.so*)
 mkdir -p usr/lib lib
-if [ -d "$EXTRACT_DIR/usr/lib" ]; then
-    cp -P "$EXTRACT_DIR/usr/lib/"*.so* usr/lib/ 2>/dev/null || true
-fi
-if [ -d "$EXTRACT_DIR/lib" ]; then
-    cp -P "$EXTRACT_DIR/lib/"*.so* lib/ 2>/dev/null || true
-fi
+[ -d "$EXTRACT_DIR/usr/lib" ] && cp -P "$EXTRACT_DIR/usr/lib/"*.so* usr/lib/ 2>/dev/null || true
+[ -d "$EXTRACT_DIR/lib" ]     && cp -P "$EXTRACT_DIR/lib/"*.so* lib/ 2>/dev/null || true
 
-echo "    Libs instaladas:"
-ls usr/lib/*.so* 2>/dev/null | sed 's|^|      |'
-ls lib/*.so* 2>/dev/null | sed 's|^|      |'
+echo "    Total libs:"
+ls usr/lib/*.so* 2>/dev/null | wc -l | sed 's|^|      usr/lib: |'
+ls lib/*.so* 2>/dev/null | wc -l | sed 's|^|      lib: |'
 
 rm -rf "$EXTRACT_DIR"
 
