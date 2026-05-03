@@ -88,6 +88,13 @@ cp "$WEBSOCAT_BIN" usr/bin/websocat
 cp "$AGENT_SCRIPT" usr/bin/forge-agent
 chmod +x usr/bin/websocat usr/bin/forge-agent
 
+# Copia libs do agent
+mkdir -p usr/lib/forge
+for lib in "$PROJECT_ROOT/agent/lib/"*.sh; do
+    cp "$lib" usr/lib/forge/
+done
+echo "    libs do agent: $(ls usr/lib/forge/)"
+
 # 6. Patcha o /init
 echo ">>> Patchando /init"
 python3 << 'PYEOF'
