@@ -10,11 +10,11 @@ router = APIRouter()
 
 def _disk_smart(dev: str) -> dict:
     try:
-        out = subprocess.check_output(
-            ["smartctl", "-H", "-i", "-j", dev],
-            stderr=subprocess.DEVNULL, text=True
+        result = subprocess.run(
+            ["sudo", "smartctl", "-H", "-i", "-j", dev],
+            capture_output=True, text=True
         )
-        data = _json.loads(out)
+        data = _json.loads(result.stdout)
         return {
             "passed": data.get("smart_status", {}).get("passed"),
             "model": data.get("model_name", ""),
@@ -35,7 +35,12 @@ def _hot_disks() -> list[dict]:
         disks = []
         for d in _json.loads(out).get("blockdevices", []):
             smart = _disk_smart(f"/dev/{d['name']}")
-            disks.append({**d, **smart})
+            disks.append({
+                "name": d["name"],
+                "size": d.get("size"),
+                "model": d.get("model"),
+                **smart
+            })
         return disks
     except Exception:
         return []
