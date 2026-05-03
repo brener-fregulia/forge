@@ -5,5 +5,5 @@ exec uvicorn app.main:app \
     --host 0.0.0.0 \
     --port 8080 \
     --reload \
-    --ws-ping-interval 5 \
-    --ws-ping-timeout 3
+    --ws-ping-interval 3 \
+    --ws-ping-timeout 2
