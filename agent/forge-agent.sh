@@ -1,6 +1,4 @@
 #!/bin/sh
-# FORGE Agent — entrypoint
-
 SERVER_IP="192.168.100.1"
 SERVER_PORT="8080"
 LIB="/usr/lib/forge"
@@ -13,7 +11,11 @@ LIB="/usr/lib/forge"
 network_wait
 network_info
 
-INVENTORY=$(inventory_collect)
+BASE_INVENTORY=$(inventory_collect_base)
 WS_URL="ws://$SERVER_IP:$SERVER_PORT/ws/agent/$MAC"
 
-forge_loop "$INVENTORY" "$WS_URL"
+# Conecta imediatamente com inventário base
+# Coleta discos/SMART em paralelo (demora ~10s)
+DISKS_INVENTORY=$(inventory_collect_disks)
+
+forge_loop "$BASE_INVENTORY" "$DISKS_INVENTORY" "$WS_URL"

@@ -65,9 +65,13 @@ inventory_smart() {
     export SMART_JSON=$(cat $SMART_TMP | tr -d '\n')
 }
 
-inventory_collect() {
+inventory_collect_base() {
     inventory_hardware
+    echo "{\"type\":\"inventory_base\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"users\":[]}"
+}
+
+inventory_collect_disks() {
     inventory_disks
     inventory_smart
-    echo "{\"type\":\"inventory\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":[]}"
+    echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON}"
 }

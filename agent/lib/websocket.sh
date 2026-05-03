@@ -22,8 +22,9 @@ cmd_extract() {
 }
 
 forge_loop() {
-    INVENTORY="$1"
-    WS_URL="$2"
+    BASE_INVENTORY="$1"
+    DISKS_INVENTORY="$2"
+    WS_URL="$3"
     FIFO=/tmp/forge-out
 
     while true; do
@@ -32,7 +33,11 @@ forge_loop() {
         mkfifo "$FIFO"
 
         (
-            echo "$INVENTORY"
+            # Fase 1: inventário base imediato
+            echo "$BASE_INVENTORY"
+            # Fase 2: discos + SMART (demora mais)
+            echo "$DISKS_INVENTORY"
+            # Heartbeat contínuo
             while true; do
                 sleep 30
                 echo '{"type":"status","status":"alive"}'

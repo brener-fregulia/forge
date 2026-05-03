@@ -25,13 +25,19 @@ def _handle_message(client: Client, msg: dict) -> None:
     msg_type = msg.get("type")
     client.last_seen = datetime.now()
 
-    if msg_type == "inventory":
-        client.hostname = msg.get("hostname")
-        client.hardware = msg.get("hardware", {})
-        client.disks    = msg.get("disks", [])
-        client.users    = msg.get("users", [])
-        client.smart    = _parse_smart(msg.get("smart"))
-        client.status   = "ready"
+    if msg_type in ("inventory", "inventory_base"):
+        client.hostname = msg.get("hostname", client.hostname)
+        client.hardware = msg.get("hardware", client.hardware) or client.hardware
+        client.users    = msg.get("users", client.users)
+        if msg_type == "inventory_base":
+            client.status = "ready"
+        else:
+            client.disks  = msg.get("disks", [])
+            client.smart  = _parse_smart(msg.get("smart"))
+            client.status = "ready"
+    elif msg_type == "inventory_disks":
+        client.disks = msg.get("disks", [])
+        client.smart = _parse_smart(msg.get("smart"))
     elif msg_type == "status":
         client.status   = msg.get("status", client.status)
         client.progress = msg.get("progress", client.progress)
