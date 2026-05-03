@@ -8,63 +8,58 @@ from app.state import state, Client
 router = APIRouter()
 
 
+def _parse_smart(smart_raw: dict) -> dict:
+    parsed = {}
+    for disk, data in (smart_raw or {}).items():
+        if isinstance(data, str):
+            try:
+                parsed[disk] = json.loads(data)
+            except json.JSONDecodeError:
+                parsed[disk] = {"error": "parse_failed"}
+        else:
+            parsed[disk] = data
+    return parsed
+
+
+def _handle_message(client: Client, msg: dict) -> None:
+    msg_type = msg.get("type")
+    client.last_seen = datetime.now()
+
+    if msg_type == "inventory":
+        client.hostname = msg.get("hostname")
+        client.hardware = msg.get("hardware", {})
+        client.disks    = msg.get("disks", [])
+        client.users    = msg.get("users", [])
+        client.smart    = _parse_smart(msg.get("smart"))
+        client.status   = "ready"
+    elif msg_type == "status":
+        client.status   = msg.get("status", client.status)
+        client.progress = msg.get("progress", client.progress)
+    elif msg_type == "log":
+        client.log.append(msg.get("line", ""))
+    elif msg_type == "command_output":
+        client.log.append(f"[cmd] {msg.get('output', '')}")
+
+
 @router.websocket("/ws/agent/{mac}")
 async def ws_agent(websocket: WebSocket, mac: str):
-    """Endpoint para o FORGE Agent (Alpine cliente) se conectar."""
     await websocket.accept()
     ip = websocket.client.host if websocket.client else "unknown"
 
     client = Client(mac=mac, ip=ip, websocket=websocket)
     state.add_client(client)
-
-    await state.broadcast_to_dashboard({
-        "type": "client_connected",
-        "client": client.to_dict(),
-    })
+    await state.broadcast_to_dashboard({"type": "client_connected", "client": client.to_dict()})
 
     try:
         while True:
             data = await websocket.receive_text()
             try:
                 msg = json.loads(data)
-                print(f"[FORGE] msg de {mac}: type={msg.get('type')}")
             except json.JSONDecodeError as e:
-                print(f"[FORGE] JSON inválido de {mac}: {e}")
-                print(f"[FORGE] dados crus: {repr(data[:200])}")
-                client.log.append(f"[raw] {data}")
+                client.log.append(f"[raw] {data[:200]}")
                 continue
 
-            client.last_seen = datetime.now()
-            msg_type = msg.get("type")
-
-            # Atualiza estado conforme o tipo de mensagem
-            if msg_type == "inventory":
-                client.hostname = msg.get("hostname")
-                client.hardware = msg.get("hardware", {})
-                client.disks = msg.get("disks", [])
-                client.users = msg.get("users", [])
-                # SMART vem como dict {disk_name: json_string}; parseia cada um
-                smart_raw = msg.get("smart", {}) or {}
-                parsed_smart = {}
-                for disk_name, smart_str in smart_raw.items():
-                    if isinstance(smart_str, str):
-                        try:
-                            parsed_smart[disk_name] = json.loads(smart_str)
-                        except json.JSONDecodeError:
-                            parsed_smart[disk_name] = {"error": "parse_failed"}
-                    else:
-                        parsed_smart[disk_name] = smart_str
-                client.smart = parsed_smart
-                client.status = "ready"
-            elif msg_type == "status":
-                client.status = msg.get("status", client.status)
-                client.progress = msg.get("progress", client.progress)
-            elif msg_type == "log":
-                client.log.append(msg.get("line", ""))
-            elif msg_type == "command_output":
-                client.log.append(f"[cmd] {msg.get('output', '')}")
-
-            # Repassa para o dashboard em tempo real
+            _handle_message(client, msg)
             await state.broadcast_to_dashboard({
                 "type": "client_update",
                 "mac": mac,
@@ -75,27 +70,19 @@ async def ws_agent(websocket: WebSocket, mac: str):
         pass
     finally:
         state.remove_client(mac)
-        await state.broadcast_to_dashboard({
-            "type": "client_disconnected",
-            "mac": mac,
-        })
+        await state.broadcast_to_dashboard({"type": "client_disconnected", "mac": mac})
 
 
 @router.websocket("/ws/dashboard")
 async def ws_dashboard(websocket: WebSocket):
-    """Endpoint para o navegador receber atualizações em tempo real."""
     await websocket.accept()
     state.dashboard_sockets.add(websocket)
-
-    # Snapshot inicial
     await websocket.send_json({
         "type": "snapshot",
         "clients": [c.to_dict() for c in state.clients.values()],
     })
-
     try:
         while True:
-            # Mantém conexão viva, ignora mensagens do navegador
             await websocket.receive_text()
     except WebSocketDisconnect:
         pass
