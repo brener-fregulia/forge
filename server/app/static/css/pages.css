@@ -1,0 +1,82 @@
+/* --- Dashboard: grid de clientes --- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.client-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s;
+}
+.client-card:hover { border-color: var(--accent); }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.mac      { color: var(--text-dim); font-family: monospace; }
+.hostname { font-size: 1.1rem; font-weight: 600; }
+.ip       { color: var(--text-dim); font-family: monospace; font-size: 0.9rem; }
+
+/* --- Página de cliente: tabela de discos --- */
+.disks-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+.disks-table th,
+.disks-table td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+.disks-table th {
+    background: var(--bg);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+.disks-table tr:last-child td { border-bottom: none; }
+
+.disks-table tr.disk-main td {
+    font-weight: 600;
+    background: rgba(247, 129, 102, 0.05);
+    border-top: 2px solid var(--border);
+}
+.disks-table tr.disk-main:first-child td { border-top: none; }
+
+.disks-table tr.disk-part td:first-child {
+    padding-left: 2rem;
+    color: var(--text-dim);
+    border-left: 3px solid var(--border);
+    position: relative;
+}
+.disks-table tr.disk-part td:first-child::before {
+    content: "└";
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+.disks-table code { font-family: monospace; color: var(--accent); }
+
+.disk-serial { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.15rem; }
+.disk-serial code { color: var(--text-dim); font-size: 0.75rem; }
