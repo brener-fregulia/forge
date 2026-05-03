@@ -25,7 +25,7 @@
         <button type="submit">Enviar</button>
     </form>
 
-    <h3>Log</h3>
+    <h3>Log <button id="clear-log-btn" class="btn-small">Limpar</button></h3>
     <pre id="log">{{ client.log_tail | join('\n') }}</pre>
 </section>
 {% endblock %}

@@ -42,3 +42,17 @@ async def send_command(mac: str, payload: CommandRequest):
         raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
 
     return {"status": "sent", "command": payload.command}
+
+@router.post("/clients/{mac}/log/clear")
+async def clear_log(mac: str):
+    """Limpa o log de um cliente."""
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    client.log = []
+    await state.broadcast_to_dashboard({
+        "type": "client_update",
+        "mac": mac,
+        "client": client.to_dict(),
+    })
+    return {"status": "cleared"}

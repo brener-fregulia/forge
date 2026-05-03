@@ -140,3 +140,19 @@ button {
     cursor: pointer;
 }
 button:hover { opacity: 0.9; }
+
+.btn-small {
+    background: var(--bg-card);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    vertical-align: middle;
+}
+.btn-small:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}

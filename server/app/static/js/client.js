@@ -39,3 +39,9 @@ document.getElementById("cmd-form").addEventListener("submit", async (e) => {
         alert("Erro ao enviar comando: " + (await res.text()));
     }
 });
+
+document.getElementById("clear-log-btn").addEventListener("click", async () => {
+    if (!confirm("Limpar o log deste cliente?")) return;
+    const res = await fetch(`/api/clients/${mac}/log/clear`, {method: "POST"});
+    if (!res.ok) alert("Erro ao limpar log");
+});

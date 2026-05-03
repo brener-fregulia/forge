@@ -57,7 +57,28 @@ while true; do
     # Producer 2: processa comandos recebidos do servidor e devolve output pelo FIFO
     (
         websocat -t "$WS_URL" < "$FIFO" | while read -r line; do
-            CMD=$(echo "$line" | sed -n 's/.*"command":"\([^"]*\)".*/\1/p')
+            # Extrai "command" usando awk (lida com aspas escapadas)
+            CMD=$(echo "$line" | awk -F'"command":"' '{
+                if (NF < 2) exit
+                s = $2
+                # Encontra a posição da aspa não escapada de fechamento
+                out = ""
+                i = 1
+                while (i <= length(s)) {
+                    c = substr(s, i, 1)
+                    if (c == "\\" && i < length(s)) {
+                        n = substr(s, i+1, 1)
+                        if (n == "\"") { out = out "\""; i += 2; continue }
+                        if (n == "\\") { out = out "\\"; i += 2; continue }
+                        if (n == "n") { out = out "\n"; i += 2; continue }
+                        out = out c n; i += 2; continue
+                    }
+                    if (c == "\"") break
+                    out = out c
+                    i++
+                }
+                print out
+            }')
             if [ -n "$CMD" ]; then
                 echo "[FORGE] cmd recebido: $CMD" >&2
                 OUTPUT=$(sh -c "$CMD" 2>&1)
