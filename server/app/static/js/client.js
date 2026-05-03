@@ -18,9 +18,9 @@ ws.onmessage = (event) => {
         els.disks.textContent = JSON.stringify(c.disks, null, 2);
         els.users.textContent = JSON.stringify(c.users, null, 2);
         els.log.textContent = (c.log_tail || []).join("\n");
+        renderDisks(c.disks);
     }
 };
-
 document.getElementById("cmd-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const input = document.getElementById("cmd-input");
@@ -67,3 +67,58 @@ document.querySelectorAll(".btn-copy").forEach(btn => {
         }
     });
 });
+
+// Renderiza discos em tabela amigável
+function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return "—";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let i = 0;
+    let n = Number(bytes);
+    while (n >= 1024 && i < units.length - 1) {
+        n /= 1024;
+        i++;
+    }
+    return n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2) + " " + units[i];
+}
+
+function renderDisks(disks) {
+    const container = document.getElementById("disks-rendered");
+    if (!container) return;
+    if (!disks || !disks.length) {
+        container.innerHTML = '<p class="empty">Nenhum disco detectado.</p>';
+        return;
+    }
+
+    let html = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Modelo</th></tr></thead><tbody>';
+    for (const d of disks) {
+        const isPart = d.type === "part";
+        const cls = isPart ? "disk-part" : "disk-main";
+        html += `<tr class="${cls}">
+            <td><code>${d.name}</code></td>
+            <td>${d.type}</td>
+            <td>${formatBytes(d.size)}</td>
+            <td>${d.model || "—"}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// Renderiza ao carregar e a cada update
+function tryInitialRender() {
+    try {
+        const disksRaw = document.getElementById("disks").textContent.trim();
+        if (!disksRaw) return;
+        // Pode vir como Python repr (aspas simples) ou JSON — tenta JSON primeiro
+        let disks;
+        try {
+            disks = JSON.parse(disksRaw);
+        } catch {
+            disks = JSON.parse(disksRaw.replace(/'/g, '"'));
+        }
+        renderDisks(disks);
+    } catch (e) {
+        console.warn("Erro ao renderizar discos iniciais:", e);
+    }
+}
+tryInitialRender();

@@ -14,7 +14,8 @@
     <pre id="hw">{{ client.hardware }}</pre>
 
     <h3>Discos <button class="btn-small btn-copy" data-target="disks">Copiar</button></h3>
-    <pre id="disks">{{ client.disks }}</pre>
+    <div id="disks-rendered" class="disks-table"></div>
+    <pre id="disks" style="display:none">{{ client.disks }}</pre>
 
     <h3>Usuários Windows <button class="btn-small btn-copy" data-target="users">Copiar</button></h3>
     <pre id="users">{{ client.users }}</pre>
