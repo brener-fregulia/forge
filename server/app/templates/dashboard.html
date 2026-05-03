@@ -4,21 +4,25 @@
 {% block content %}
 <section>
     <div id="server-status" class="server-status">
-        <div class="server-status-item">
+        <div class="server-status-item" id="ss-item-cpu">
             <span class="ss-label">CPU</span>
             <span class="ss-value" id="ss-cpu">—</span>
+            <button class="ss-info-btn" title="Detalhes CPU">i</button>
         </div>
-        <div class="server-status-item">
+        <div class="server-status-item" id="ss-item-ram">
             <span class="ss-label">RAM</span>
             <span class="ss-value" id="ss-ram">—</span>
+            <button class="ss-info-btn" title="Detalhes RAM">i</button>
         </div>
-        <div class="server-status-item">
+        <div class="server-status-item" id="ss-item-hot">
             <span class="ss-label">Hot Cache</span>
             <span class="ss-value" id="ss-hot">—</span>
+            <button class="ss-info-btn" title="Detalhes Hot Cache">i</button>
         </div>
-        <div class="server-status-item">
+        <div class="server-status-item" id="ss-item-cold">
             <span class="ss-label">Cold Storage</span>
             <span class="ss-value" id="ss-cold">—</span>
+            <button class="ss-info-btn" title="Detalhes Cold Storage">i</button>
         </div>
         <div class="server-status-item">
             <span class="ss-label">RAID</span>
@@ -52,6 +56,16 @@
         {% endfor %}
     </div>
 </section>
+
+<div id="server-modal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="server-modal-title">Detalhes</h3>
+            <button class="modal-close" id="server-modal-close">✕</button>
+        </div>
+        <div id="server-modal-body"></div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
