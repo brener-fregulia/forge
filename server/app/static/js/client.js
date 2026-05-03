@@ -1,6 +1,7 @@
 import { createWS } from "./lib/ws.js";
 import { initClipboard } from "./lib/clipboard.js";
 import { renderDisks, tryInitialRender, initSmartModal } from "./components/disks-table.js";
+import { renderUsers, getSelectedUsers } from "./components/users-table.js";
 
 const mac = window.CLIENT_MAC;
 
@@ -26,9 +27,8 @@ function updateClient(c) {
         initSmartModal(c.smart);
     }
     if (Array.isArray(c.users)) {
-        els.users.textContent = c.users.length
-            ? JSON.stringify(c.users, null, 2)
-            : "Nenhum usuário encontrado.";
+        els.users.textContent = JSON.stringify(c.users, null, 2);
+        renderUsers(c.users);
     }
     els.log.textContent = (c.log_tail || []).join("\n");
 }

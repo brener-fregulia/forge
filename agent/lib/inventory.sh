@@ -71,7 +71,7 @@ inventory_users() {
     > $USERS_TMP
 
     # Para cada partição NTFS detectada
-    for dev in $(lsblk -b -n -o NAME,FSTYPE | awk '$2=="ntfs"{print $1}'); do
+    for dev in $(lsblk -b -n -o NAME,FSTYPE | awk '$2=="ntfs"{print $1}' | sed 's/[├└│─ ]//g'); do
         MNT="/tmp/mnt_$dev"
         mkdir -p "$MNT"
 
@@ -86,7 +86,8 @@ inventory_users() {
 
                 # Ignora pastas de sistema
                 case "$USERNAME" in
-                    "Public"|"Default"|"Default User"|"All Users"|"desktop.ini") continue ;;
+                    "Public"|"Default"|"Default User"|"All Users"|"desktop.ini"|\
+                    "Todos os Usuários"|"Usuário Padrão"|"Usuários") continue ;;
                 esac
 
                 # Calcula tamanho da pasta

@@ -18,7 +18,8 @@
     <pre id="disks" style="display:none">{{ client.disks }}</pre>
 
     <h3>Usuários Windows <button class="btn-small btn-copy" data-target="users">Copiar</button></h3>
-    <pre id="users"><span class="loading"><span class="spinner"></span>Montando partições NTFS…</span></pre>
+    <div id="users-rendered"><span class="loading"><span class="spinner"></span>Montando partições NTFS…</span></div>
+    <pre id="users" style="display:none"></pre>
 
     <h3>Enviar comando</h3>
     <form id="cmd-form">
