@@ -3,10 +3,37 @@
 
 {% block content %}
 <section>
+    <div id="server-status" class="server-status">
+        <div class="server-status-item">
+            <span class="ss-label">CPU</span>
+            <span class="ss-value" id="ss-cpu">—</span>
+        </div>
+        <div class="server-status-item">
+            <span class="ss-label">RAM</span>
+            <span class="ss-value" id="ss-ram">—</span>
+        </div>
+        <div class="server-status-item">
+            <span class="ss-label">Hot Cache</span>
+            <span class="ss-value" id="ss-hot">—</span>
+        </div>
+        <div class="server-status-item">
+            <span class="ss-label">Cold Storage</span>
+            <span class="ss-value" id="ss-cold">—</span>
+        </div>
+        <div class="server-status-item">
+            <span class="ss-label">RAID</span>
+            <span class="ss-value" id="ss-raid">—</span>
+        </div>
+        <div class="server-status-item">
+            <span class="ss-label">Uptime</span>
+            <span class="ss-value" id="ss-uptime">—</span>
+        </div>
+    </div>
+
     <h2>Clientes conectados</h2>
     <div id="clients-grid" class="grid">
         {% if not clients %}
-        <p class="empty" id="empty-state">Nenhum cliente conectado. Aguardando boot PXE…</p>
+        <p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>
         {% endif %}
         {% for c in clients %}
         <a href="/client/{{ c.mac }}" class="client-card" data-mac="{{ c.mac }}">
