@@ -17,12 +17,20 @@ createWS("/ws/dashboard", {
 });
 
 function updateClient(c) {
-    els.hw.textContent    = JSON.stringify(c.hardware, null, 2);
-    els.disks.textContent = JSON.stringify(c.disks, null, 2);
-    els.users.textContent = JSON.stringify(c.users, null, 2);
-    els.log.textContent   = (c.log_tail || []).join("\n");
-    renderDisks(c.disks, c.smart);
-    initSmartModal(c.smart);
+    if (c.hardware && typeof c.hardware === 'object' && Object.keys(c.hardware).length > 0) {
+        els.hw.textContent = JSON.stringify(c.hardware, null, 2);
+    }
+    if (c.disks?.length) {
+        els.disks.textContent = JSON.stringify(c.disks, null, 2);
+        renderDisks(c.disks, c.smart);
+        initSmartModal(c.smart);
+    }
+    if (Array.isArray(c.users)) {
+        els.users.textContent = c.users.length
+            ? JSON.stringify(c.users, null, 2)
+            : "Nenhum usuário encontrado.";
+    }
+    els.log.textContent = (c.log_tail || []).join("\n");
 }
 
 document.getElementById("cmd-form").addEventListener("submit", async (e) => {

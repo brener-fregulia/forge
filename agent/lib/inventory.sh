@@ -65,6 +65,49 @@ inventory_smart() {
     export SMART_JSON=$(cat $SMART_TMP | tr -d '\n')
 }
 
+inventory_users() {
+    USERS_JSON="[]"
+    USERS_TMP=/tmp/forge-users.tmp
+    > $USERS_TMP
+
+    # Para cada partição NTFS detectada
+    for dev in $(lsblk -b -n -o NAME,FSTYPE | awk '$2=="ntfs"{print $1}'); do
+        MNT="/tmp/mnt_$dev"
+        mkdir -p "$MNT"
+
+        # Monta a partição NTFS
+        ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || continue
+
+        # Verifica se tem pasta Users (Windows)
+        if [ -d "$MNT/Users" ]; then
+            for user_dir in "$MNT/Users"/*/; do
+                [ -d "$user_dir" ] || continue
+                USERNAME=$(basename "$user_dir")
+
+                # Ignora pastas de sistema
+                case "$USERNAME" in
+                    "Public"|"Default"|"Default User"|"All Users"|"desktop.ini") continue ;;
+                esac
+
+                # Calcula tamanho da pasta
+                SIZE_KB=$(du -sk "$user_dir" 2>/dev/null | awk '{print $1}')
+                SIZE_BYTES=$((${SIZE_KB:-0} * 1024))
+
+                USERNAME_ESC=$(echo "$USERNAME" | sed 's/"/\\"/g')
+                printf '{"device":"%s","username":"%s","size":%s},' \
+                    "$dev" "$USERNAME_ESC" "$SIZE_BYTES" >> $USERS_TMP
+            done
+        fi
+
+        # Desmonta
+        umount "$MNT" 2>/dev/null
+        rmdir "$MNT" 2>/dev/null
+    done
+
+    USERS_INNER=$(sed 's/,$//' $USERS_TMP)
+    export USERS_JSON="[$USERS_INNER]"
+}
+
 inventory_collect_base() {
     inventory_hardware
     echo "{\"type\":\"inventory_base\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"users\":[]}"
@@ -73,5 +116,6 @@ inventory_collect_base() {
 inventory_collect_disks() {
     inventory_disks
     inventory_smart
-    echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON}"
+    inventory_users
+    echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":$USERS_JSON}"
 }

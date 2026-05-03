@@ -26,18 +26,21 @@ def _handle_message(client: Client, msg: dict) -> None:
     client.last_seen = datetime.now()
 
     if msg_type in ("inventory", "inventory_base"):
-        client.hostname = msg.get("hostname", client.hostname)
-        client.hardware = msg.get("hardware", client.hardware) or client.hardware
-        client.users    = msg.get("users", client.users)
+        client.hostname = msg.get("hostname") or client.hostname
+        hw = msg.get("hardware")
+        if hw:
+            client.hardware = hw
+        client.users = msg.get("users") or client.users
         if msg_type == "inventory_base":
             client.status = "ready"
         else:
-            client.disks  = msg.get("disks", [])
-            client.smart  = _parse_smart(msg.get("smart"))
+            client.disks = msg.get("disks", [])
+            client.smart = _parse_smart(msg.get("smart"))
             client.status = "ready"
     elif msg_type == "inventory_disks":
         client.disks = msg.get("disks", [])
         client.smart = _parse_smart(msg.get("smart"))
+        client.users = msg.get("users") or client.users
     elif msg_type == "status":
         client.status   = msg.get("status", client.status)
         client.progress = msg.get("progress", client.progress)
@@ -45,7 +48,6 @@ def _handle_message(client: Client, msg: dict) -> None:
         client.log.append(msg.get("line", ""))
     elif msg_type == "command_output":
         client.log.append(f"[cmd] {msg.get('output', '')}")
-
 
 @router.websocket("/ws/agent/{mac}")
 async def ws_agent(websocket: WebSocket, mac: str):

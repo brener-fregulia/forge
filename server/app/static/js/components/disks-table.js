@@ -20,8 +20,8 @@ export function renderDisks(disks, smart) {
             ? `<span class="fs-badge ${fs === "ntfs" ? "fs-ntfs" : "fs-other"}">${fs}</span>`
             : "—";
 
-        let health = "—";
-        if (!isPart && smart?.[d.name]) {
+        let health = `<span class="loading"><span class="spinner"></span></span>`;
+        if (!isPart && smart && Object.keys(smart).length && smart[d.name] !== undefined) {
             const s = smart[d.name];
             const passed = s.smart_status?.passed;
             const temp = s.temperature?.current;
@@ -31,6 +31,8 @@ export function renderDisks(disks, smart) {
                     ? `<span class="health-badge health-fail">FAIL</span>`
                     : `<span class="health-badge health-unknown">?</span>`;
             if (temp != null) health += ` <span class="health-temp">${temp}°C</span>`;
+        } else if (isPart) {
+            health = "—";
         }
 
         let ident = "—";

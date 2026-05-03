@@ -55,7 +55,7 @@ sudo umount /mnt/modloop
 echo ">>> Adicionando lsblk + smartctl"
 APK_DIR="$PROJECT_ROOT/build"
 
-APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++"
+APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++ ntfs-3g ntfs-3g-libs"
 
 EXTRACT_DIR=$(mktemp -d)
 for apk in $APKS; do
@@ -70,6 +70,8 @@ done
 # Copia binários
 [ -f "$EXTRACT_DIR/bin/lsblk" ]         && cp "$EXTRACT_DIR/bin/lsblk"         usr/bin/lsblk         && chmod +x usr/bin/lsblk         && echo "    + lsblk"
 [ -f "$EXTRACT_DIR/usr/sbin/smartctl" ] && cp "$EXTRACT_DIR/usr/sbin/smartctl" usr/sbin/smartctl     && chmod +x usr/sbin/smartctl     && echo "    + smartctl"
+[ -f "$EXTRACT_DIR/bin/ntfs-3g" ] && cp "$EXTRACT_DIR/bin/ntfs-3g" usr/bin/ntfs-3g && chmod +x usr/bin/ntfs-3g && echo "    + ntfs-3g"
+[ -f "$EXTRACT_DIR/sbin/mount.ntfs-3g" ] && cp "$EXTRACT_DIR/sbin/mount.ntfs-3g" sbin/mount.ntfs-3g && chmod +x sbin/mount.ntfs-3g && echo "    + mount.ntfs-3g"
 
 # Copia libs (.so*)
 mkdir -p usr/lib lib
