@@ -17,20 +17,53 @@ CPU=$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | sed 's/^ *//')
 RAM_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 RAM_MB=$((RAM_KB / 1024))
 
-# Coleta discos com awk puro (busybox sem -J)
-DISKS_INNER=$(lsblk -b -n -o NAME,SIZE,TYPE,MODEL 2>/dev/null | awk '
-{
-    name = $1
-    size = $2
-    type = $3
-    model = ""
-    for (i = 4; i <= NF; i++) model = model $i " "
-    sub(/ *$/, "", model)
-    gsub(/"/, "\\\"", model)
-    if (name == "") next
-    if (size == "") size = 0
-    printf "{\"name\":\"%s\",\"size\":%s,\"type\":\"%s\",\"model\":\"%s\"},", name, size, type, model
-}' | sed 's/,$//')
+# Coleta discos com lsblk --pairs + enriquece com serial do sysfs
+DISKS_TMP=/tmp/forge-disks.tmp
+> $DISKS_TMP
+
+lsblk -b -n -P -o NAME,SIZE,TYPE,FSTYPE,MODEL,VENDOR 2>/dev/null | while IFS= read -r LINE; do
+    NAME=""; SIZE=""; TYPE=""; FSTYPE=""; MODEL=""; VENDOR=""
+
+    # Extrai cada KEY="VALUE" via shell parameter expansion
+    eval "$(echo "$LINE" | tr ' ' '\n' | grep -E '^[A-Z]+="' | sed 's/^/local_/')" 2>/dev/null
+
+    # Fallback: parse manual via sed
+    NAME=$(echo "$LINE"   | sed -n 's/.*\(^\| \)NAME="\([^"]*\)".*/\2/p')
+    SIZE=$(echo "$LINE"   | sed -n 's/.*\(^\| \)SIZE="\([^"]*\)".*/\2/p')
+    TYPE=$(echo "$LINE"   | sed -n 's/.*\(^\| \)TYPE="\([^"]*\)".*/\2/p')
+    FSTYPE=$(echo "$LINE" | sed -n 's/.*\(^\| \)FSTYPE="\([^"]*\)".*/\2/p')
+    MODEL=$(echo "$LINE"  | sed -n 's/.*\(^\| \)MODEL="\([^"]*\)".*/\2/p')
+    VENDOR=$(echo "$LINE" | sed -n 's/.*\(^\| \)VENDOR="\([^"]*\)".*/\2/p')
+
+    [ -z "$NAME" ] && continue
+
+    # Lê serial do sysfs (mais confiável que lsblk SERIAL)
+    SERIAL=""
+    for path in "/sys/class/block/$NAME/device/serial" "/sys/class/block/$NAME/device/wwid"; do
+        if [ -r "$path" ]; then
+            RAW=$(cat "$path" 2>/dev/null | tr -d '\n')
+            # wwid vem como "t10.ATA  MODEL  SERIAL" — pega último campo
+            if echo "$RAW" | grep -q "^t10\."; then
+                SERIAL=$(echo "$RAW" | awk '{print $NF}')
+            else
+                SERIAL="$RAW"
+            fi
+            [ -n "$SERIAL" ] && break
+        fi
+    done
+
+    # Limpa espaços e escapa aspas
+    MODEL=$(echo "$MODEL" | sed 's/^ *//;s/ *$//;s/"/\\"/g')
+    VENDOR=$(echo "$VENDOR" | sed 's/^ *//;s/ *$//;s/"/\\"/g')
+    SERIAL=$(echo "$SERIAL" | sed 's/^ *//;s/ *$//;s/"/\\"/g')
+
+    [ -z "$SIZE" ] && SIZE=0
+
+    printf '{"name":"%s","size":%s,"type":"%s","fstype":"%s","model":"%s","serial":"%s","vendor":"%s"},' \
+        "$NAME" "$SIZE" "$TYPE" "$FSTYPE" "$MODEL" "$SERIAL" "$VENDOR" >> $DISKS_TMP
+done
+
+DISKS_INNER=$(cat $DISKS_TMP | sed 's/,$//')
 DISKS="[$DISKS_INNER]"
 
 INVENTORY="{\"type\":\"inventory\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"disks\":$DISKS,\"users\":[]}"

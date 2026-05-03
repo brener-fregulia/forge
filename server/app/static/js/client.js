@@ -89,15 +89,32 @@ function renderDisks(disks) {
         return;
     }
 
-    let html = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Modelo</th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Filesystem</th><th>Identificação</th></tr></thead><tbody>';
     for (const d of disks) {
         const isPart = d.type === "part";
         const cls = isPart ? "disk-part" : "disk-main";
+
+        const fs = d.fstype || "";
+        const fsClass = fs === "ntfs" ? "fs-ntfs" : (fs ? "fs-other" : "");
+        const fsBadge = fs ? `<span class="fs-badge ${fsClass}">${fs}</span>` : "—";
+
+        // Identificação: vendor + model + serial (só para discos físicos)
+        let ident = "—";
+        if (!isPart) {
+            const parts = [];
+            if (d.vendor) parts.push(d.vendor.trim());
+            if (d.model) parts.push(d.model.trim());
+            const head = parts.join(" ") || "—";
+            const serial = d.serial ? `<div class="disk-serial">SN: <code>${d.serial}</code></div>` : "";
+            ident = `<div>${head}</div>${serial}`;
+        }
+
         html += `<tr class="${cls}">
             <td><code>${d.name}</code></td>
             <td>${d.type}</td>
             <td>${formatBytes(d.size)}</td>
-            <td>${d.model || "—"}</td>
+            <td>${fsBadge}</td>
+            <td>${ident}</td>
         </tr>`;
     }
     html += '</tbody></table>';

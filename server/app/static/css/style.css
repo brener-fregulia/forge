@@ -201,3 +201,31 @@ button:hover { opacity: 0.9; }
     font-family: monospace;
     color: var(--accent);
 }
+
+.fs-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: monospace;
+}
+.fs-badge.fs-ntfs {
+    background: var(--accent);
+    color: #000;
+}
+.fs-badge.fs-other {
+    background: var(--border);
+    color: var(--text-dim);
+}
+
+.disk-serial {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.15rem;
+}
+.disk-serial code {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+}
