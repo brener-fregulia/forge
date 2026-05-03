@@ -1,4 +1,3 @@
-"""Endpoints REST — status e configuração do servidor FORGE."""
 import shutil
 import psutil
 from pathlib import Path
@@ -7,7 +6,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-def _disk_info(path: str) -> dict:
+def disk_info(path: str) -> dict:
     try:
         u = shutil.disk_usage(path)
         return {"total": u.total, "used": u.used, "free": u.free}
@@ -15,7 +14,7 @@ def _disk_info(path: str) -> dict:
         return {"total": 0, "used": 0, "free": 0, "error": "indisponível"}
 
 
-def _raid_status() -> str:
+def raid_status() -> str:
     try:
         mdstat = Path("/proc/mdstat").read_text()
         if "[UU]" in mdstat:
@@ -27,7 +26,7 @@ def _raid_status() -> str:
         return "unknown"
 
 
-def _cpu_temp() -> float | None:
+def cpu_temp() -> float | None:
     try:
         temps = psutil.sensors_temperatures()
         for sensor in ("k10temp", "coretemp", "cpu_thermal"):
@@ -44,7 +43,7 @@ def _cpu_temp() -> float | None:
     return None
 
 
-def _uptime() -> str:
+def uptime() -> str:
     uptime_s = int(Path("/proc/uptime").read_text().split()[0].split(".")[0])
     h, m = divmod(uptime_s // 60, 60)
     return f"{h}h {m}m"
@@ -52,15 +51,14 @@ def _uptime() -> str:
 
 @router.get("/server/status")
 async def server_status():
-    """Status em tempo real do servidor FORGE."""
     cpu = psutil.cpu_percent(interval=0.1)
     ram = psutil.virtual_memory()
     return {
         "cpu_percent": cpu,
-        "cpu_temp": _cpu_temp(),
+        "cpu_temp": cpu_temp(),
         "ram": {"total": ram.total, "used": ram.used, "percent": ram.percent},
-        "hot_cache": _disk_info("/mnt/hot"),
-        "cold_storage": _disk_info("/mnt/cold"),
-        "raid_status": _raid_status(),
-        "uptime": _uptime(),
+        "hot_cache": disk_info("/mnt/hot"),
+        "cold_storage": disk_info("/mnt/cold"),
+        "raid_status": raid_status(),
+        "uptime": uptime(),
     }

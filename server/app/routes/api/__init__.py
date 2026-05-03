@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from app.routes.api import clients, server
+from app.routes.api import clients
+from app.routes.api.server import router as server_router
 
 router = APIRouter()
 router.include_router(clients.router)
-router.include_router(server.router)
+router.include_router(server_router)
