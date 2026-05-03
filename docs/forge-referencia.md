@@ -24,13 +24,15 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
     → Agente conecta no FORGE Server (WebSocket)
     → Inventário automático (hardware, discos, SMART, usuários)
     → Técnico escolhe o que salvar no painel web
-    → Backup seletivo → Hot Cache (SSD SATA RAID1)
+    → Backup seletivo (ntfsclone) → Hot Cache (SSD SATA)
+    → Compactação zstd no servidor → Hot Cache (compactado)
+    → Cópia compactado → Cold Storage (RAID1)
     → Formatação + instalação Windows (Win10 ou Win11)
     → Injeção de drivers via SDIO
     → Debloat
-    → Restauração do backup
-    → Compactação em background → Cold Storage (HDDs)
-    → Após 30 dias → deleção automática do cold storage
+    → Restauração do backup (descompacta no cliente por padrão)
+    → Confirmação de restauração → deleção do hot cache
+    → Após 30 dias no cold → deleção automática
 ```
 
 ---
@@ -38,13 +40,18 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 ## Hardware do servidor
 
 ### Estado atual
-| Dispositivo | Tipo | Uso |
-|---|---|---|
-| PC servidor | AMD Ryzen 5 3350G, 2×8GB RAM | Servidor principal |
-| `nvme0n1` 256GB | NVMe | OS Debian 13 + ISOs + tftp + scripts + SDIO + `/tmp` + `/var` |
-| SSD SATA 240GB | SSD | Hot Cache (sozinho por ora; RAID1 futuro com 2º SSD) |
-| 2× HDD 512GB | HDD | Cold Storage (sem RAID inicialmente; RAID1 futuro) |
-| TP-Link Archer T2U Plus | WiFi USB | Uplink (driver `rtl8821au` via DKMS) |
+| Dispositivo | Tipo | Uso | Montagem |
+|---|---|---|---|
+| PC servidor | AMD Ryzen 5 3350G, 2×8GB RAM | Servidor principal | — |
+| `nvme0n1` 238GB | NVMe | OS Debian 13 + ISOs + tftp + scripts + SDIO | `/` `/var` `/tmp` `/home` |
+| `sdb` 240GB SSD SATA | SSD | Hot Cache exclusivo para backups | `/mnt/hot` |
+| `sda` + `sdc` 2×466GB HDD | HDD RAID1 (`/dev/md0`) | Cold Storage de longo prazo | `/mnt/cold` |
+| TP-Link Archer T2U Plus | WiFi USB | Uplink | `wlan0` |
+
+**Notas de storage:**
+- ISOs Windows ficam em `/home/isos` (symlink `/srv/isos → /home/isos`) para não encher a raiz do NVMe
+- Hot cache é exclusivo para backup — sem ISOs, sem tftp
+- RAID1 do cold storage gerenciado via `mdadm` (`/dev/md0`)
 
 **Cliente PXE atual:** Beelink Mini S (Celeron N5095, 16GB RAM) com Windows 11 — usado para testar backup/deploy.
 
@@ -58,7 +65,7 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 | NIC 10GbE | Intel X520-DA2 (2× SFP+, PCIe 2.0 x8) | Roda em PCIe 3.0 x8 no slot x16 do B450M — sem conflito com NVMe; requer cabos DAC SFP+ |
 | Switch gerenciável | MikroTik CSS326-24G-2S+RM | 24× GbE + 2× SFP+, SNMP v1/v2c, SwOS — habilita detecção de portas e WoL futuro |
 
-> RAID do Cold Storage ainda a definir. Candidatos: RAID5, RAID6 ou ZFS RAIDZ2.
+> RAID do Cold Storage futuro ainda a definir. Candidatos: RAID5, RAID6 ou ZFS RAIDZ2.
 
 ---
 
@@ -83,29 +90,44 @@ DKMS recompila automaticamente em cada atualização de kernel.
 ### Filosofia
 - **CPU-heavy no servidor** — compressão e processamento pesado no servidor, não nos clientes
 - **Hot Cache → Cold Storage** — dois níveis com ciclo de vida automatizado
+- **Hot cache exclusivo para backups** — ISOs e tftp ficam no NVMe
 
 ### Fluxo de dados do backup
 ```
-Cliente (ntfsclone via rede)
-    ↓ stream direto
-Hot Cache: SSD SATA RAID1  ← raw, rápido, redundante
-    ↓ (background, após formatação confirmada)
-Compressão zstd -T0 no servidor
+Cliente (ntfsclone stream via rede)
     ↓
-Cold Storage: HDDs  ← compactado de longo prazo
-    ↓ (30 dias + restauração confirmada)
-Deleção automática
+Hot Cache: /mnt/hot  ← backup raw (.img), rápido
+    ↓ (zstd -T0 no servidor, em background)
+Hot Cache: /mnt/hot  ← backup compactado (.img.zst)
+    ↓ (cópia para cold)
+Cold Storage: /mnt/cold  ← backup compactado de longo prazo
+    ↓ (confirmou no cold)
+Deleta raw do hot cache (mantém só o .img.zst no hot)
+    ↓ (restauração no cliente confirmada)
+Deleta compactado do hot cache
+    ↓ (30 dias no cold)
+Deleção automática do cold storage
 ```
 
-### Estrutura de diretórios alvo
-```
-/srv/                          → SSD SATA (hot/operacional)
-  isos/                        → ISOs Windows
-  tftp/                        → boot PXE
-  scripts/                     → deploy
-  hot-cache/<alias>/<MAC>/     → backup_<timestamp>.img
+**Restauração:** por padrão descompacta no servidor e envia raw para o cliente. Para clientes mais rápidos, pode enviar compactado e descompactar localmente (a testar).
 
-/mnt/cold/<alias>/<MAC>/       → backup_<timestamp>.img.zst + manifest.json
+### Estrutura de diretórios
+```
+/mnt/hot/forge/
+  hot-cache/<alias>/<MAC>/
+    backup_<timestamp>.img      ← raw (deletado após compactação)
+    backup_<timestamp>.img.zst  ← compactado (deletado após restauração)
+
+/mnt/cold/forge/
+  cold-storage/<alias>/<MAC>/
+    backup_<timestamp>.img.zst  ← arquivo de longo prazo
+    manifest.json               ← inventário, data, hash, status
+
+/srv/                           ← NVMe
+  isos/ → /home/isos/           ← symlink (ISOs no /home para economizar raiz)
+  tftp/                         ← boot PXE
+  scripts/                      ← scripts de deploy
+  backup/                       ← (legado, substituído pelo hot cache)
 ```
 
 > **Identificação de clientes:** raiz por alias (ERP futuro), subpastas por MAC. Standalone usa alias `local`.
@@ -113,10 +135,22 @@ Deleção automática
 ### Ciclo de vida do backup
 | Fase | Gatilho | Ação |
 |---|---|---|
-| Criação | Início do deploy | `ntfsclone` → hot cache |
-| Compactação | Formatação concluída | `zstd` no servidor → cold storage |
-| Retenção | Restauração confirmada | Mantém por 30 dias |
-| Deleção | 30 dias após restauração | Remove de hot e cold |
+| Criação | Início do deploy | `ntfsclone` stream → `/mnt/hot` raw |
+| Compactação | Backup raw concluído | `zstd -T0` no servidor → `.img.zst` no hot |
+| Replicação | Compactação concluída | Cópia `.img.zst` → cold storage |
+| Limpeza parcial | Confirmou no cold | Deleta raw do hot; mantém `.img.zst` no hot |
+| Limpeza total | Restauração confirmada | Deleta compactado do hot |
+| Expiração | 30 dias após restauração | Deleta do cold storage |
+
+### Configuração RAID1 cold storage
+```bash
+# Criado com mdadm
+sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdc
+
+# UUID no fstab
+UUID=aac9b533-e808-4b69-b81a-6765824a82fb  /mnt/cold  ext4  defaults,nofail  0  2
+UUID=18e473ee-a15e-4815-ae78-34c3fafa1170  /mnt/hot   ext4  defaults,nofail  0  2
+```
 
 ---
 
@@ -135,12 +169,14 @@ Deleção automática
 ### FORGE Server (servidor Debian)
 - **Stack:** Python 3.13 + FastAPI + WebSockets + Jinja2
 - **Porta:** `http://192.168.100.1:8080` (também via WiFi em `192.168.3.22:8080`)
-- **Heartbeat WebSocket:** ping 5s, timeout 3s (detecção de desconexão em ~8s)
+- **Heartbeat WebSocket:** ping 3s, timeout 2s (detecção de desconexão em ~5s)
 
 ### FORGE Agent (cliente Alpine)
-- **Stack:** shell script + websocat
+- **Stack:** shell script modular + websocat
+- **Módulos:** `network.sh`, `inventory.sh`, `websocket.sh`, `json.sh` em `/usr/lib/forge/`
 - **Inicia automaticamente:** injeção no `/init` do initramfs com `setsid`
 - **Reconexão automática** com backoff de 3s
+- **Inventário em duas fases:** base (imediato) + discos/SMART/usuários (~15s)
 
 ### Comunicação
 ```
@@ -150,7 +186,8 @@ Alpine Agent  ←→  WebSocket  ←→  FORGE Server  ←→  Painel Web (brows
 ### Mensagens (JSON)
 | `type` | Direção | Conteúdo |
 |---|---|---|
-| `inventory` | Agent → Server | hostname, hardware, discos, smart, users |
+| `inventory_base` | Agent → Server | hostname, hardware, iface |
+| `inventory_disks` | Agent → Server | discos, smart, usuários Windows |
 | `status` | Agent → Server | status, progress |
 | `command` | Server → Agent | command (string shell) |
 | `command_output` | Agent → Server | output (resultado da execução) |
@@ -163,7 +200,12 @@ Alpine Agent  ←→  WebSocket  ←→  FORGE Server  ←→  Painel Web (brows
 ```
 /opt/forge/
   agent/
-    forge-agent.sh             ← script do cliente Alpine
+    forge-agent.sh             ← entrypoint (~20 linhas)
+    lib/
+      network.sh               ← aguarda rede, detecta IFACE/MAC
+      inventory.sh             ← hardware, discos, SMART, usuários
+      websocket.sh             ← loop WebSocket, FIFO, comandos
+      json.sh                  ← escape JSON
   server/
     .venv/                     ← Python 3.13 venv
     run.sh                     ← uvicorn launcher
@@ -173,23 +215,38 @@ Alpine Agent  ←→  WebSocket  ←→  FORGE Server  ←→  Painel Web (brows
       config.py                ← caminhos e constantes
       state.py                 ← estado em memória (Client, State)
       routes/
-        pages.py               ← rotas HTML (dashboard, detalhes)
+        pages.py               ← rotas HTML
         api.py                 ← endpoints REST
         ws.py                  ← endpoints WebSocket
       templates/
         base.html, dashboard.html, client.html
       static/
-        css/style.css
-        js/dashboard.js, client.js
+        css/
+          style.css            ← imports
+          base.css             ← variáveis, reset, layout
+          components.css       ← botões, badges, forms, modal
+          pages/
+            dashboard.css
+            client.css
+            disks-table.css
+            users-table.css
+            smart-modal.css
+        js/
+          dashboard.js
+          client.js
+          lib/
+            format.js          ← formatBytes
+            clipboard.js       ← botão copiar
+            ws.js              ← wrapper WebSocket
+          components/
+            disks-table.js     ← renderDisks, modal SMART
+            users-table.js     ← renderUsers, checkboxes
   scripts/
     build-initramfs.sh         ← reconstrói initramfs Alpine completo
     client-shell.sh            ← shell remota netcat (debug)
   drivers/
     rtl8821au/                 ← driver WiFi USB (DKMS)
-  build/                       ← .gitignored: artefatos de build
-    websocat                   ← binário estático
-    *.apk                      ← pacotes Alpine baixados
-    initramfs-work/            ← workdir
+  build/                       ← .gitignored
   docs/
     forge-referencia.md        ← este arquivo
 ```
@@ -271,14 +328,14 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 | Binário | Pacote Alpine | Função |
 |---|---|---|
 | `websocat` | estático musl | comunicação WebSocket |
-| `lsblk` | util-linux (lsblk) | listagem de discos |
+| `lsblk` | util-linux | listagem de discos com fstype/serial |
 | `smartctl` | smartmontools | saúde SMART |
 | `ntfsclone` | (já existia) | clonagem NTFS |
-| `ntfs-3g` | (já existia) | montagem NTFS |
-| `forge-agent` | local | script do cliente |
+| `ntfs-3g` | ntfs-3g | montagem NTFS (leitura de usuários) |
+| `forge-agent` + libs | local | script do cliente + módulos |
 
 ### Bibliotecas musl embutidas
-`libmount`, `libsmartcols`, `libblkid`, `libncursesw`, `libuuid`, `libstdc++`, `libgcc` — todas de `.apk` Alpine 3.23.
+`libmount`, `libsmartcols`, `libblkid`, `libncursesw`, `libuuid`, `libstdc++`, `libgcc`, `libntfs-3g` — todas de `.apk` Alpine 3.23.
 
 ### Patches no `/init`
 - Marcador de boot visível no console
@@ -295,17 +352,18 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 ### Página principal
 - Grid de clientes em tempo real via WebSocket
 - Badge de status colorido (CONNECTED, READY, ALIVE, ERROR)
-- Detecção automática de desconexão (~8s)
+- Detecção automática de desconexão (~5s)
 
 ### Página de cliente
-- Hardware (CPU, RAM, interface)
+- Hardware (CPU, RAM, interface) — carrega imediato via `inventory_base`
 - Tabela de discos com:
   - Hierarquia visual (disco → partições)
   - Tamanhos legíveis (GB/TB)
   - Filesystem com badge colorido (NTFS em destaque)
-  - Saúde SMART (OK/FAIL/?) + temperatura em °C
+  - Saúde SMART com spinner até carregar (OK/FAIL/?) + temperatura
   - Identificação (vendor + modelo + SN via sysfs/wwid)
-- Usuários Windows (a implementar)
+  - Botão SMART abre modal com atributos completos + copiar JSON
+- Usuários Windows com checkboxes para seleção de backup
 - Campo de comando shell com retorno bidirecional no log
 - Botão Copiar em todos os campos
 - Botão Limpar log
@@ -324,24 +382,28 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 - ✅ `smartctl` para saúde dos discos
 - ✅ `ntfsclone`, `ntfs-3g` disponíveis
 
+### Storage do servidor
+- ✅ Hot cache montado em `/mnt/hot` (SSD SATA 240GB)
+- ✅ Cold storage montado em `/mnt/cold` (RAID1 2×466GB via `/dev/md0`)
+- ✅ Ambos persistidos no `/etc/fstab`
+- ✅ ISOs movidas para `/home/isos` (symlink `/srv/isos`) — raiz NVMe em 15%
+
 ### FORGE Server + Agent
 - ✅ Agent inicia automaticamente no boot PXE
-- ✅ Reconexão automática com backoff
-- ✅ Inventário automático (hardware, discos, SMART)
+- ✅ Inventário em duas fases (base imediato + discos/SMART/usuários)
 - ✅ Comandos bidirecionais com escape robusto de aspas
-- ✅ Detecção de desconexão via heartbeat (5s/3s)
-- ✅ Identificação de discos (vendor, modelo, SN via sysfs)
+- ✅ Detecção de desconexão via heartbeat (3s/2s)
+- ✅ Identificação de discos (vendor, modelo, SN via sysfs/wwid)
 - ✅ Detecção de filesystems (NTFS, vfat, etc)
-- ✅ Saúde SMART por disco (status + temperatura)
+- ✅ Saúde SMART por disco (status + temperatura + modal com atributos)
+- ✅ Usuários Windows via ntfs-3g com checkboxes de seleção
 - ✅ Dashboard com grid de clientes em tempo real
-- ✅ Página de detalhes com tabela polida de discos
+- ✅ Arquitetura CSS/JS modular (lib/, components/, pages/)
+- ✅ Agent modular (network.sh, inventory.sh, websocket.sh, json.sh)
 
 ### Pipeline de deploy (a implementar)
-- ⬜ Inventário de usuários Windows (montagem NTFS + `C:\Users\`)
-- ⬜ SMART expandido (horas de uso, setores realocados, pendentes)
-- ⬜ Latência otimizada (inventário em duas fases — base + SMART)
 - ⬜ Backup seletivo via ntfsclone → hot cache
-- ⬜ Compactação zstd → cold storage
+- ⬜ Compactação zstd → hot cache → cold storage
 - ⬜ Formatação e particionamento
 - ⬜ Instalação Windows via ISO
 - ⬜ Injeção de drivers SDIO
@@ -349,6 +411,8 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 - ⬜ Restauração do backup
 - ⬜ Ciclo de vida automatizado (30 dias → deleção)
 - ⬜ `safe-reboot` no agent (sync antes de reiniciar)
+- ⬜ Dashboard de status do servidor (CPU, RAM, storage, rede)
+- ⬜ Página de configuração do servidor
 
 ### Ambiente de desenvolvimento
 - ✅ VSCode Remote-SSH (Windows → servidor)
@@ -360,27 +424,27 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 ## Roadmap
 
 ### Próximos passos imediatos (em ordem)
-1. Refatoração de arquitetura (CSS, JS e agent em módulos)
-2. Latência otimizada do inventário (duas fases: base imediato + SMART posterior)
-3. SMART expandido (modal com horas de uso, setores realocados, pendentes)
-4. Inventário de usuários Windows
-5. Botões de ação por estágio do deploy
+1. Dashboard de status do servidor (CPU, RAM, hot cache, cold storage, rede)
+2. Botões de ação por estágio do deploy (Backup / Format / Install / Restore)
+3. Backup seletivo via ntfsclone com seleção de usuários
+4. Compactação + replicação para cold storage
+5. Instalação Windows via ISO
 
 ### Dashboard — polimento
 - ⬜ Console de comandos estilo terminal (prompt + histórico)
 - ⬜ Terminal interativo real (xterm.js) — pós-MVP
-- ⬜ Botões de ação (Inventariar / Backup / Format / Install / Restore)
 - ⬜ Indicador de progresso por etapa
 - ⬜ Aviso visual para disco com sinais de degradação (SMART)
-- ⬜ Detecção de portas do switch via SNMP (CSS326 + IF-MIB) — link up/down por porta
-- ⬜ Wake-on-LAN via FORGE dashboard — requer switch gerenciável + MAC conhecido
+- ⬜ Detecção de portas do switch via SNMP (CSS326 + IF-MIB)
+- ⬜ Wake-on-LAN via FORGE dashboard
 - ⬜ ARP scan + leases dnsmasq para detectar dispositivos ligados não-Alpine
 
 ### Hardware
 - ⬜ Segundo SSD SATA (RAID1 hot cache)
-- ⬜ HDDs Ironwolf PRO NAS (cold storage)
+- ⬜ HDDs Ironwolf PRO NAS 4TB (cold storage)
 - ⬜ Upgrade CPU (Ryzen 7 PRO 5750G)
-- ⬜ Decisão RAID cold storage
+- ⬜ Intel X520-DA2 + DAC cables SFP+
+- ⬜ MikroTik CSS326-24G-2S+RM
 
 ### Integração futura
 - ⬜ ERP para lojas de informática (alias por cliente, histórico por MAC)
@@ -401,9 +465,12 @@ Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 | `smartctl` falhava por libs | C++ runtime ausente | Adicionar `libstdc++` e `libgcc` Alpine |
 | JSON inválido com aspas em comandos | Regex sed não trata escape | Parser awk com state machine |
 | `disks` chegava vazio no servidor | Variável em subshell perdida | Escrever em arquivo temp `/tmp/forge-disks.tmp` |
-| Cliente "alive" mesmo desligado | TCP sem heartbeat | uvicorn `--ws-ping-interval 5 --ws-ping-timeout 3` |
+| Cliente "alive" mesmo desligado | TCP sem heartbeat | uvicorn `--ws-ping-interval 3 --ws-ping-timeout 2` |
 | Modelo do disco misturado com fstype | awk separando por espaço | Usar `lsblk -P` com parser chave="valor" |
 | Serial do disco vazio via lsblk | SSD barato não expõe serial | Ler `/sys/class/block/*/device/wwid` |
+| Raiz NVMe em 82% | ISOs de 12GB na raiz | Mover ISOs para `/home/isos` com symlink |
+| ntfs-3g não disponível no initramfs | Não incluído no build | Extrair pacote Alpine + libs e embutir |
+| Usuários não detectados | lsblk retornava `├─sda3` com caracteres de árvore | `sed 's/[├└│─ ]//g'` no nome do device |
 
 ---
 
