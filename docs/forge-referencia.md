@@ -11,9 +11,9 @@
 ```
 Internet → Roteador WiFi
                 |
-         Beelink (wlp2s0=WiFi/uplink · enp1s0=192.168.100.1/PXE)
+         Servidor (wlan0=WiFi/uplink · enp7s0=192.168.100.1/PXE)
                 |
-          Switch TP-Link
+          Switch
                 |
          Clientes (DHCP 192.168.100.100–200)
 ```
@@ -22,7 +22,7 @@ Internet → Roteador WiFi
 ```
 Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
     → Agente conecta no FORGE Server (WebSocket)
-    → Inventário automático (hardware, discos, usuários)
+    → Inventário automático (hardware, discos, SMART, usuários)
     → Técnico escolhe o que salvar no painel web
     → Backup seletivo → Hot Cache (SSD SATA RAID1)
     → Formatação + instalação Windows (Win10 ou Win11)
@@ -41,88 +41,80 @@ Liga cabo → DHCP → iPXE (UEFI) → Alpine Linux RAM
 | Dispositivo | Tipo | Uso |
 |---|---|---|
 | PC servidor | AMD Ryzen 5 3350G, 2×8GB RAM | Servidor principal |
-| `nvme0n1` NVMe 256GB | NVMe | OS Debian 13 + ISOs + tftp + scripts + SDIO + `/tmp` + `/var` |
+| `nvme0n1` 256GB | NVMe | OS Debian 13 + ISOs + tftp + scripts + SDIO + `/tmp` + `/var` |
 | SSD SATA 240GB | SSD | Hot Cache (sozinho por ora; RAID1 futuro com 2º SSD) |
 | 2× HDD 512GB | HDD | Cold Storage (sem RAID inicialmente; RAID1 futuro) |
+| TP-Link Archer T2U Plus | WiFi USB | Uplink (driver `rtl8821au` via DKMS) |
 
-**Cliente PXE atual:** Beelink Mini S (Celeron N5095, 16GB RAM) com Windows 11 instalado — usado para testar backup/deploy.
+**Cliente PXE atual:** Beelink Mini S (Celeron N5095, 16GB RAM) com Windows 11 — usado para testar backup/deploy.
 
 ### Hardware alvo (roadmap)
 | Componente | Especificação | Justificativa |
 |---|---|---|
-| CPU | AMD Ryzen 7 PRO 5750G | Suporte a múltiplos clientes simultâneos, iGPU, compressão |
-| NVMe (SO) | A definir | OS + ISOs + scripts + SDIO + alta leitura/acesso múltiplo |
-| SSD SATA ×2 | A definir | Hot Cache em RAID1 — backup temporário antes da formatação |
-| HDD ×2 inicial | 2× Seagate Ironwolf PRO NAS 4TB | Cold Storage — backup de longo prazo |
-| HDD ×4 futuro | 4× Seagate Ironwolf PRO NAS 4TB | Expansão do Cold Storage |
+| CPU | AMD Ryzen 7 PRO 5750G | Múltiplos clientes simultâneos, iGPU, compressão |
+| SSD SATA ×2 | A definir | Hot Cache em RAID1 |
+| HDD ×2 inicial | 2× Seagate Ironwolf PRO NAS 4TB | Cold Storage |
+| HDD ×4 futuro | 4× Seagate Ironwolf PRO NAS 4TB | Expansão Cold Storage |
 
-> **Nota:** RAID do Cold Storage (HDDs) ainda a definir. Candidatos: RAID5 (espaço útil ~75%), RAID6 (redundância dupla), ou ZFS RAIDZ2.
+> RAID do Cold Storage ainda a definir. Candidatos: RAID5, RAID6 ou ZFS RAIDZ2.
+
+---
 
 ## Drivers customizados do servidor
 
 ### TP-Link Archer T2U Plus (rtl8821au)
-Adaptador WiFi USB. Driver não vem no kernel padrão do Debian 13.
-
-**Source versionado em:** `/opt/forge/drivers/rtl8821au/`
-**Versão:** 5.12.5.2 (instalado via DKMS)
+Source versionado em `/opt/forge/drivers/rtl8821au/` (versão 5.12.5.2 via DKMS).
 
 **Reinstalação após formatação do servidor:**
-\`\`\`bash
+```bash
 apt install dkms build-essential linux-headers-$(uname -r) -y
 cd /opt/forge/drivers/rtl8821au
 sudo ./install-driver.sh
-\`\`\`
+```
 
-O DKMS recompila o módulo automaticamente em cada atualização de kernel.
+DKMS recompila automaticamente em cada atualização de kernel.
 
 ---
 
 ## Arquitetura de storage
 
 ### Filosofia
-- **CPU-heavy no servidor** — toda compressão e processamento pesado ocorre no servidor, não nos clientes
-- **Hot Cache → Cold Storage** — dois níveis de armazenamento com ciclo de vida automatizado
+- **CPU-heavy no servidor** — compressão e processamento pesado no servidor, não nos clientes
+- **Hot Cache → Cold Storage** — dois níveis com ciclo de vida automatizado
 
 ### Fluxo de dados do backup
 ```
 Cliente (ntfsclone via rede)
     ↓ stream direto
-Hot Cache: SSD SATA RAID1  ← backup raw, rápido, redundante
-    ↓ (em background, após formatação confirmada)
-Compressão no servidor (zstd -T0)
+Hot Cache: SSD SATA RAID1  ← raw, rápido, redundante
+    ↓ (background, após formatação confirmada)
+Compressão zstd -T0 no servidor
     ↓
-Cold Storage: HDDs  ← arquivo compactado de longo prazo
-    ↓ (após 30 dias + confirmação de restauração bem-sucedida)
+Cold Storage: HDDs  ← compactado de longo prazo
+    ↓ (30 dias + restauração confirmada)
 Deleção automática
 ```
 
 ### Estrutura de diretórios alvo
 ```
 /srv/                          → SSD SATA (hot/operacional)
-  isos/                        → Win10_22H2_ptBR.iso, Win11_25H2_ptBR.iso
-  tftp/                        → arquivos de boot PXE
-  scripts/                     → scripts de deploy
-  hot-cache/
-    <cliente_alias>/           → nome/alias do cliente ERP (ex: "escola-estadual-jk")
-      <MAC>/                   → MAC da máquina específica
-        backup_<timestamp>.img → imagem ntfsclone raw
+  isos/                        → ISOs Windows
+  tftp/                        → boot PXE
+  scripts/                     → deploy
+  hot-cache/<alias>/<MAC>/     → backup_<timestamp>.img
 
-/mnt/cold/                     → HDDs montados
-  <cliente_alias>/
-    <MAC>/
-      backup_<timestamp>.img.zst  → compactado com zstd
-      manifest.json               → inventário, data, hash, status restauração
+/mnt/cold/<alias>/<MAC>/       → backup_<timestamp>.img.zst + manifest.json
 ```
 
-> **Nota sobre identificação de clientes:** o diretório raiz usa o alias/nome do cliente (vindo do ERP futuro), com subdiretórios por MAC da máquina. Para operação standalone (sem ERP), o alias padrão será `local` até integração.
+> **Identificação de clientes:** raiz por alias (ERP futuro), subpastas por MAC. Standalone usa alias `local`.
 
 ### Ciclo de vida do backup
 | Fase | Gatilho | Ação |
 |---|---|---|
 | Criação | Início do deploy | `ntfsclone` → hot cache |
 | Compactação | Formatação concluída | `zstd` no servidor → cold storage |
-| Retenção | Restauração confirmada + backup no cold | Mantém por 30 dias |
-| Deleção | 30 dias após restauração confirmada | Remove hot cache e cold storage |
+| Retenção | Restauração confirmada | Mantém por 30 dias |
+| Deleção | 30 dias após restauração | Remove de hot e cold |
 
 ---
 
@@ -131,75 +123,109 @@ Deleção automática
 | Cenário | Clientes simultâneos |
 |---|---|
 | Testes iniciais | 1–2 |
-| Operação normal (switch atual) | até 7 |
-| Operação em campo (escola, etc.) | 20–30 |
-
-> O painel web e o agente foram projetados para escalar. WebSockets stateless por cliente, sem estado compartilhado bloqueante.
+| Operação normal | até 7 |
+| Operação em campo (escolas) | 20–30 |
 
 ---
 
-## Componentes de software do FORGE
+## Componentes de software
 
-### 1. FORGE Server (servidor Debian)
-- **Stack:** Python 3.13 + FastAPI + WebSockets
-- **Porta:** `http://192.168.100.1:8080`
-- **Função:** painel web com grid de clientes, recebe telemetria, envia comandos, gerencia storage
+### FORGE Server (servidor Debian)
+- **Stack:** Python 3.13 + FastAPI + WebSockets + Jinja2
+- **Porta:** `http://192.168.100.1:8080` (também via WiFi em `192.168.3.22:8080`)
+- **Heartbeat WebSocket:** ping 5s, timeout 3s (detecção de desconexão em ~8s)
 
-### 2. FORGE Agent (cliente Alpine)
-- **Stack:** shell script + `websocat`
-- **Função:** conecta ao servidor ao bootar, reporta hardware/discos/usuários, executa etapas do deploy, reporta progresso em tempo real
+### FORGE Agent (cliente Alpine)
+- **Stack:** shell script + websocat
+- **Inicia automaticamente:** injeção no `/init` do initramfs com `setsid`
+- **Reconexão automática** com backoff de 3s
 
 ### Comunicação
 ```
 Alpine Agent  ←→  WebSocket  ←→  FORGE Server  ←→  Painel Web (browser)
 ```
-- Cada cliente tem uma conexão WebSocket persistente
-- Servidor faz broadcast de status para o painel
-- Técnico envia comandos por cliente via painel
 
-### Fluxo de inventário (primeira conexão)
-1. Agente conecta e envia: MAC, hostname, CPU, RAM, discos detectados
-2. Para cada partição NTFS: lista usuários em `C:\Users\` e tamanho de cada um
-3. Servidor registra e exibe no painel
-4. Técnico escolhe o que salvar antes de autorizar o deploy
+### Mensagens (JSON)
+| `type` | Direção | Conteúdo |
+|---|---|---|
+| `inventory` | Agent → Server | hostname, hardware, discos, smart, users |
+| `status` | Agent → Server | status, progress |
+| `command` | Server → Agent | command (string shell) |
+| `command_output` | Agent → Server | output (resultado da execução) |
+| `log` | Agent → Server | line (linha de log) |
 
 ---
 
-## Configuração do servidor (atual)
+## Estrutura do projeto
+
+```
+/opt/forge/
+  agent/
+    forge-agent.sh             ← script do cliente Alpine
+  server/
+    .venv/                     ← Python 3.13 venv
+    run.sh                     ← uvicorn launcher
+    requirements.txt
+    app/
+      main.py                  ← entrypoint FastAPI
+      config.py                ← caminhos e constantes
+      state.py                 ← estado em memória (Client, State)
+      routes/
+        pages.py               ← rotas HTML (dashboard, detalhes)
+        api.py                 ← endpoints REST
+        ws.py                  ← endpoints WebSocket
+      templates/
+        base.html, dashboard.html, client.html
+      static/
+        css/style.css
+        js/dashboard.js, client.js
+  scripts/
+    build-initramfs.sh         ← reconstrói initramfs Alpine completo
+    client-shell.sh            ← shell remota netcat (debug)
+  drivers/
+    rtl8821au/                 ← driver WiFi USB (DKMS)
+  build/                       ← .gitignored: artefatos de build
+    websocat                   ← binário estático
+    *.apk                      ← pacotes Alpine baixados
+    initramfs-work/            ← workdir
+  docs/
+    forge-referencia.md        ← este arquivo
+```
+
+---
+
+## Configuração do servidor
 
 ### Rede — `/etc/network/interfaces`
 ```
-auto enp1s0
-iface enp1s0 inet static
+auto enp7s0
+iface enp7s0 inet static
     address 192.168.100.1
     netmask 255.255.255.0
 ```
 
-### NAT (clientes com internet via WiFi do servidor)
+### NAT (clientes com internet via WiFi)
 ```bash
 net.ipv4.ip_forward=1   # /etc/sysctl.conf
-iptables MASQUERADE em wlp2s0
-iptables FORWARD enp1s0 ↔ wlp2s0
-# salvo com netfilter-persistent
+iptables MASQUERADE em wlan0
+iptables FORWARD enp7s0 ↔ wlan0
+# salvo via netfilter-persistent
 ```
 
 ### dnsmasq — `/etc/dnsmasq.conf`
 ```ini
-interface=enp1s0
+interface=enp7s0
 bind-interfaces
 dhcp-range=192.168.100.100,192.168.100.200,12h
 dhcp-option=3,192.168.100.1
 dhcp-option=6,8.8.8.8,8.8.4.4
 enable-tftp
 tftp-root=/srv/tftp
-log-dhcp
-log-queries
 
-# Detecta arquitetura do cliente
 dhcp-match=set:efi-x86_64,option:client-arch,7
-dhcp-boot=tag:efi-x86_64,ipxe.efi      # UEFI
+dhcp-boot=tag:efi-x86_64,ipxe.efi
 dhcp-match=set:bios,option:client-arch,0
-dhcp-boot=tag:bios,undionly.kpxe        # Legacy
+dhcp-boot=tag:bios,undionly.kpxe
 dhcp-match=set:ipxe,175
 dhcp-boot=tag:ipxe,http://192.168.100.1/tftp/boot.ipxe
 ```
@@ -209,16 +235,14 @@ dhcp-boot=tag:ipxe,http://192.168.100.1/tftp/boot.ipxe
 server {
     listen 80;
     server_name 192.168.100.1;
-    location / {
-        root /srv;
-        autoindex on;
-    }
+    location / { root /srv; autoindex on; }
 }
 ```
 
 ---
 
 ## iPXE — `/srv/tftp/boot.ipxe`
+
 ```
 #!ipxe
 echo Iniciando FORGE Agent...
@@ -228,97 +252,61 @@ initrd http://192.168.100.1/tftp/alpine-initramfs-full
 boot
 ```
 
-**Arquivos em `/srv/tftp/`:**
-| Arquivo | Origem |
-|---|---|
-| `ipxe.efi` | `/usr/lib/ipxe/ipxe.efi` |
-| `undionly.kpxe` | `/usr/lib/ipxe/undionly.kpxe` |
-| `vmlinuz` | Alpine 3.23.3 netboot `vmlinuz-lts` |
-| `alpine-initramfs-full` | initramfs-lts + módulos ata/nvme embutidos |
-| `alpine-modloop` | Alpine 3.23.3 `modloop-lts` (referência) |
-
 ---
 
 ## Alpine initramfs customizado
 
-**Problema central:** o Alpine 3.23 netboot não carrega módulos de disco (ahci/nvme) automaticamente via rede. O `modloop` é projetado para mídia local.
+Construído via `scripts/build-initramfs.sh`. **Tamanho final: ~41MB**
 
-**Solução:** embutir os módulos diretamente no initramfs.
+### Drivers de kernel embutidos
+- `ata` — controladores SATA/AHCI
+- `nvme` — discos NVMe
+- `scsi` — `sd_mod` (essencial para `/dev/sda`), `sg`, `sr_mod`
+- `block` — block devices genéricos
+- `usb` — dispositivos USB
 
-```bash
-# 1. Montar o modloop original
-sudo mount -o loop /srv/tftp/alpine-modloop /mnt/modloop
-
-# 2. Extrair o initramfs original
-mkdir /tmp/initramfs-work && cd /tmp/initramfs-work
-zcat /srv/tftp/alpine-initramfs | cpio -id
-
-# 3. Copiar módulos de disco para dentro
-mkdir -p lib/modules/6.18.7-0-lts/kernel/drivers
-sudo cp -r /mnt/modloop/modules/6.18.7-0-lts/kernel/drivers/ata \
-           lib/modules/6.18.7-0-lts/kernel/drivers/
-sudo cp -r /mnt/modloop/modules/6.18.7-0-lts/kernel/drivers/nvme \
-           lib/modules/6.18.7-0-lts/kernel/drivers/
-sudo cp /mnt/modloop/modules/6.18.7-0-lts/modules.* \
-        lib/modules/6.18.7-0-lts/
-
-# 4. Reempacotar (~29MB)
-find . | cpio -H newc -o | gzip > /srv/tftp/alpine-initramfs-full
-chmod 644 /srv/tftp/alpine-initramfs-full
-```
-
-**Pacotes disponíveis no initramfs atual:**
-- `ntfsclone` — clonagem de partições NTFS ✅
-- `ntfs-3g` — montagem de volumes NTFS ✅
-- `websocat` — comunicação WebSocket com o servidor ⬜ (a adicionar)
-
----
-
-## Desenvolvimento — Ambiente
-
-### Stack
-- **IDE:** VSCode (Windows) com extensão Remote-SSH
-- **Edição:** direta no servidor via SSH (sem sync local)
-- **Projeto no servidor:** `/opt/forge/`
-- **Usuário de desenvolvimento:** a definir
-
-### Conexão VSCode → Servidor
-```
-VSCode (Windows)
-  └── Remote-SSH → root@192.168.100.1
-        └── edita /opt/forge/ diretamente
-```
-
-> Setup do Remote-SSH ainda não realizado — próximo passo.
-
----
-
-## Problemas encontrados e soluções
-
-| Problema | Causa | Solução |
+### Binários embutidos
+| Binário | Pacote Alpine | Função |
 |---|---|---|
-| pxelinux não carregava menu | Arquivos `.c32` sem permissão | `chmod 644 *.c32` |
-| Alpine não detectava HD (Lenovo G460) | Kernel lts 6.18 sem driver ahci para HM55 | Hardware legado — usar cliente mais moderno para PoC |
-| Dell UEFI não bootava pxelinux | pxelinux é BIOS-only | Migrar para iPXE com `ipxe.efi` |
-| iPXE incluía nome do kernel como parâmetro | Sintaxe `imgargs` com bug | Passar parâmetros diretamente na linha `kernel` |
-| Alpine não carregava módulos nvme/ahci | modloop não monta via rede no netboot | Embutir módulos diretamente no initramfs |
-| Segundo initramfs causava kernel panic | Conflito com estrutura do Alpine | Embutir tudo em um único initramfs |
-| nginx retornando 404 | Site não recarregado após config | `systemctl reload nginx` |
-| dnsmasq com permissão negada no initramfs | Arquivo sem leitura para outros | `chmod 644` nos arquivos tftp |
+| `websocat` | estático musl | comunicação WebSocket |
+| `lsblk` | util-linux (lsblk) | listagem de discos |
+| `smartctl` | smartmontools | saúde SMART |
+| `ntfsclone` | (já existia) | clonagem NTFS |
+| `ntfs-3g` | (já existia) | montagem NTFS |
+| `forge-agent` | local | script do cliente |
+
+### Bibliotecas musl embutidas
+`libmount`, `libsmartcols`, `libblkid`, `libncursesw`, `libuuid`, `libstdc++`, `libgcc` — todas de `.apk` Alpine 3.23.
+
+### Patches no `/init`
+- Marcador de boot visível no console
+- Cópia de binários FORGE para `$sysroot` antes do switch_root
+- Envio de log de debug síncrono para servidor (porta 9997)
+- Inicialização do agent com `setsid` antes do `switch_root`
+
+> **Nota técnica:** Alpine netboot mínimo não tem OpenRC nem sysroot populado — o `switch_root` cai em recovery shell. O agent é iniciado **antes** desse ponto via `setsid` e sobrevive.
 
 ---
 
-## Debug — netcat
+## Recursos do dashboard
 
-Para ver output do cliente no servidor sem precisar de tela:
+### Página principal
+- Grid de clientes em tempo real via WebSocket
+- Badge de status colorido (CONNECTED, READY, ALIVE, ERROR)
+- Detecção automática de desconexão (~8s)
 
-```bash
-# Servidor (escuta antes de executar no cliente)
-nc -lp 9999
-
-# Cliente Alpine
-comando_qualquer | nc 192.168.100.1 9999
-```
+### Página de cliente
+- Hardware (CPU, RAM, interface)
+- Tabela de discos com:
+  - Hierarquia visual (disco → partições)
+  - Tamanhos legíveis (GB/TB)
+  - Filesystem com badge colorido (NTFS em destaque)
+  - Saúde SMART (OK/FAIL/?) + temperatura em °C
+  - Identificação (vendor + modelo + SN via sysfs/wwid)
+- Usuários Windows (a implementar)
+- Campo de comando shell com retorno bidirecional no log
+- Botão Copiar em todos os campos
+- Botão Limpar log
 
 ---
 
@@ -327,49 +315,101 @@ comando_qualquer | nc 192.168.100.1 9999
 ### Infraestrutura base
 - ✅ DHCP + TFTP funcionando
 - ✅ Boot UEFI via iPXE
-- ✅ Alpine sobe em RAM (~29MB initramfs)
+- ✅ Alpine sobe em RAM (~41MB initramfs)
 - ✅ NAT — clientes com internet
-- ✅ NVMe detectado no Dell i5 8ª gen (`/dev/nvme0n1`)
-- ✅ `ntfsclone` disponível no initramfs
+- ✅ Detecção de discos NVMe e SATA
+- ✅ `lsblk` Alpine com libs musl
+- ✅ `smartctl` para saúde dos discos
+- ✅ `ntfsclone`, `ntfs-3g` disponíveis
 
-### Pipeline de deploy
-- ✅ FORGE Agent (agente Alpine com WebSocket)
-- ✅ FORGE Server (painel FastAPI + WebSocket)
-- ✅ Inventário automático de hardware/discos
-- ✅ Comandos bidirecionais (servidor → agent → output no dashboard)
-- ✅ Detecção automática de desconexão (heartbeat 5s/3s)
-- ⬜ Inventário de usuários Windows em partições NTFS
+### FORGE Server + Agent
+- ✅ Agent inicia automaticamente no boot PXE
+- ✅ Reconexão automática com backoff
+- ✅ Inventário automático (hardware, discos, SMART)
+- ✅ Comandos bidirecionais com escape robusto de aspas
+- ✅ Detecção de desconexão via heartbeat (5s/3s)
+- ✅ Identificação de discos (vendor, modelo, SN via sysfs)
+- ✅ Detecção de filesystems (NTFS, vfat, etc)
+- ✅ Saúde SMART por disco (status + temperatura)
+- ✅ Dashboard com grid de clientes em tempo real
+- ✅ Página de detalhes com tabela polida de discos
+
+### Pipeline de deploy (a implementar)
+- ⬜ Inventário de usuários Windows (montagem NTFS + `C:\Users\`)
+- ⬜ SMART expandido (horas de uso, setores realocados, pendentes)
+- ⬜ Latência otimizada (inventário em duas fases — base + SMART)
 - ⬜ Backup seletivo via ntfsclone → hot cache
 - ⬜ Compactação zstd → cold storage
 - ⬜ Formatação e particionamento
-- ⬜ Instalação Windows via ISO (Win10/Win11)
+- ⬜ Instalação Windows via ISO
 - ⬜ Injeção de drivers SDIO
 - ⬜ Debloat
 - ⬜ Restauração do backup
 - ⬜ Ciclo de vida automatizado (30 dias → deleção)
-
-## Roadmap do dashboard
-
-- ⬜ Console de comandos estilo terminal (prompt + histórico + clear)
-- ⬜ Terminal interativo real (xterm.js + sessão shell persistente) — pós-MVP
-- ⬜ Botões de ação para cada estágio do deploy
-- ⬜ Indicador de progresso por etapa
+- ⬜ `safe-reboot` no agent (sync antes de reiniciar)
 
 ### Ambiente de desenvolvimento
-- ⬜ VSCode Remote-SSH configurado
-- ⬜ Estrutura `/opt/forge/` criada no servidor
-- ⬜ `websocat` embutido no initramfs Alpine
-
-### Hardware (roadmap)
-- ⬜ Segundo SSD SATA (para RAID1 hot cache)
-- ⬜ HDDs Ironwolf PRO NAS (cold storage)
-- ⬜ Upgrade CPU (Ryzen 7 PRO 5750G)
-- ⬜ Decisão RAID cold storage (RAID5 / RAID6 / ZFS RAIDZ2)
+- ✅ VSCode Remote-SSH (Windows → servidor)
+- ✅ Repositório Git privado (github.com/brener-fregulia/forge)
+- ✅ Build do initramfs reproduzível (`scripts/build-initramfs.sh`)
 
 ---
 
-## Roadmap de integração futura
+## Roadmap
 
-- **ERP para lojas de informática** — integração com FORGE para identificação de clientes por alias, histórico de máquinas por MAC, rastreabilidade de deploys
-- **Multi-switch** — suporte a operações em campo (escolas, empresas) com 20–30 máquinas simultâneas
-- **Cold storage expandido** — até 4× HDDs Ironwolf PRO NAS em RAID
+### Próximos passos imediatos (em ordem)
+1. Refatoração de arquitetura (CSS, JS e agent em módulos)
+2. Latência otimizada do inventário (duas fases: base imediato + SMART posterior)
+3. SMART expandido (modal com horas de uso, setores realocados, pendentes)
+4. Inventário de usuários Windows
+5. Botões de ação por estágio do deploy
+
+### Dashboard — polimento
+- ⬜ Console de comandos estilo terminal (prompt + histórico)
+- ⬜ Terminal interativo real (xterm.js) — pós-MVP
+- ⬜ Botões de ação (Inventariar / Backup / Format / Install / Restore)
+- ⬜ Indicador de progresso por etapa
+- ⬜ Aviso visual para disco com sinais de degradação (SMART)
+
+### Hardware
+- ⬜ Segundo SSD SATA (RAID1 hot cache)
+- ⬜ HDDs Ironwolf PRO NAS (cold storage)
+- ⬜ Upgrade CPU (Ryzen 7 PRO 5750G)
+- ⬜ Decisão RAID cold storage
+
+### Integração futura
+- ⬜ ERP para lojas de informática (alias por cliente, histórico por MAC)
+- ⬜ Multi-switch (operação em campo, 20–30 máquinas simultâneas)
+- ⬜ Terminal interativo SSH no dashboard (xterm.js) — pós-MVP
+
+---
+
+## Problemas resolvidos
+
+| Problema | Causa | Solução |
+|---|---|---|
+| Dell UEFI não bootava pxelinux | pxelinux é BIOS-only | Migrar para iPXE com `ipxe.efi` |
+| Alpine não carregava módulos nvme/ahci | modloop não monta via rede | Embutir módulos no initramfs |
+| Switch_root falha (recovery shell) | Sysroot vazio em modo netboot | Iniciar agent antes via `setsid` |
+| `lsblk` não retornava discos | Sem `sd_mod` no initramfs | Embutir drivers `scsi/` e `block/` |
+| `lsblk` não existia no busybox | Limitação do busybox | Extrair `lsblk` Alpine + libs musl |
+| `smartctl` falhava por libs | C++ runtime ausente | Adicionar `libstdc++` e `libgcc` Alpine |
+| JSON inválido com aspas em comandos | Regex sed não trata escape | Parser awk com state machine |
+| `disks` chegava vazio no servidor | Variável em subshell perdida | Escrever em arquivo temp `/tmp/forge-disks.tmp` |
+| Cliente "alive" mesmo desligado | TCP sem heartbeat | uvicorn `--ws-ping-interval 5 --ws-ping-timeout 3` |
+| Modelo do disco misturado com fstype | awk separando por espaço | Usar `lsblk -P` com parser chave="valor" |
+| Serial do disco vazio via lsblk | SSD barato não expõe serial | Ler `/sys/class/block/*/device/wwid` |
+
+---
+
+## Convenções de commit
+
+| Prefixo | Uso |
+|---|---|
+| `init:` | estrutura inicial |
+| `feat:` | nova funcionalidade |
+| `fix:` | correção de bug |
+| `agent:` | mudanças no agente Alpine |
+| `server:` | mudanças no FORGE Server |
+| `infra:` | configurações do servidor/rede |
+| `docs:` | documentação |
