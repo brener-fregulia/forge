@@ -1,0 +1,29 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.client-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s;
+}
+.client-card:hover { border-color: var(--accent); }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.mac      { color: var(--text-dim); font-family: monospace; }
+.hostname { font-size: 1.1rem; font-weight: 600; }
+.ip       { color: var(--text-dim); font-family: monospace; font-size: 0.9rem; }

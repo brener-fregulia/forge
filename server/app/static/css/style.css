@@ -1,3 +1,7 @@
 @import url('/static/css/base.css');
 @import url('/static/css/components.css');
-@import url('/static/css/pages.css');
+@import url('/static/css/pages/dashboard.css');
+@import url('/static/css/pages/client.css');
+@import url('/static/css/pages/disks-table.css');
+@import url('/static/css/pages/users-table.css');
+@import url('/static/css/pages/smart-modal.css');
