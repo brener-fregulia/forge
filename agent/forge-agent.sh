@@ -17,18 +17,20 @@ CPU=$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | sed 's/^ *//')
 RAM_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 RAM_MB=$((RAM_KB / 1024))
 
-# Coleta discos parseando lsblk (busybox sem -J)
-DISKS_TMP=/tmp/forge-disks.tmp
-> $DISKS_TMP
-lsblk -b -n -o NAME,SIZE,TYPE,MODEL 2>/dev/null | while IFS= read -r LINE; do
-    NAME=$(echo "$LINE" | awk '{print $1}')
-    SIZE=$(echo "$LINE" | awk '{print $2}')
-    TYPE=$(echo "$LINE" | awk '{print $3}')
-    MODEL=$(echo "$LINE" | awk '{for(i=4;i<=NF;i++) printf "%s ", $i}' | sed 's/ *$//' | sed 's/"/\\"/g')
-    [ -z "$NAME" ] && continue
-    printf '{"name":"%s","size":%s,"type":"%s","model":"%s"},' "$NAME" "${SIZE:-0}" "$TYPE" "$MODEL" >> $DISKS_TMP
-done
-DISKS_INNER=$(cat $DISKS_TMP | sed 's/,$//')
+# Coleta discos com awk puro (busybox sem -J)
+DISKS_INNER=$(lsblk -b -n -o NAME,SIZE,TYPE,MODEL 2>/dev/null | awk '
+{
+    name = $1
+    size = $2
+    type = $3
+    model = ""
+    for (i = 4; i <= NF; i++) model = model $i " "
+    sub(/ *$/, "", model)
+    gsub(/"/, "\\\"", model)
+    if (name == "") next
+    if (size == "") size = 0
+    printf "{\"name\":\"%s\",\"size\":%s,\"type\":\"%s\",\"model\":\"%s\"},", name, size, type, model
+}' | sed 's/,$//')
 DISKS="[$DISKS_INNER]"
 
 INVENTORY="{\"type\":\"inventory\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"disks\":$DISKS,\"users\":[]}"

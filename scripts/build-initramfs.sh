@@ -38,14 +38,57 @@ sudo mkdir -p /mnt/modloop
 sudo mount -o loop "$ALPINE_MODLOOP" /mnt/modloop 2>/dev/null || true
 
 mkdir -p "lib/modules/$KERNEL_VERSION/kernel/drivers"
-sudo cp -r "/mnt/modloop/modules/$KERNEL_VERSION/kernel/drivers/ata" \
-           "lib/modules/$KERNEL_VERSION/kernel/drivers/"
-sudo cp -r "/mnt/modloop/modules/$KERNEL_VERSION/kernel/drivers/nvme" \
-           "lib/modules/$KERNEL_VERSION/kernel/drivers/"
+# Copia drivers necessários para detectar discos
+for drv in ata nvme scsi block usb; do
+    if [ -d "/mnt/modloop/modules/$KERNEL_VERSION/kernel/drivers/$drv" ]; then
+        sudo cp -r "/mnt/modloop/modules/$KERNEL_VERSION/kernel/drivers/$drv" \
+                   "lib/modules/$KERNEL_VERSION/kernel/drivers/"
+        echo "    drv: $drv"
+    fi
+done
 sudo cp "/mnt/modloop/modules/$KERNEL_VERSION/modules."* \
         "lib/modules/$KERNEL_VERSION/"
 
 sudo umount /mnt/modloop
+
+# 4.5 Adiciona lsblk Alpine + libs musl necessárias
+echo ">>> Adicionando lsblk Alpine + libs"
+APK_DIR="$PROJECT_ROOT/build"
+
+# Pacotes a extrair: lsblk e suas dependências
+APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid"
+
+EXTRACT_DIR=$(mktemp -d)
+for apk in $APKS; do
+    APK_FILE="$APK_DIR/${apk}.apk"
+    if [ ! -f "$APK_FILE" ]; then
+        echo "    AVISO: $APK_FILE não existe"
+        continue
+    fi
+    tar -xzf "$APK_FILE" -C "$EXTRACT_DIR" 2>/dev/null || true
+done
+
+# Copia o binário lsblk
+if [ -f "$EXTRACT_DIR/bin/lsblk" ]; then
+    cp "$EXTRACT_DIR/bin/lsblk" usr/bin/lsblk
+    chmod +x usr/bin/lsblk
+    echo "    lsblk Alpine instalado"
+fi
+
+# Copia todas as libs (.so*)
+mkdir -p usr/lib lib
+if [ -d "$EXTRACT_DIR/usr/lib" ]; then
+    cp -P "$EXTRACT_DIR/usr/lib/"*.so* usr/lib/ 2>/dev/null || true
+fi
+if [ -d "$EXTRACT_DIR/lib" ]; then
+    cp -P "$EXTRACT_DIR/lib/"*.so* lib/ 2>/dev/null || true
+fi
+
+echo "    Libs instaladas:"
+ls usr/lib/*.so* 2>/dev/null | sed 's|^|      |'
+ls lib/*.so* 2>/dev/null | sed 's|^|      |'
+
+rm -rf "$EXTRACT_DIR"
 
 # 5. Copia binários FORGE
 echo ">>> Copiando websocat e forge-agent"

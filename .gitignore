@@ -6,3 +6,6 @@ __pycache__/
 *.log
 build/initramfs-work/
 build/*.tmp
+build/*.apk
+build/websocat
+build/initramfs-work/
