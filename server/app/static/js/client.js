@@ -1,6 +1,6 @@
 import { createWS } from "./lib/ws.js";
 import { initClipboard } from "./lib/clipboard.js";
-import { renderDisks, tryInitialRender } from "./components/disks-table.js";
+import { renderDisks, tryInitialRender, initSmartModal } from "./components/disks-table.js";
 
 const mac = window.CLIENT_MAC;
 
@@ -22,6 +22,7 @@ function updateClient(c) {
     els.users.textContent = JSON.stringify(c.users, null, 2);
     els.log.textContent   = (c.log_tail || []).join("\n");
     renderDisks(c.disks, c.smart);
+    initSmartModal(c.smart);
 }
 
 document.getElementById("cmd-form").addEventListener("submit", async (e) => {
@@ -46,3 +47,5 @@ document.getElementById("clear-log-btn").addEventListener("click", async () => {
 
 initClipboard();
 tryInitialRender();
+// Inicializa modal com smart vazio (será preenchido no primeiro update)
+initSmartModal({});
