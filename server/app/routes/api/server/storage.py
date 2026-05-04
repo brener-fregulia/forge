@@ -7,11 +7,21 @@ from app.routes.api.server.status import disk_info
 
 router = APIRouter()
 
+HOT_LABEL  = Path("/dev/disk/by-label/forge-hot")
+COLD_LABEL = Path("/dev/disk/by-label/forge-cold")
+
+
+def _resolve_dev(label_path: Path) -> str | None:
+    try:
+        return str(label_path.resolve())
+    except Exception:
+        return None
+
 
 def _disk_smart(dev: str) -> dict:
     try:
         result = subprocess.run(
-            ["sudo", "smartctl", "-H", "-i", "-j", dev],
+            ["sudo", "smartctl", "-H", "-i", "-A", "-j", dev],
             capture_output=True, text=True
         )
         data = _json.loads(result.stdout)
@@ -27,9 +37,14 @@ def _disk_smart(dev: str) -> dict:
 
 
 def _hot_disks() -> list[dict]:
+    dev = _resolve_dev(HOT_LABEL)
+    if not dev:
+        return []
+    # Remove número da partição para obter o disco pai (sda1 → sda, nvme0n1p1 → nvme0n1)
+    parent = re.sub(r'p?\d+$', '', dev.replace('/dev/', ''))
     try:
         out = subprocess.check_output(
-            ["lsblk", "-J", "-o", "NAME,SIZE,MODEL", "/dev/sdb"],
+            ["lsblk", "-J", "-o", "NAME,SIZE,MODEL", f"/dev/{parent}"],
             stderr=subprocess.DEVNULL, text=True
         )
         disks = []
@@ -49,19 +64,21 @@ def _hot_disks() -> list[dict]:
 def _cold_disks_and_raid() -> tuple[list[dict], dict]:
     disks = []
     raid_detail = {}
+    dev = _resolve_dev(COLD_LABEL)
+    if not dev:
+        return disks, raid_detail
     try:
-        mdstat = Path("/proc/mdstat").read_text()
-        for line in mdstat.splitlines():
-            if "md0" in line:
-                members = re.findall(r'sd[a-z]+', line)
-                for m in members:
-                    smart = _disk_smart(f"/dev/{m}")
-                    disks.append({"name": m, **smart})
-        detail = subprocess.check_output(
-            ["sudo", "mdadm", "--detail", "/dev/md0"],
-            stderr=subprocess.DEVNULL, text=True
+        detail = subprocess.run(
+            ["sudo", "mdadm", "--detail", dev],
+            capture_output=True, text=True
         )
-        for line in detail.splitlines():
+        for line in detail.stdout.splitlines():
+            # Membros do RAID aparecem como: "active sync   /dev/sdb"
+            match = re.search(r'/dev/(sd[a-z]+)\s*$', line)
+            if match:
+                m = match.group(1)
+                smart = _disk_smart(f"/dev/{m}")
+                disks.append({"name": m, **smart})
             if ":" in line:
                 k, _, v = line.strip().partition(":")
                 k = k.strip().lower().replace(" ", "_")
