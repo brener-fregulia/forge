@@ -4,6 +4,8 @@ from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.state import state, Client
+from app.db.base import AsyncSessionLocal
+from app.db.models import Client, Machine, Deploy, Snapshot  # noqa — garante ordem de init
 
 router = APIRouter()
 
@@ -49,6 +51,7 @@ def _handle_message(client: Client, msg: dict) -> None:
     elif msg_type == "command_output":
         client.log.append(f"[cmd] {msg.get('output', '')}")
 
+
 @router.websocket("/ws/agent/{mac}")
 async def ws_agent(websocket: WebSocket, mac: str):
     await websocket.accept()
@@ -56,6 +59,14 @@ async def ws_agent(websocket: WebSocket, mac: str):
 
     client = Client(mac=mac, ip=ip, websocket=websocket)
     state.add_client(client)
+
+    # Registra ou atualiza máquina no banco
+    async with AsyncSessionLocal() as db:
+        machine = await get_or_create_machine(db, mac=mac)
+        # Carrega alias salvo no banco para o estado em memória
+        if machine.alias:
+            client.alias = machine.alias
+
     await state.broadcast_to_dashboard({"type": "client_connected", "client": client.to_dict()})
 
     try:
@@ -63,11 +74,18 @@ async def ws_agent(websocket: WebSocket, mac: str):
             data = await websocket.receive_text()
             try:
                 msg = json.loads(data)
-            except json.JSONDecodeError as e:
+            except json.JSONDecodeError:
                 client.log.append(f"[raw] {data[:200]}")
                 continue
 
             _handle_message(client, msg)
+
+            # Persiste hardware quando inventário base chega
+            if msg.get("type") == "inventory_base" and msg.get("hardware"):
+                async with AsyncSessionLocal() as db:
+                    await update_machine_hardware(db, mac=mac, hardware=msg["hardware"])
+                    await get_or_create_machine(db, mac=mac, hostname=msg.get("hostname"))
+
             await state.broadcast_to_dashboard({
                 "type": "client_update",
                 "mac": mac,
