@@ -4,11 +4,12 @@ import re
 from pathlib import Path
 from fastapi import APIRouter
 from app.routes.api.server.status import disk_info
+from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, HOT_CACHE_LABEL, COLD_STORAGE_LABEL
 
 router = APIRouter()
 
-HOT_LABEL  = Path("/dev/disk/by-label/forge-hot")
-COLD_LABEL = Path("/dev/disk/by-label/forge-cold")
+HOT_LABEL  = Path(f"/dev/disk/by-label/{HOT_CACHE_LABEL}")
+COLD_LABEL = Path(f"/dev/disk/by-label/{COLD_STORAGE_LABEL}")
 
 
 def _resolve_dev(label_path: Path) -> str | None:
@@ -92,8 +93,8 @@ def _cold_disks_and_raid() -> tuple[list[dict], dict]:
 
 @router.get("/server/storage")
 async def server_storage():
-    hot = disk_info("/mnt/hot")
-    cold = disk_info("/mnt/cold")
+    hot = disk_info(str(HOT_CACHE_PATH))
+    cold = disk_info(str(COLD_STORAGE_PATH))
     cold_disks, raid_detail = _cold_disks_and_raid()
     return {
         "hot_cache": {**hot, "disks": _hot_disks(), "raid": False},

@@ -2,6 +2,7 @@ import shutil
 import psutil
 from pathlib import Path
 from fastapi import APIRouter
+from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH
 
 router = APIRouter()
 
@@ -57,8 +58,8 @@ async def server_status():
         "cpu_percent": cpu,
         "cpu_temp": cpu_temp(),
         "ram": {"total": ram.total, "used": ram.used, "percent": ram.percent},
-        "hot_cache": disk_info("/mnt/hot"),
-        "cold_storage": disk_info("/mnt/cold"),
+        "hot_cache": disk_info(str(HOT_CACHE_PATH)),
+        "cold_storage": disk_info(str(COLD_STORAGE_PATH)),
         "raid_status": raid_status(),
         "uptime": uptime(),
     }
