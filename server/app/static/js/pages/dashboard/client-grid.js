@@ -2,7 +2,7 @@ import { createWS } from "../../lib/ws.js";
 
 const grid = document.getElementById("clients-grid");
 
-export function initClients() {
+export function initClientGrid() {
     createWS("/ws/dashboard", {
         snapshot:            ({ clients }) => renderAll(clients),
         client_connected:    ({ client }) => upsertClient(client),
@@ -12,18 +12,16 @@ export function initClients() {
 }
 
 function renderAll(clients) {
+    if (!clients.length) return;
     grid.innerHTML = "";
-    if (!clients.length) {
-        grid.innerHTML = '<p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>';
-        return;
-    }
     clients.forEach(upsertClient);
 }
 
 function upsertClient(c) {
     grid.querySelector(".empty")?.remove();
     const existing = grid.querySelector(`[data-mac="${c.mac}"]`);
-    const html = renderCard(c);
+    const label = c.alias || c.hostname || "—";
+    const html = renderCard(c, label);
     if (existing) existing.outerHTML = html;
     else grid.insertAdjacentHTML("beforeend", html);
 }
@@ -34,8 +32,7 @@ function removeClient(mac) {
         grid.innerHTML = '<p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>';
 }
 
-function renderCard(c) {
-    const label = c.alias || c.hostname || "—";
+function renderCard(c, label) {
     return `
         <a href="/client/${c.mac}" class="client-card" data-mac="${c.mac}">
             <div class="card-header">

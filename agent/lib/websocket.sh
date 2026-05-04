@@ -32,6 +32,7 @@ forge_loop() {
         rm -f "$FIFO"
         mkfifo "$FIFO"
 
+        # Producer: inventário + heartbeat
         (
             # Fase 1: inventário base imediato
             echo "$BASE_INVENTORY"
@@ -45,8 +46,30 @@ forge_loop() {
         ) > "$FIFO" &
         PROD_PID=$!
 
+       # Watchdog: mata websocat se ficar mais de 20s sem receber nada do servidor
+        LAST_MSG_FILE=/tmp/forge-last-msg
+        echo "$(date +%s)" > $LAST_MSG_FILE
+
         (
-            websocat -t "$WS_URL" < "$FIFO" | while read -r line; do
+            while true; do
+                sleep 5
+                LAST=$(cat $LAST_MSG_FILE 2>/dev/null || echo 0)
+                NOW=$(date +%s)
+                if [ $((NOW - LAST)) -gt 60 ]; then
+                    echo "[FORGE] watchdog: sem resposta do servidor, matando websocat" >&2
+                    pkill -f "websocat" 2>/dev/null
+                    break
+                fi
+            done
+        ) &
+        WATCHDOG_PID=$!
+
+        (
+            websocat -t \
+                --ping-interval 3 \
+                --ping-timeout 5 \
+                "$WS_URL" < "$FIFO" | while read -r line; do
+                echo "$(date +%s)" > $LAST_MSG_FILE
                 CMD=$(cmd_extract "$line")
                 if [ -n "$CMD" ]; then
                     echo "[FORGE] cmd: $CMD" >&2
@@ -57,6 +80,8 @@ forge_loop() {
             done
         )
 
+        # Limpeza após desconexão
+        kill $WATCHDOG_PID 2>/dev/null
         kill $PROD_PID 2>/dev/null
         rm -f "$FIFO"
         echo "[FORGE] Conexão perdida, reconectando em 3s..."

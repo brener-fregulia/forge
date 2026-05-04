@@ -1,7 +1,7 @@
 import { createWS } from "./lib/ws.js";
 import { initClipboard } from "./lib/clipboard.js";
 import { renderDisks, tryInitialRender, initSmartModal } from "./components/disks-table.js";
-import { renderUsers, getSelectedUsers } from "./components/users-table.js";
+import { renderUsers } from "./components/users-table.js";
 
 const mac = window.CLIENT_MAC;
 
@@ -15,6 +15,10 @@ const els = {
 createWS("/ws/dashboard", {
     client_update:    ({ mac: m, client: c }) => m === mac && updateClient(c),
     client_connected: ({ mac: m, client: c }) => m === mac && updateClient(c),
+    snapshot:         ({ clients }) => {
+        const c = clients.find(x => x.mac === mac);
+        if (c) updateClient(c);
+    },
 });
 
 function updateClient(c) {
@@ -30,11 +34,14 @@ function updateClient(c) {
         els.users.textContent = JSON.stringify(c.users, null, 2);
         renderUsers(c.users);
     }
+    const newLog = (c.log_tail || []).join("\n");
+    if (els.log.textContent !== newLog) {
+        els.log.textContent = newLog;
+    } //teste
     if (c.alias) {
         const el = document.getElementById("machine-alias");
         if (el) el.textContent = c.alias;
     }
-    els.log.textContent = (c.log_tail || []).join("\n");
 }
 
 document.getElementById("cmd-form").addEventListener("submit", async (e) => {
@@ -57,35 +64,27 @@ document.getElementById("clear-log-btn").addEventListener("click", async () => {
     if (!res.ok) alert("Erro ao limpar log");
 });
 
-// Alias editável
-const aliasDisplay = document.getElementById("machine-alias");
-const aliasForm    = document.getElementById("alias-form");
-const aliasInput   = document.getElementById("alias-input");
-
 document.getElementById("edit-alias-btn")?.addEventListener("click", () => {
-    aliasForm.style.display = "block";
-    aliasInput.focus();
-    aliasInput.select();
+    document.getElementById("alias-form").style.display = "block";
+    document.getElementById("alias-input").focus();
 });
 
 document.getElementById("cancel-alias-btn")?.addEventListener("click", () => {
-    aliasForm.style.display = "none";
+    document.getElementById("alias-form").style.display = "none";
 });
 
 document.getElementById("alias-edit-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const alias = aliasInput.value.trim();
+    const alias = document.getElementById("alias-input").value.trim();
     if (!alias) return;
-
     const res = await fetch(`/api/clients/${mac}/alias`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ alias }),
     });
-
     if (res.ok) {
-        aliasDisplay.textContent = alias;
-        aliasForm.style.display = "none";
+        document.getElementById("machine-alias").textContent = alias;
+        document.getElementById("alias-form").style.display = "none";
     } else {
         alert("Erro ao salvar nome");
     }
@@ -93,5 +92,3 @@ document.getElementById("alias-edit-form")?.addEventListener("submit", async (e)
 
 initClipboard();
 tryInitialRender();
-// Inicializa modal com smart vazio (será preenchido no primeiro update)
-initSmartModal({});
