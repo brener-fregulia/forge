@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.state import state
+from app.db.base import AsyncSessionLocal
 
 router = APIRouter()
 
@@ -48,3 +49,31 @@ async def clear_log(mac: str):
         "client": client.to_dict(),
     })
     return {"status": "cleared"}
+
+class AliasRequest(BaseModel):
+    alias: str
+
+
+@router.post("/clients/{mac}/alias")
+async def set_alias(mac: str, payload: AliasRequest):
+    """Define alias para uma máquina."""
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    # Salva no estado em memória
+    client.alias = payload.alias.strip()
+
+    # Persiste no banco
+    async with AsyncSessionLocal() as db:
+        from app.db.services.machine import set_machine_alias
+        await set_machine_alias(db, mac=mac, alias=client.alias)
+
+    # Propaga para o dashboard
+    await state.broadcast_to_dashboard({
+        "type": "client_update",
+        "mac": mac,
+        "client": client.to_dict(),
+    })
+
+    return {"status": "ok", "alias": client.alias}

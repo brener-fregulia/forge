@@ -30,6 +30,10 @@ function updateClient(c) {
         els.users.textContent = JSON.stringify(c.users, null, 2);
         renderUsers(c.users);
     }
+    if (c.alias) {
+        const el = document.getElementById("machine-alias");
+        if (el) el.textContent = c.alias;
+    }
     els.log.textContent = (c.log_tail || []).join("\n");
 }
 
@@ -51,6 +55,40 @@ document.getElementById("clear-log-btn").addEventListener("click", async () => {
     if (!confirm("Limpar o log deste cliente?")) return;
     const res = await fetch(`/api/clients/${mac}/log/clear`, { method: "POST" });
     if (!res.ok) alert("Erro ao limpar log");
+});
+
+// Alias editável
+const aliasDisplay = document.getElementById("machine-alias");
+const aliasForm    = document.getElementById("alias-form");
+const aliasInput   = document.getElementById("alias-input");
+
+document.getElementById("edit-alias-btn")?.addEventListener("click", () => {
+    aliasForm.style.display = "block";
+    aliasInput.focus();
+    aliasInput.select();
+});
+
+document.getElementById("cancel-alias-btn")?.addEventListener("click", () => {
+    aliasForm.style.display = "none";
+});
+
+document.getElementById("alias-edit-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const alias = aliasInput.value.trim();
+    if (!alias) return;
+
+    const res = await fetch(`/api/clients/${mac}/alias`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alias }),
+    });
+
+    if (res.ok) {
+        aliasDisplay.textContent = alias;
+        aliasForm.style.display = "none";
+    } else {
+        alert("Erro ao salvar nome");
+    }
 });
 
 initClipboard();

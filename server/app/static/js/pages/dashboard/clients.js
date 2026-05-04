@@ -35,6 +35,7 @@ function removeClient(mac) {
 }
 
 function renderCard(c) {
+    const label = c.alias || c.hostname || "—";
     return `
         <a href="/client/${c.mac}" class="client-card" data-mac="${c.mac}">
             <div class="card-header">
@@ -42,7 +43,7 @@ function renderCard(c) {
                 <span class="mac">${c.mac}</span>
             </div>
             <div class="card-body">
-                <div class="hostname">${c.hostname || "—"}</div>
+                <div class="hostname">${label}</div>
                 <div class="ip">${c.ip}</div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${c.progress}%"></div>

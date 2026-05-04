@@ -3,7 +3,18 @@
 
 {% block content %}
 <section>
-    <h2>{{ client.hostname or client.mac }}</h2>
+    <h2>
+        <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
+        <button class="btn-small" id="edit-alias-btn">Editar nome</button>
+    </h2>
+    <div id="alias-form" style="display:none; margin-bottom:1rem">
+        <form id="alias-edit-form">
+            <input type="text" id="alias-input" placeholder="Nome do cliente" autocomplete="off" value="{{ client.alias or '' }}">
+            <button type="submit">Salvar</button>
+            <button type="button" id="cancel-alias-btn" class="btn-small">Cancelar</button>
+        </form>
+    </div>
+
     <div class="meta">
         <div><strong>MAC:</strong> {{ client.mac }}</div>
         <div><strong>IP:</strong> {{ client.ip }}</div>
