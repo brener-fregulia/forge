@@ -5,7 +5,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.state import state, Client
 from app.db.base import AsyncSessionLocal
-from app.db.models import Client, Machine, Deploy, Snapshot  # noqa — garante ordem de init
+from app.db.services.machine import get_or_create_machine, update_machine_hardware
+from app.db.models import Client as DBClient, Machine as DBMachine  # noqa — garante init dos models
 
 router = APIRouter()
 
