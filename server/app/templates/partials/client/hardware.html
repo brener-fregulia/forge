@@ -1,3 +1,24 @@
 <h3>Hardware <button class="btn-small btn-copy" data-target="hw">Copiar</button></h3>
-<div id="hw-rendered"></div>
+
+<div class="hw-card">
+    <div class="hw-section">
+        <div class="hw-item">
+            <span class="hw-label">CPU</span>
+            <span class="hw-value" id="hw-cpu"><span class="loading"><span class="spinner"></span></span></span>
+        </div>
+        <div class="hw-item">
+            <span class="hw-label">RAM</span>
+            <span class="hw-value" id="hw-ram"><span class="loading"><span class="spinner"></span></span></span>
+        </div>
+        <div class="hw-item">
+            <span class="hw-label">GPU</span>
+            <span class="hw-value" id="hw-gpu"><span class="loading"><span class="spinner"></span></span></span>
+        </div>
+    </div>
+    <div class="hw-section" id="hw-ram-slots-section" style="display:none">
+        <div class="hw-section-title">Módulos de RAM</div>
+        <div id="hw-ram-slots"></div>
+    </div>
+</div>
+
 <pre id="hw" style="display:none">{{ client.hardware }}</pre>
