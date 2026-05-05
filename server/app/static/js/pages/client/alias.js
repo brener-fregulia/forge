@@ -27,6 +27,9 @@ export function initAlias(mac) {
 }
 
 export function updateAlias(alias) {
-    const el = document.getElementById("machine-alias");
-    if (el && alias) el.textContent = alias;
+    if (!alias) return;
+    const display = document.getElementById("machine-alias");
+    if (display) display.textContent = alias;
+    const input = document.getElementById("alias-input");
+    if (input && !input.value) input.value = alias;
 }
