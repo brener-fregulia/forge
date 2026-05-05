@@ -13,7 +13,9 @@ export function renderHardware(hw) {
             <span class="hw-label">${s.locator}</span>
             <span class="hw-value">${s.size_mb > 0 ? s.size_mb + " MB" : "vazio"} — ${s.bank}</span>
         </div>`).join("");
-
+    
+    const ramPhysical = (hw.ram_slots || []).reduce((sum, s) => sum + (s.size_mb || 0), 0);
+    
     container.innerHTML = `
         <div class="hw-card">
             <div class="hw-section">
@@ -23,7 +25,10 @@ export function renderHardware(hw) {
                 </div>
                 <div class="hw-item">
                     <span class="hw-label">RAM Total</span>
-                    <span class="hw-value">${hw.ram_mb ? (hw.ram_mb / 1024).toFixed(1) + " GB" : "—"}</span>
+                    <span class="hw-value">${ramPhysical > 0
+                        ? (ramPhysical / 1024).toFixed(1) + ' GB físico / ' + (hw.ram_mb / 1024).toFixed(1) + ' GB disponível'
+                        : (hw.ram_mb / 1024).toFixed(1) + ' GB'
+                    }</span>
                 </div>
                 ${gpus}
             </div>
