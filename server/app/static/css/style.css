@@ -3,7 +3,7 @@
 @import url('/static/css/pages/dashboard.css');
 @import url('/static/css/pages/server-status.css');
 @import url('/static/css/pages/client.css');
-@import url('/static/css/pages/deploy-modal.css');
-@import url('/static/css/pages/disks-table.css');
-@import url('/static/css/pages/users-table.css');
-@import url('/static/css/pages/smart-modal.css');
+@import url('/static/css/modals/smart.css');
+@import url('/static/css/modals/deploy.css');
+@import url('/static/css/tables/disks.css');
+@import url('/static/css/tables/users.css');
