@@ -1,4 +1,5 @@
 import { createWS } from "./lib/ws.js";
+import { initDeployModal } from "./components/deploy-modal.js";
 import { initClipboard } from "./lib/clipboard.js";
 import { renderDisks, tryInitialRender, initSmartModal } from "./components/disks-table.js";
 import { renderUsers } from "./components/users-table.js";
@@ -90,5 +91,10 @@ document.getElementById("alias-edit-form")?.addEventListener("submit", async (e)
     }
 });
 
+document.getElementById("execute-deploy-btn")?.addEventListener("click", () => {
+    alert("Execução do deploy em desenvolvimento — em breve!");
+});
+
+initDeployModal(() => mac, () => null);
 initClipboard();
 tryInitialRender();

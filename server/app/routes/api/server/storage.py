@@ -100,3 +100,22 @@ async def server_storage():
         "hot_cache": {**hot, "disks": _hot_disks(), "raid": False},
         "cold_storage": {**cold, "disks": cold_disks, "raid": True, "raid_detail": raid_detail},
     }
+
+
+from app.config import HOT_CACHE_PATH
+
+@router.get("/server/isos")
+async def list_isos():
+    """Lista ISOs disponíveis em /srv/isos."""
+    isos_path = Path("/srv/isos")
+    try:
+        isos = []
+        for f in sorted(isos_path.glob("*.iso")):
+            isos.append({
+                "filename": f.name,
+                "size": f.stat().st_size,
+                "path": str(f),
+            })
+        return {"isos": isos}
+    except Exception as e:
+        return {"isos": [], "error": str(e)}

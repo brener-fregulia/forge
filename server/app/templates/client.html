@@ -3,10 +3,18 @@
 
 {% block content %}
 <section>
-    <h2>
-        <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
-        <button class="btn-small" id="edit-alias-btn">Editar nome</button>
-    </h2>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
+        <h2 style="margin:0">
+            <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
+            <button class="btn-small" id="edit-alias-btn">Editar nome</button>
+        </h2>
+        <div style="display:flex; gap:0.5rem; align-items:center">
+            <button id="deploy-btn" class="btn-secondary">⚙ Configurar Deploy</button>
+            <button id="execute-deploy-btn" class="btn-execute" disabled>▶ Executar</button>
+        </div>
+    </div>
+
     <div id="alias-form" style="display:none; margin-bottom:1rem">
         <form id="alias-edit-form">
             <input type="text" id="alias-input" placeholder="Nome do cliente" autocomplete="off" value="{{ client.alias or '' }}">
@@ -45,6 +53,25 @@
     </h3>
     <pre id="log">{{ client.log_tail | join('\n') }}</pre>
 </section>
+
+<!-- Modal Deploy -->
+<div id="deploy-modal" class="modal-overlay">
+    <div class="modal modal-wide">
+        <div class="modal-header">
+            <h3>Configurar Deploy</h3>
+            <button class="modal-close" id="deploy-modal-close">✕</button>
+        </div>
+        
+        <div id="deploy-modal-body">
+            <div class="loading"><span class="spinner"></span>Carregando…</div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-small" id="deploy-cancel-btn">Cancelar</button>
+            <button class="btn-primary" id="deploy-confirm-btn">💾 Salvar</button>
+        </div>
+    </div>
+</div>
 
 <!-- Modal SMART -->
 <div id="smart-modal" class="modal-overlay">
