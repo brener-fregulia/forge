@@ -1,5 +1,28 @@
 <h3>Usuários Windows <button class="btn-small btn-copy" data-target="users">Copiar</button></h3>
+
 <div id="users-rendered">
     <span class="loading"><span class="spinner"></span>Montando partições NTFS…</span>
 </div>
+
+<template id="users-table-tpl">
+    <table class="users-table">
+        <thead>
+            <tr>
+                <th>Disco</th>
+                <th>Usuário</th>
+                <th>Tamanho</th>
+            </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+    </table>
+</template>
+
+<template id="user-row-tpl">
+    <tr>
+        <td><code class="user-device"></code></td>
+        <td class="user-name"></td>
+        <td class="user-size"></td>
+    </tr>
+</template>
+
 <pre id="users" style="display:none"></pre>

@@ -9,19 +9,21 @@ export function renderUsers(users) {
         return;
     }
 
-    let html = `<table class="users-table">
-        <thead><tr>
-            <th>Disco</th><th>Usuário</th><th>Tamanho</th>
-        </tr></thead><tbody>`;
+    // Clona template da tabela
+    const tableTpl = document.getElementById("users-table-tpl");
+    const table = tableTpl.content.cloneNode(true);
+    const tbody = table.getElementById("users-tbody");
 
+    // Clona template de linha para cada usuário
+    const rowTpl = document.getElementById("user-row-tpl");
     for (const u of users) {
-        html += `<tr>
-            <td><code>${u.device}</code></td>
-            <td>${u.username}</td>
-            <td>${formatBytes(u.size)}</td>
-        </tr>`;
+        const row = rowTpl.content.cloneNode(true);
+        row.querySelector(".user-device").textContent = u.device;
+        row.querySelector(".user-name").textContent = u.username;
+        row.querySelector(".user-size").textContent = formatBytes(u.size);
+        tbody.appendChild(row);
     }
 
-    html += `</tbody></table>`;
-    container.innerHTML = html;
+    container.innerHTML = "";
+    container.appendChild(table);
 }
