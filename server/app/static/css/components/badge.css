@@ -1,0 +1,49 @@
+/* --- Status badges --- */
+.status {
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.status-connected { background: var(--blue); color: #000; }
+.status-ready     { background: var(--green); color: #000; }
+.status-done      { background: var(--green); color: #000; }
+.status-error     { background: var(--red); color: #fff; }
+.status-inventory,
+.status-backup,
+.status-format,
+.status-install   { background: var(--yellow); color: #000; }
+
+/* --- Filesystem badges --- */
+.fs-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: monospace;
+}
+.fs-badge.fs-ntfs  { background: var(--accent); color: #000; }
+.fs-badge.fs-other { background: var(--border); color: var(--text-dim); }
+
+/* --- Health badges --- */
+.health-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: monospace;
+}
+.health-badge.health-ok      { background: var(--green); color: #000; }
+.health-badge.health-fail    { background: var(--red); color: #fff; }
+.health-badge.health-unknown { background: var(--border); color: var(--text-dim); }
+.health-temp {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-left: 0.25rem;
+    font-family: monospace;
+}
