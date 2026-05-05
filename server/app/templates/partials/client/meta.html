@@ -1,5 +1,5 @@
 <div class="meta">
-    <div><strong>MAC:</strong> {{ client.mac }}</div>
-    <div><strong>IP:</strong> {{ client.ip }}</div>
-    <div><strong>Status:</strong> <span class="status status-{{ client.status }}">{{ client.status }}</span></div>
+    <div><strong>MAC:</strong> <span id="meta-mac">{{ client.mac }}</span></div>
+    <div><strong>IP:</strong> <span id="meta-ip">{{ client.ip }}</span></div>
+    <div><strong>Status:</strong> <span id="meta-status" class="status status-{{ client.status }}">{{ client.status }}</span></div>
 </div>

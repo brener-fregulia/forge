@@ -26,6 +26,16 @@ createWS("/ws/dashboard", {
     },
 });
 
+function updateMeta(c) {
+    const status = document.getElementById("meta-status");
+    if (status) {
+        status.textContent = c.status;
+        status.className = `status status-${c.status}`;
+    }
+    const ip = document.getElementById("meta-ip");
+    if (ip) ip.textContent = c.ip;
+}
+
 function updateClient(c) {
     if (c.hardware && typeof c.hardware === 'object' && Object.keys(c.hardware).length > 0) {
         els.hw.textContent = JSON.stringify(c.hardware, null, 2);
@@ -40,6 +50,7 @@ function updateClient(c) {
         els.users.textContent = JSON.stringify(c.users, null, 2);
         renderUsers(c.users);
     }
+    updateMeta(c);
     updateLog(c.log_tail, els.log);
     updateAlias(c.alias);
     updateDeployState(c.deploy_plan);
