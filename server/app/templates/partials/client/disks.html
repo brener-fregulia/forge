@@ -1,5 +1,51 @@
 <h3>Discos <button class="btn-small btn-copy" data-target="disks">Copiar</button></h3>
+
 <div id="disks-rendered" class="disks-table">
     <span class="loading"><span class="spinner"></span>Detectando discos e saúde…</span>
 </div>
+
+<template id="disks-table-tpl">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Tamanho</th>
+                <th>Tipo</th>
+                <th>Saúde</th>
+                <th>Modelo / Serial</th>
+            </tr>
+        </thead>
+        <tbody id="disks-tbody"></tbody>
+    </table>
+</template>
+
+<template id="disk-row-main-tpl">
+    <tr class="disk-main">
+        <td>
+            <code class="disk-name"></code>
+            <button class="btn-small btn-smart disk-smart-btn">SMART</button>
+        </td>
+        <td class="disk-size"></td>
+        <td class="disk-fstype"></td>
+        <td class="disk-health"></td>
+        <td>
+            <div class="disk-model"></div>
+            <div class="disk-serial"></div>
+        </td>
+    </tr>
+</template>
+
+<template id="disk-row-part-tpl">
+    <tr class="disk-part">
+        <td><code class="disk-name"></code></td>
+        <td class="disk-size"></td>
+        <td class="disk-fstype"></td>
+        <td class="disk-health"></td>
+        <td>
+            <div class="disk-model"></div>
+            <div class="disk-serial"></div>
+        </td>
+    </tr>
+</template>
+
 <pre id="disks" style="display:none">{{ client.disks }}</pre>
