@@ -14,8 +14,9 @@ export function initDeployModal(getMac) {
             fetch("/api/server/isos").then(r => r.json()),
         ]);
 
-        body.innerHTML = renderForm(clientData, isosData.isos || []);
-        initFormInteractions();
+        const savedPlan = clientData.deploy_plan || null;
+        body.innerHTML = renderForm(clientData, isosData.isos || [], savedPlan);
+        initFormInteractions(savedPlan);
     });
 
     document.getElementById("deploy-cancel-btn")?.addEventListener("click", () => modal.close());
@@ -43,33 +44,47 @@ export function initDeployModal(getMac) {
     });
 }
 
-function renderForm(client, isos) {
+function renderForm(client, isos, plan = null) {
     const disks = (client.disks || []).filter(d => d.type === "disk");
     const users = client.users || [];
 
-    // Discos
-    const disksHtml = disks.map((d, i) => `
-        <label class="deploy-disk-option ${i === 0 ? 'selected' : ''}">
-            <input type="radio" name="target_disk" value="${d.name}" ${i === 0 ? 'checked' : ''} style="display:none">
+    const disksHtml = disks.map((d, i) => {
+        const selected = plan ? plan.target_disk === d.name : i === 0;
+        return `
+        <label class="deploy-disk-option ${selected ? 'selected' : ''}">
+            <input type="radio" name="target_disk" value="${d.name}" ${selected ? 'checked' : ''}>
             <div>
                 <strong><code>${d.name}</code> — ${d.model || "disco"}</strong>
                 <div style="font-size:0.8rem;color:var(--text-dim)">${formatBytes(d.size)}</div>
             </div>
-        </label>`).join("");
+        </label>`;
+    }).join("");
 
-    // Usuários
-    const usersHtml = users.map(u => `
+    const usersHtml = users.map(u => {
+        const checked = plan ? plan.backup_users.includes(u.username) : true;
+        return `
         <div class="deploy-option">
-            <input type="checkbox" id="user-${u.username}" name="backup_users" value="${u.username}" checked>
+            <input type="checkbox" id="user-${u.username}" name="backup_users" value="${u.username}" ${checked ? 'checked' : ''}>
             <label for="user-${u.username}">${u.username} <span style="color:var(--text-dim)">(${formatBytes(u.size)})</span></label>
-        </div>`).join("");
+        </div>`;
+    }).join("");
 
-    // ISOs
-    const isosHtml = isos.map((iso, i) => `
+    const doBackup = plan ? plan.backup : true;
+    const backupRoot = plan ? plan.backup_root : false;
+    const doDrivers = plan ? plan.drivers : true;
+    const doDebloat = plan ? plan.debloat : true;
+    const doRestore = plan ? plan.restore : true;
+
+    const isosHtml = isos.map((iso, i) => {
+        const checked = plan ? plan.windows_iso === iso.filename : i === isos.length - 1;
+        return `
         <div class="deploy-option">
-            <input type="radio" name="windows_iso" id="iso-${i}" value="${iso.filename}" ${i === isos.length - 1 ? 'checked' : ''}>
+            <input type="radio" name="windows_iso" id="iso-${i}" value="${iso.filename}" ${checked ? 'checked' : ''}>
             <label for="iso-${i}">${iso.filename} <span style="color:var(--text-dim)">(${formatBytes(iso.size)})</span></label>
-        </div>`).join("");
+        </div>`;
+    }).join("");
+
+    const isoNoneChecked = plan && !plan.windows_iso ? 'checked' : '';
 
     return `
         <div class="deploy-section">
@@ -77,17 +92,17 @@ function renderForm(client, isos) {
             ${disksHtml || '<p class="empty">Nenhum disco detectado</p>'}
         </div>
 
-        <div class="deploy-section" id="backup-section">
+        <div class="deploy-section">
             <h4>Backup</h4>
             <div class="deploy-option">
-                <input type="checkbox" id="do-backup" checked>
+                <input type="checkbox" id="do-backup" ${doBackup ? 'checked' : ''}>
                 <label for="do-backup"><strong>Fazer backup antes de formatar</strong></label>
             </div>
-            <div id="backup-options" style="margin-left:1.5rem;margin-top:0.5rem">
+            <div id="backup-options" style="margin-left:1.5rem;margin-top:0.5rem;${doBackup ? '' : 'display:none'}">
                 <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem">Usuários:</div>
                 ${usersHtml || '<p class="empty" style="font-size:0.85rem">Nenhum usuário detectado</p>'}
                 <div class="deploy-option" style="margin-top:0.5rem">
-                    <input type="checkbox" id="backup-root">
+                    <input type="checkbox" id="backup-root" ${backupRoot ? 'checked' : ''}>
                     <label for="backup-root">Arquivos soltos em C:\</label>
                 </div>
             </div>
@@ -97,7 +112,7 @@ function renderForm(client, isos) {
             <h4>Instalação Windows</h4>
             ${isosHtml}
             <div class="deploy-option">
-                <input type="radio" name="windows_iso" id="iso-none" value="">
+                <input type="radio" name="windows_iso" id="iso-none" value="" ${isoNoneChecked}>
                 <label for="iso-none">Não instalar</label>
             </div>
         </div>
@@ -105,15 +120,15 @@ function renderForm(client, isos) {
         <div class="deploy-section">
             <h4>Pós-instalação</h4>
             <div class="deploy-option">
-                <input type="checkbox" id="do-drivers" checked>
+                <input type="checkbox" id="do-drivers" ${doDrivers ? 'checked' : ''}>
                 <label for="do-drivers">Injeção de drivers (SDIO)</label>
             </div>
             <div class="deploy-option">
-                <input type="checkbox" id="do-debloat" checked>
+                <input type="checkbox" id="do-debloat" ${doDebloat ? 'checked' : ''}>
                 <label for="do-debloat">Debloat</label>
             </div>
             <div class="deploy-option">
-                <input type="checkbox" id="do-restore" checked>
+                <input type="checkbox" id="do-restore" ${doRestore ? 'checked' : ''}>
                 <label for="do-restore">Restaurar backup</label>
             </div>
         </div>`;
