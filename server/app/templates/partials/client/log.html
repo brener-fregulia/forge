@@ -1,0 +1,6 @@
+<h3>
+    Log
+    <button id="clear-log-btn" class="btn-small">Limpar</button>
+    <button class="btn-small btn-copy" data-target="log">Copiar</button>
+</h3>
+<pre id="log">{{ client.log_tail | join('\n') }}</pre>

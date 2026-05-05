@@ -26,22 +26,31 @@ function updateClient(c) {
     if (c.hardware && typeof c.hardware === 'object' && Object.keys(c.hardware).length > 0) {
         els.hw.textContent = JSON.stringify(c.hardware, null, 2);
     }
+
     if (c.disks?.length) {
         els.disks.textContent = JSON.stringify(c.disks, null, 2);
         renderDisks(c.disks, c.smart);
         initSmartModal(c.smart);
     }
+
     if (Array.isArray(c.users)) {
         els.users.textContent = JSON.stringify(c.users, null, 2);
         renderUsers(c.users);
     }
+
     const newLog = (c.log_tail || []).join("\n");
     if (els.log.textContent !== newLog) {
         els.log.textContent = newLog;
-    } //teste
+    }
+
     if (c.alias) {
         const el = document.getElementById("machine-alias");
         if (el) el.textContent = c.alias;
+    }
+
+    if (c.deploy_plan) {
+        const execBtn = document.getElementById("execute-deploy-btn");
+        if (execBtn) execBtn.disabled = false;
     }
 }
 

@@ -3,92 +3,22 @@
 
 {% block content %}
 <section>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
-        <h2 style="margin:0">
-            <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
-            <button class="btn-small" id="edit-alias-btn">Editar nome</button>
-        </h2>
-        <div style="display:flex; gap:0.5rem; align-items:center">
-            <button id="deploy-btn" class="btn-secondary">⚙ Configurar Deploy</button>
-            <button id="execute-deploy-btn" class="btn-execute" disabled>▶ Executar</button>
-        </div>
-    </div>
-
-    <div id="alias-form" style="display:none; margin-bottom:1rem">
-        <form id="alias-edit-form">
-            <input type="text" id="alias-input" placeholder="Nome do cliente" autocomplete="off" value="{{ client.alias or '' }}">
-            <button type="submit">Salvar</button>
-            <button type="button" id="cancel-alias-btn" class="btn-small">Cancelar</button>
-        </form>
-    </div>
-
-    <div class="meta">
-        <div><strong>MAC:</strong> {{ client.mac }}</div>
-        <div><strong>IP:</strong> {{ client.ip }}</div>
-        <div><strong>Status:</strong> <span class="status status-{{ client.status }}">{{ client.status }}</span></div>
-    </div>
-
-    <h3>Hardware <button class="btn-small btn-copy" data-target="hw">Copiar</button></h3>
-    <pre id="hw">{{ client.hardware }}</pre>
-
-    <h3>Discos <button class="btn-small btn-copy" data-target="disks">Copiar</button></h3>
-    <div id="disks-rendered" class="disks-table"><span class="loading"><span class="spinner"></span>Detectando discos e saúde…</span></div>
-    <pre id="disks" style="display:none">{{ client.disks }}</pre>
-
-    <h3>Usuários Windows <button class="btn-small btn-copy" data-target="users">Copiar</button></h3>
-    <div id="users-rendered"><span class="loading"><span class="spinner"></span>Montando partições NTFS…</span></div>
-    <pre id="users" style="display:none"></pre>
-
-    <h3>Enviar comando</h3>
-    <form id="cmd-form">
-        <input type="text" id="cmd-input" placeholder="ex: ip addr show" autocomplete="off">
-        <button type="submit">Enviar</button>
-    </form>
-
-    <h3>
-        Log
-        <button id="clear-log-btn" class="btn-small">Limpar</button>
-        <button class="btn-small btn-copy" data-target="log">Copiar</button>
-    </h3>
-    <pre id="log">{{ client.log_tail | join('\n') }}</pre>
+    {% include "partials/client/header.html" %}
+    {% include "partials/client/meta.html" %}
+    {% include "partials/client/hardware.html" %}
+    {% include "partials/client/disks.html" %}
+    {% include "partials/client/users.html" %}
+    {% include "partials/client/command.html" %}
+    {% include "partials/client/log.html" %}
 </section>
 
-<!-- Modal Deploy -->
-<div id="deploy-modal" class="modal-overlay">
-    <div class="modal modal-wide">
-        <div class="modal-header">
-            <h3>Configurar Deploy</h3>
-            <button class="modal-close" id="deploy-modal-close">✕</button>
-        </div>
-        
-        <div id="deploy-modal-body">
-            <div class="loading"><span class="spinner"></span>Carregando…</div>
-        </div>
-
-        <div class="modal-footer">
-            <button class="btn-small" id="deploy-cancel-btn">Cancelar</button>
-            <button class="btn-primary" id="deploy-confirm-btn">💾 Salvar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal SMART -->
-<div id="smart-modal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 id="smart-modal-title">SMART — /dev/sda</h3>
-            <button class="modal-close" id="smart-modal-close">✕</button>
-        </div>
-        <div id="smart-modal-body"></div>
-    </div>
-</div>
+{% include "partials/modals/deploy.html" %}
+{% include "partials/modals/smart.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script>
     window.CLIENT_MAC = "{{ client.mac }}";
 </script>
-
 <script type="module" src="/static/js/client-detail.js"></script>
 {% endblock %}
