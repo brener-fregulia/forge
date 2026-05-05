@@ -63,6 +63,8 @@ async function updateStatus() {
             ? `${s.cpu_percent.toFixed(0)}% · ${s.cpu_temp}°C`
             : `${s.cpu_percent.toFixed(0)}%`;
         set("ss-cpu", cpuText, s.cpu_temp > 85 ? "critical" : s.cpu_temp > 70 ? "warn" : cpuClass);
+        const cpuName = document.getElementById("ss-cpu-name");
+        if (cpuName && s.cpu_name) cpuName.textContent = s.cpu_name;
 
         const ram = fmt(s.ram.used, s.ram.total);
         set("ss-ram", `${ram.text} (${s.ram.percent}%)`,

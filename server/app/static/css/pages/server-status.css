@@ -60,3 +60,11 @@
     color: var(--accent);
     opacity: 1;
 }
+
+.ss-sublabel {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

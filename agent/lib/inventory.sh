@@ -144,21 +144,48 @@ inventory_ram_slots() {
     RAM_TMP=/tmp/forge-ram.tmp
     > $RAM_TMP
 
+    # Mapeamento de tipo de memória SMBIOS
+    mem_type() {
+        case "$1" in
+            2)  echo "" ;;
+            20) echo "DDR" ;;
+            21) echo "DDR2" ;;
+            24) echo "DDR3" ;;
+            26) echo "DDR4" ;;
+            27) echo "LPDDR" ;;
+            28) echo "LPDDR2" ;;
+            29) echo "LPDDR3" ;;
+            30) echo "LPDDR4" ;;
+            34) echo "DDR5" ;;
+            35) echo "LPDDR5" ;;
+            *)  echo "Unknown($1)" ;;
+        esac
+    }
+
     for entry in /sys/firmware/dmi/entries/17-*/raw; do
         [ -r "$entry" ] || continue
-        DATA=$(strings "$entry" 2>/dev/null)
+        STRINGS=$(strings "$entry" 2>/dev/null)
 
-        # Extrai campos por posição nas strings
-        LOCATOR=$(echo "$DATA" | sed -n '1p' | sed 's/"/\\"/g')
-        BANK=$(echo "$DATA" | sed -n '2p' | sed 's/"/\\"/g')
+        LOCATOR=$(echo "$STRINGS" | sed -n '1p' | sed 's/"/\\"/g')
+        BANK=$(echo "$STRINGS"    | sed -n '2p' | sed 's/"/\\"/g')
 
-        # Tamanho via bytes do header DMI (offset 0x0C, 2 bytes)
-        SIZE_RAW=$(cat "$entry" 2>/dev/null | od -An -j12 -N2 -tu2 2>/dev/null | tr -d ' \n')
-        SIZE_MB=0
-        [ -n "$SIZE_RAW" ] && [ "$SIZE_RAW" != "0" ] && SIZE_MB=$SIZE_RAW
+        # Campos via offset SMBIOS (independente de fabricante)
+        SIZE_MB=$(od -An -j12 -N2 -tu2 "$entry" 2>/dev/null | tr -d ' \n')
+        TYPE_ID=$(od -An -j18 -N1 -tu1 "$entry" 2>/dev/null | tr -d ' \n')
+        SPEED=$(od -An -j21 -N2 -tu2   "$entry" 2>/dev/null | tr -d ' \n')
+        WIDTH=$(od -An -j8  -N2 -tu2   "$entry" 2>/dev/null | tr -d ' \n')
 
-        printf '{"locator":"%s","bank":"%s","size_mb":%s},' \
-            "$LOCATOR" "$BANK" "$SIZE_MB" >> $RAM_TMP
+        [ -z "$SIZE_MB" ] && SIZE_MB=0
+        TYPE=$(mem_type "${TYPE_ID:-0}")
+        [ -z "$SPEED" ] && SPEED=0
+        [ -z "$WIDTH" ] && WIDTH=0
+
+        # Fabricante e part number só via strings (não tem offset fixo curto)
+        MANUFACTURER=$(echo "$STRINGS" | grep -v "^BANK\|^Controller\|^[0-9]*$\|DDR\|MHz\|LPDDR" | sed -n '1p' | sed 's/"/\\"/g')
+        PART=$(echo "$STRINGS"         | grep -v "^BANK\|^Controller\|^[0-9]*$\|DDR\|MHz\|LPDDR" | sed -n '2p' | sed 's/"/\\"/g')
+
+        printf '{"locator":"%s","bank":"%s","size_mb":%s,"type":"%s","speed_mts":%s,"width_bits":%s,"manufacturer":"%s","part":"%s"},' \
+            "$LOCATOR" "$BANK" "$SIZE_MB" "$TYPE" "$SPEED" "$WIDTH" "$MANUFACTURER" "$PART" >> $RAM_TMP
     done
 
     INNER=$(sed 's/,$//' $RAM_TMP)

@@ -1,24 +1,53 @@
 <h3>Hardware <button class="btn-small btn-copy" data-target="hw">Copiar</button></h3>
 
-<div class="hw-card">
-    <div class="hw-section">
-        <div class="hw-item">
-            <span class="hw-label">CPU</span>
-            <span class="hw-value" id="hw-cpu"><span class="loading"><span class="spinner"></span></span></span>
-        </div>
-        <div class="hw-item">
-            <span class="hw-label">RAM</span>
-            <span class="hw-value" id="hw-ram"><span class="loading"><span class="spinner"></span></span></span>
-        </div>
-        <div class="hw-item">
-            <span class="hw-label">GPU</span>
-            <span class="hw-value" id="hw-gpu"><span class="loading"><span class="spinner"></span></span></span>
-        </div>
+<div class="server-status" id="client-hw-bar">
+    <div class="server-status-item">
+        <span class="ss-label">CPU</span>
+        <span class="ss-value" id="hw-cpu">—</span>
     </div>
-    <div class="hw-section" id="hw-ram-slots-section" style="display:none">
-        <div class="hw-section-title">Módulos de RAM</div>
-        <div id="hw-ram-slots"></div>
+    <div class="server-status-item">
+        <span class="ss-label">RAM</span>
+        <span class="ss-value" id="hw-ram">—</span>
+        <button class="ss-info-btn" id="hw-ram-btn" title="Detalhes RAM">i</button>
     </div>
+    <div class="server-status-item">
+        <span class="ss-label">GPU</span>
+        <span class="ss-value" id="hw-gpu">—</span>
+    </div>
+</div>
+
+<!-- Modal RAM -->
+<div id="hw-ram-modal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Módulos de RAM</h3>
+            <button class="modal-close" id="hw-ram-modal-close">✕</button>
+        </div>
+        <div id="hw-ram-modal-body"></div>
+    </div>
+
+    <template id="ram-slots-table-tpl">
+        <table class="smart-table">
+            <thead><tr>
+                <th>Slot</th><th>Bank</th><th>Tamanho</th><th>Tipo</th>
+                <th>Velocidade</th><th>Largura</th><th>Fabricante</th><th>Part</th>
+            </tr></thead>
+            <tbody id="ram-slots-tbody"></tbody>
+        </table>
+    </template>
+
+    <template id="ram-slot-row-tpl">
+        <tr>
+            <td class="slot-locator"></td>
+            <td class="slot-bank"></td>
+            <td class="slot-size"></td>
+            <td class="slot-type"></td>
+            <td class="slot-speed"></td>
+            <td class="slot-width"></td>
+            <td class="slot-manufacturer"></td>
+            <td class="slot-part"></td>
+        </tr>
+    </template>
 </div>
 
 <pre id="hw" style="display:none">{{ client.hardware }}</pre>

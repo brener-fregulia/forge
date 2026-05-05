@@ -1,3 +1,4 @@
+import re
 import shutil
 import psutil
 from pathlib import Path
@@ -55,6 +56,7 @@ async def server_status():
     cpu = psutil.cpu_percent(interval=0.1)
     ram = psutil.virtual_memory()
     return {
+        "cpu_name": _cpu_name_short(),
         "cpu_percent": cpu,
         "cpu_temp": cpu_temp(),
         "ram": {"total": ram.total, "used": ram.used, "percent": ram.percent},
@@ -63,3 +65,17 @@ async def server_status():
         "raid_status": raid_status(),
         "uptime": uptime(),
     }
+
+
+def _cpu_name_short() -> str:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if "model name" in line:
+                name = line.split(":")[1].strip()
+                # Remove "@ XGHz" e texto redundante
+                name = re.sub(r'\s+@\s+[\d.]+GHz', '', name)
+                name = re.sub(r'\(R\)|\(TM\)', '', name)
+                return name.strip()
+    except Exception:
+        pass
+    return ""
