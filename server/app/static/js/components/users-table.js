@@ -11,13 +11,11 @@ export function renderUsers(users) {
 
     let html = `<table class="users-table">
         <thead><tr>
-            <th><input type="checkbox" id="select-all-users" checked title="Selecionar todos"></th>
             <th>Disco</th><th>Usuário</th><th>Tamanho</th>
         </tr></thead><tbody>`;
 
     for (const u of users) {
         html += `<tr>
-            <td><input type="checkbox" class="user-select" data-device="${u.device}" data-username="${u.username}" checked></td>
             <td><code>${u.device}</code></td>
             <td>${u.username}</td>
             <td>${formatBytes(u.size)}</td>
@@ -26,16 +24,4 @@ export function renderUsers(users) {
 
     html += `</tbody></table>`;
     container.innerHTML = html;
-
-    // Selecionar todos
-    document.getElementById("select-all-users")?.addEventListener("change", (e) => {
-        document.querySelectorAll(".user-select").forEach(cb => cb.checked = e.target.checked);
-    });
-}
-
-export function getSelectedUsers() {
-    return [...document.querySelectorAll(".user-select:checked")].map(cb => ({
-        device: cb.dataset.device,
-        username: cb.dataset.username,
-    }));
 }
