@@ -109,9 +109,67 @@ inventory_users() {
     export USERS_JSON="[$USERS_INNER]"
 }
 
+inventory_gpu() {
+    GPU_JSON="[]"
+    GPU_TMP=/tmp/forge-gpu.tmp
+    > $GPU_TMP
+
+    for dev_path in /sys/bus/pci/devices/*/; do
+        CLASS=$(cat "$dev_path/class" 2>/dev/null)
+        # Classe 0x03xxxx = display controller
+        echo "$CLASS" | grep -qE "^0x03" || continue
+
+        VENDOR_ID=$(cat "$dev_path/vendor" 2>/dev/null | tr -d '\n')
+        DEVICE_ID=$(cat "$dev_path/device" 2>/dev/null | tr -d '\n')
+        LABEL=$(cat "$dev_path/label" 2>/dev/null | tr -d '\n' | sed 's/"/\\"/g')
+
+        # Resolve vendor name
+        case "$VENDOR_ID" in
+            0x8086) VENDOR_NAME="Intel" ;;
+            0x10de) VENDOR_NAME="NVIDIA" ;;
+            0x1002) VENDOR_NAME="AMD" ;;
+            *)      VENDOR_NAME="$VENDOR_ID" ;;
+        esac
+
+        printf '{"vendor":"%s","vendor_id":"%s","device_id":"%s","label":"%s"},' \
+            "$VENDOR_NAME" "$VENDOR_ID" "$DEVICE_ID" "$LABEL" >> $GPU_TMP
+    done
+
+    INNER=$(sed 's/,$//' $GPU_TMP)
+    export GPU_JSON="[$INNER]"
+}
+
+inventory_ram_slots() {
+    RAM_SLOTS_JSON="[]"
+    RAM_TMP=/tmp/forge-ram.tmp
+    > $RAM_TMP
+
+    for entry in /sys/firmware/dmi/entries/17-*/raw; do
+        [ -r "$entry" ] || continue
+        DATA=$(strings "$entry" 2>/dev/null)
+
+        # Extrai campos por posição nas strings
+        LOCATOR=$(echo "$DATA" | sed -n '1p' | sed 's/"/\\"/g')
+        BANK=$(echo "$DATA" | sed -n '2p' | sed 's/"/\\"/g')
+
+        # Tamanho via bytes do header DMI (offset 0x0C, 2 bytes)
+        SIZE_RAW=$(cat "$entry" 2>/dev/null | od -An -j12 -N2 -tu2 2>/dev/null | tr -d ' \n')
+        SIZE_MB=0
+        [ -n "$SIZE_RAW" ] && [ "$SIZE_RAW" != "0" ] && SIZE_MB=$SIZE_RAW
+
+        printf '{"locator":"%s","bank":"%s","size_mb":%s},' \
+            "$LOCATOR" "$BANK" "$SIZE_MB" >> $RAM_TMP
+    done
+
+    INNER=$(sed 's/,$//' $RAM_TMP)
+    export RAM_SLOTS_JSON="[$INNER]"
+}
+
 inventory_collect_base() {
     inventory_hardware
-    echo "{\"type\":\"inventory_base\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\"},\"users\":[]}"
+    inventory_gpu
+    inventory_ram_slots
+    echo "{\"type\":\"inventory_base\",\"hostname\":\"$HOSTNAME\",\"hardware\":{\"cpu\":\"$CPU\",\"ram_mb\":$RAM_MB,\"iface\":\"$IFACE\",\"gpu\":$GPU_JSON,\"ram_slots\":$RAM_SLOTS_JSON},\"users\":[]}"
 }
 
 inventory_collect_disks() {

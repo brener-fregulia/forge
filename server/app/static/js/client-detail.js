@@ -1,6 +1,7 @@
 import { createWS } from "./lib/ws.js";
 import { initDeployModal } from "./components/deploy-modal.js";
 import { initClipboard } from "./lib/clipboard.js";
+import { renderHardware } from "./components/hardware-card.js";
 import { renderDisks, tryInitialRender, initSmartModal } from "./components/disks-table.js";
 import { renderUsers } from "./components/users-table.js";
 
@@ -25,6 +26,7 @@ createWS("/ws/dashboard", {
 function updateClient(c) {
     if (c.hardware && typeof c.hardware === 'object' && Object.keys(c.hardware).length > 0) {
         els.hw.textContent = JSON.stringify(c.hardware, null, 2);
+        renderHardware(c.hardware);
     }
 
     if (c.disks?.length) {

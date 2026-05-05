@@ -40,3 +40,36 @@
     opacity: 0.6;
 }
 .btn-execute:not(:disabled):hover { opacity: 0.9; }
+
+.hw-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 0.5rem 0 1.5rem 0;
+}
+.hw-section {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+.hw-section:last-child { border-bottom: none; }
+.hw-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+}
+.hw-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+}
+.hw-label {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    min-width: 100px;
+}
+.hw-value { font-family: monospace; }
