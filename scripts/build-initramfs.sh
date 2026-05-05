@@ -55,7 +55,7 @@ sudo umount /mnt/modloop
 echo ">>> Adicionando lsblk + smartctl"
 APK_DIR="$PROJECT_ROOT/build"
 
-APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++ ntfs-3g ntfs-3g-libs"
+APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++ ntfs-3g ntfs-3g-libs ntfs-3g-progs sgdisk dosfstools wimlib popt fuse3-libs"
 
 EXTRACT_DIR=$(mktemp -d)
 for apk in $APKS; do
@@ -72,6 +72,21 @@ done
 [ -f "$EXTRACT_DIR/usr/sbin/smartctl" ] && cp "$EXTRACT_DIR/usr/sbin/smartctl" usr/sbin/smartctl     && chmod +x usr/sbin/smartctl     && echo "    + smartctl"
 [ -f "$EXTRACT_DIR/bin/ntfs-3g" ] && cp "$EXTRACT_DIR/bin/ntfs-3g" usr/bin/ntfs-3g && chmod +x usr/bin/ntfs-3g && echo "    + ntfs-3g"
 [ -f "$EXTRACT_DIR/sbin/mount.ntfs-3g" ] && cp "$EXTRACT_DIR/sbin/mount.ntfs-3g" sbin/mount.ntfs-3g && chmod +x sbin/mount.ntfs-3g && echo "    + mount.ntfs-3g"
+
+# ntfs-3g-progs
+[ -f "$EXTRACT_DIR/usr/sbin/ntfsclone" ] && cp "$EXTRACT_DIR/usr/sbin/ntfsclone" usr/sbin/ntfsclone && chmod +x usr/sbin/ntfsclone && echo "    + ntfsclone"
+[ -f "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" ] && cp "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" usr/sbin/mkfs.ntfs && chmod +x usr/sbin/mkfs.ntfs && echo "    + mkfs.ntfs"
+[ -f "$EXTRACT_DIR/usr/sbin/ntfsfix" ]   && cp "$EXTRACT_DIR/usr/bin/ntfsfix" usr/bin/ntfsfix && chmod +x usr/bin/ntfsfix && echo "    + ntfsfix"
+
+# sgdisk
+[ -f "$EXTRACT_DIR/usr/bin/sgdisk" ] && cp "$EXTRACT_DIR/usr/bin/sgdisk" usr/bin/sgdisk && chmod +x usr/bin/sgdisk && echo "    + sgdisk"
+
+# dosfstools
+[ -f "$EXTRACT_DIR/sbin/mkfs.fat" ] && cp "$EXTRACT_DIR/sbin/mkfs.fat" sbin/mkfs.fat && chmod +x sbin/mkfs.fat && echo "    + mkfs.fat"
+
+# wimlib
+[ -f "$EXTRACT_DIR/usr/bin/wimlib-imagex" ] && cp "$EXTRACT_DIR/usr/bin/wimlib-imagex" usr/bin/wimlib-imagex && chmod +x usr/bin/wimlib-imagex && echo "    + wimlib-imagex"
+[ -f "$EXTRACT_DIR/usr/lib/libwim.so.15" ] && cp -P "$EXTRACT_DIR/usr/lib/libwim.so."* usr/lib/ 2>/dev/null && echo "    + libwim"
 
 # Copia libs (.so*)
 mkdir -p usr/lib lib
