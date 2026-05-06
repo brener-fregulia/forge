@@ -1,5 +1,6 @@
 import { initModal } from "../../lib/modal.js";
 import { initTabs } from "../../lib/tabs.js";
+import { renderDisco, collectDisco } from "./tabs/disco.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
@@ -7,7 +8,11 @@ export function initConfigDeploy(getMac) {
     const modal = initModal("config-deploy-modal");
 
     document.getElementById("deploy-btn")
-        ?.addEventListener("click", () => modal.open());
+    ?.addEventListener("click", async () => {
+        const clientData = await fetch(`/api/clients/${getMac()}`).then(r => r.json());
+        renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
+        modal.open();
+    });
 
     document.getElementById("config-deploy-cancel")
         ?.addEventListener("click", () => modal.close());
@@ -36,7 +41,6 @@ export function initConfigDeploy(getMac) {
     });
 
     function updateNav(tabId) {
-        console.log("updateNav", tabId, "prevBtn:", prevBtn);
         const idx = TAB_ORDER.indexOf(tabId);
         const isFirst = idx === 0;
         const isLast  = idx === TAB_ORDER.length - 1;

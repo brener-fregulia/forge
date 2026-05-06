@@ -1,0 +1,25 @@
+.cd-disco-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cd-disk-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.cd-disk-option:hover { border-color: var(--accent); }
+.cd-disk-option.selected { border-color: var(--green); background: rgba(63,185,80,0.04); }
+.cd-disk-option input[type="radio"] { accent-color: var(--green); flex-shrink: 0; }
+
+.cd-disk-info { display: flex; flex-direction: column; gap: 0.2rem; }
+.cd-disk-name code { font-size: 1rem; color: var(--accent); }
+.cd-disk-model { font-size: 0.85rem; color: var(--text-dim); }
+.cd-disk-meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-dim); font-family: monospace; }
+.cd-disk-serial { color: var(--border); }
