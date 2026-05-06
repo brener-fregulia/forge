@@ -10,7 +10,7 @@ export function renderSo(isos, savedIso = null) {
     const container = document.getElementById("cd-so-list");
     if (!container) return;
 
-    _selected = savedIso ?? null;
+    _selected = savedIso ?? undefined;
     container.innerHTML = "";
 
     const optionTpl = document.getElementById("cd-so-option-tpl");
@@ -40,8 +40,8 @@ export function renderSo(isos, savedIso = null) {
         radio.addEventListener("change", () => {
             container.querySelectorAll(".cd-disk-option")
                 .forEach(el => el.classList.toggle("selected", el.dataset.name === radio.value));
-            _selected = radio.value || null;
-            _onChangeCb?.(_selected);
+            _selected = radio.value === "" ? null : radio.value;
+            _onChangeCb?.(radio.value);
         });
     });
 }
@@ -53,7 +53,7 @@ function _appendOption(parent, tpl, iso, savedIso, labelOverride = null) {
     const name  = node.querySelector(".cd-disk-name");
     const meta  = node.querySelector(".cd-disk-meta");
 
-    const isSelected = savedIso === iso.filename || (iso.filename === "" && savedIso === null);
+    const isSelected = savedIso !== undefined && savedIso === iso.filename;
     label.dataset.name = iso.filename;
     if (isSelected) label.classList.add("selected");
 

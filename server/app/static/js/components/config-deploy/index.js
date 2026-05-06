@@ -27,13 +27,27 @@ export function initConfigDeploy(getMac) {
     const saveBtn = document.getElementById("config-deploy-save");
 
     const tabs = initTabs("config-deploy-tabs", {
-        onChange: (tabId) => updateNav(tabId),
+        onChange: (tabId) => {
+            updateNav(tabId);
+            if (tabId === "so") {
+                const hasSo = collectSo() !== undefined;
+                if (nextBtn) nextBtn.style.display = hasSo ? "" : "none";
+                if (saveBtn) saveBtn.style.display = (!hasSo || collectSo() === null) ? "" : "none";
+            }
+        },
         clickable: false,
     });
 
-    onSoChange((iso) => {
-        if (iso !== null) tabs.enable("pos");
-        else tabs.disable("pos");
+    onSoChange((value) => {
+        if (value && value !== "") {
+            tabs.enable("pos");
+            if (nextBtn) nextBtn.style.display = "";
+            if (saveBtn) saveBtn.style.display = "none";
+        } else {
+            tabs.disable("pos");
+            if (nextBtn) nextBtn.style.display = "none";
+            if (saveBtn) saveBtn.style.display = "";
+        }
     });
 
     prevBtn?.addEventListener("click", () => {
