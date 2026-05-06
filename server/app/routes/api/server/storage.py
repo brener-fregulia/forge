@@ -106,15 +106,16 @@ from app.config import HOT_CACHE_PATH
 
 @router.get("/server/isos")
 async def list_isos():
-    """Lista ISOs disponíveis em /srv/isos."""
     isos_path = Path("/srv/isos")
     try:
         isos = []
-        for f in sorted(isos_path.glob("*.iso")):
+        for f in sorted(isos_path.rglob("*.iso")):
+            category = f.parent.name if f.parent != isos_path else "outros"
             isos.append({
                 "filename": f.name,
                 "size": f.stat().st_size,
                 "path": str(f),
+                "category": category,
             })
         return {"isos": isos}
     except Exception as e:
