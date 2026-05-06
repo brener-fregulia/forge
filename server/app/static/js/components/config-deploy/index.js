@@ -10,16 +10,16 @@ export function initConfigDeploy(getMac) {
     const modal = initModal("config-deploy-modal");
 
     document.getElementById("deploy-btn")
-    ?.addEventListener("click", async () => {
-        const clientData = await fetch(`/api/clients/${getMac()}`).then(r => r.json());
-        renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
-
-        const isosData = await fetch("/api/server/isos").then(r => r.json());
-        renderSo(isosData.isos, clientData.deploy_plan?.windows_iso ?? null);
-        renderPos(clientData.deploy_plan);
-        
-        modal.open();
-    });
+        ?.addEventListener("click", async () => {
+            const [clientData, isosData] = await Promise.all([
+                fetch(`/api/clients/${getMac()}`).then(r => r.json()),
+                fetch("/api/server/isos").then(r => r.json()),
+            ]);
+            renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
+            renderSo(isosData.isos, clientData.deploy_plan?.windows_iso ?? undefined);
+            renderPos(clientData.deploy_plan);
+            modal.open();
+        });
 
     document.getElementById("config-deploy-cancel")
         ?.addEventListener("click", () => modal.close());
@@ -32,12 +32,27 @@ export function initConfigDeploy(getMac) {
         onChange: (tabId) => {
             updateNav(tabId);
             if (tabId === "so") {
-                const hasSo = collectSo() !== undefined;
+                const val = collectSo();
+                const hasSo = val !== undefined;
                 if (nextBtn) nextBtn.style.display = hasSo ? "" : "none";
-                if (saveBtn) saveBtn.style.display = (!hasSo || collectSo() === null) ? "" : "none";
+                if (saveBtn) saveBtn.style.display = (!hasSo || val === null) ? "" : "none";
             }
         },
         clickable: false,
+    });
+
+    prevBtn?.addEventListener("click", () => {
+        const current = TAB_ORDER.indexOf(tabs.current());
+        if (current > 0) tabs.goTo(TAB_ORDER[current - 1]);
+    });
+
+    nextBtn?.addEventListener("click", () => {
+        const current = TAB_ORDER.indexOf(tabs.current());
+        const nextTab = TAB_ORDER[current + 1];
+        if (!nextTab) return;
+        const nextTabBtn = document.querySelector(`.tab-btn[data-tab="${nextTab}"]`);
+        if (nextTabBtn?.disabled) return;
+        tabs.goTo(nextTab);
     });
 
     onSoChange((value) => {
@@ -52,22 +67,36 @@ export function initConfigDeploy(getMac) {
         }
     });
 
-    prevBtn?.addEventListener("click", () => {
-        const current = TAB_ORDER.indexOf(tabs.current());
-        if (current > 0) tabs.goTo(TAB_ORDER[current - 1]);
-    });
+    saveBtn?.addEventListener("click", async () => {
+        const target_disk = collectDisco();
+        if (!target_disk) { alert("Selecione um disco alvo"); return; }
 
-    nextBtn?.addEventListener("click", () => {
-        const current = TAB_ORDER.indexOf(tabs.current());
-        const nextTab = TAB_ORDER[current + 1];
-        if (!nextTab) return;
-        const nextBtn_ = document.querySelector(`.tab-btn[data-tab="${nextTab}"]`);
-        if (nextBtn_?.disabled) return;
-        tabs.goTo(nextTab);
+        const plan = {
+            target_disk,
+            windows_iso: collectSo(),
+            ...collectPos(),
+            backup: false,
+            backup_users: [],
+            backup_root: false,
+        };
+
+        const res = await fetch(`/api/clients/${getMac()}/deploy/plan`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(plan),
+        });
+
+        if (res.ok) {
+            modal.close();
+            const execBtn = document.getElementById("execute-deploy-btn");
+            if (execBtn) execBtn.disabled = false;
+        } else {
+            alert("Erro ao salvar plano");
+        }
     });
 
     function updateNav(tabId) {
-        const idx = TAB_ORDER.indexOf(tabId);
+        const idx     = TAB_ORDER.indexOf(tabId);
         const isFirst = idx === 0;
         const isLast  = idx === TAB_ORDER.length - 1;
 

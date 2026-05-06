@@ -8,9 +8,9 @@ export function renderPos(plan) {
     const hasBackup = plan?.backup ?? false;
 
     const options = [
-        { id: "cd-pos-drivers",  label: "Injeção de drivers (SDIO)", checked: true,       disabled: false },
-        { id: "cd-pos-debloat",  label: "Debloat",                   checked: true,       disabled: false },
-        { id: "cd-pos-restore",  label: "Restaurar backup",          checked: hasBackup,  disabled: !hasBackup },
+        { id: "cd-pos-drivers",  label: "Injeção de drivers (SDIO)", checked: plan?.drivers ?? true,      disabled: false },
+        { id: "cd-pos-debloat",  label: "Debloat",                   checked: plan?.debloat ?? true,      disabled: false },
+        { id: "cd-pos-restore",  label: "Restaurar backup",          checked: plan?.restore ?? hasBackup, disabled: !hasBackup },
     ];
 
     for (const opt of options) {
