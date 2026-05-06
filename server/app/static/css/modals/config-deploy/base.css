@@ -22,7 +22,8 @@
 }
 .cd-disk-option:hover { border-color: var(--accent); }
 .cd-disk-option.selected { border-color: var(--green); background: rgba(63,185,80,0.04); }
-.cd-disk-option input[type="radio"] { accent-color: var(--green); flex-shrink: 0; }
+.cd-disk-option input[type="radio"],
+.cd-disk-option input[type="checkbox"] { display: none; }
 
 .cd-disk-info { display: flex; flex-direction: column; gap: 0.2rem; }
 .cd-disk-name code { font-size: 1rem; color: var(--accent); }
