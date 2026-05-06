@@ -45,6 +45,8 @@
 .modal-footer {
     display: flex;
     justify-content: flex-end;
+    min-height: 48px;
+    align-items: center;
     gap: 0.75rem;
     margin-top: 1.5rem;
     padding-top: 1rem;

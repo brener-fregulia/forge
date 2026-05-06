@@ -29,18 +29,7 @@ export function initConfigDeploy(getMac) {
     const saveBtn = document.getElementById("config-deploy-save");
 
     const tabs = initTabs("config-deploy-tabs", {
-        onChange: (tabId) => {
-            updateNav(tabId);
-            if (tabId === "so") {
-                const val = collectSo();
-                const hasSo = val !== undefined;
-                if (nextBtn) nextBtn.style.display = hasSo ? "" : "none";
-                if (saveBtn) saveBtn.style.display = (!hasSo || val === null) ? "" : "none";
-            }
-            if (tabId === "pos") {
-                if (saveBtn) saveBtn.disabled = collectSo() === undefined;
-            }
-        },
+        onChange: (tabId) => updateNav(tabId),
         clickable: false,
     });
 
@@ -59,15 +48,9 @@ export function initConfigDeploy(getMac) {
     });
 
     onSoChange((value) => {
-        if (value && value !== "") {
-            tabs.enable("pos");
-            if (nextBtn) nextBtn.style.display = "";
-            if (saveBtn) saveBtn.style.display = "none";
-        } else {
-            tabs.disable("pos");
-            if (nextBtn) nextBtn.style.display = "none";
-            if (saveBtn) saveBtn.style.display = "";
-        }
+        const isIso = value && value !== "";
+        tabs[isIso ? "enable" : "disable"]("pos");
+        updateNav("so");
     });
 
     saveBtn?.addEventListener("click", async () => {
@@ -75,9 +58,8 @@ export function initConfigDeploy(getMac) {
         if (!target_disk) { alert("Selecione um disco alvo"); return; }
 
         const windows_iso = collectSo();
-        console.log("collectSo:", collectSo());
         if (windows_iso === undefined) { alert("Selecione uma opção em Instalação SO"); return; }
-    
+
         const plan = {
             target_disk,
             windows_iso,
@@ -92,6 +74,7 @@ export function initConfigDeploy(getMac) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(plan),
         });
+
         if (res.ok) {
             modal.close();
             const execBtn = document.getElementById("execute-deploy-btn");
@@ -105,9 +88,13 @@ export function initConfigDeploy(getMac) {
         const idx     = TAB_ORDER.indexOf(tabId);
         const isFirst = idx === 0;
         const isLast  = idx === TAB_ORDER.length - 1;
+        const soVal   = collectSo();
+        const soOk    = soVal !== undefined;
 
-        if (prevBtn) prevBtn.style.visibility = isFirst ? "hidden" : "visible";
-        if (nextBtn) nextBtn.style.display = isLast ? "none" : "";
-        if (saveBtn) saveBtn.style.display = isLast ? "" : "none";
+        if (prevBtn) prevBtn.disabled = isFirst;
+        if (nextBtn) nextBtn.disabled = isLast || (tabId === "so" && !soOk) ||
+            (tabId === "so" && soVal === null);
+        const canSave = (isLast && soOk) || (tabId === "so" && soVal === null);
+        if (saveBtn) saveBtn.disabled = !canSave;
     }
 }
