@@ -4,34 +4,38 @@ let _selected = null;
 
 export function renderDisco(disks, savedDisk = null) {
     const container = document.getElementById("cd-disco-list");
-    if (!container) return;
+    const tpl       = document.getElementById("cd-disco-option-tpl");
+    if (!container || !tpl) return;
+
+    container.innerHTML = "";
+    _selected = savedDisk ?? null;
 
     const physical = (disks || []).filter(d => d.type === "disk");
-
     if (!physical.length) {
         container.innerHTML = '<p class="empty">Nenhum disco físico detectado.</p>';
         return;
     }
 
-    container.innerHTML = physical.map(d => `
-        <label class="cd-disk-option" data-name="${d.name}">
-            <input type="radio" name="cd-target-disk" value="${d.name}"
-                ${savedDisk === d.name ? "checked" : ""}>
-            <div class="cd-disk-info">
-                <div class="cd-disk-name"><code>${d.name}</code></div>
-                <div class="cd-disk-model">${[d.vendor, d.model].filter(Boolean).join(" ") || "Disco desconhecido"}</div>
-                <div class="cd-disk-meta">
-                    <span>${formatBytes(d.size)}</span>
-                    ${d.serial ? `<span class="cd-disk-serial">${d.serial}</span>` : ""}
-                </div>
-            </div>
-        </label>
-    `).join("");
+    for (const d of physical) {
+        const node  = tpl.content.cloneNode(true);
+        const label = node.querySelector(".cd-disk-option");
+        const radio = node.querySelector("input[type='radio']");
 
-    // Restaura seleção visual se havia disco salvo
-    if (savedDisk) {
-        const opt = container.querySelector(`.cd-disk-option[data-name="${savedDisk}"]`);
-        if (opt) { opt.classList.add("selected"); _selected = savedDisk; }
+        label.dataset.name = d.name;
+        if (savedDisk === d.name) { label.classList.add("selected"); }
+
+        radio.value = d.name;
+        if (savedDisk === d.name) radio.checked = true;
+
+        node.querySelector(".cd-disk-name").innerHTML  = `<code>${d.name}</code>`;
+        node.querySelector(".cd-disk-model").textContent = [d.vendor, d.model].filter(Boolean).join(" ") || "Disco desconhecido";
+        node.querySelector(".cd-disk-size").textContent  = formatBytes(d.size);
+
+        const serialEl = node.querySelector(".cd-disk-serial");
+        if (d.serial) serialEl.textContent = d.serial;
+        else serialEl.remove();
+
+        container.appendChild(node);
     }
 
     container.querySelectorAll('input[name="cd-target-disk"]').forEach(radio => {
@@ -43,6 +47,4 @@ export function renderDisco(disks, savedDisk = null) {
     });
 }
 
-export function collectDisco() {
-    return _selected;
-}
+export function collectDisco() { return _selected; }

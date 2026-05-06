@@ -1,3 +1,15 @@
-<div id="cd-disco-list" class="cd-disco-list">
-    <span class="loading"><span class="spinner"></span>Carregando discos…</span>
-</div>
+<div id="cd-disco-list" class="cd-disco-list"></div>
+
+<template id="cd-disco-option-tpl">
+    <label class="cd-disk-option">
+        <input type="radio" name="cd-target-disk">
+        <div class="cd-disk-info">
+            <div class="cd-disk-name"></div>
+            <div class="cd-disk-model"></div>
+            <div class="cd-disk-meta">
+                <span class="cd-disk-size"></span>
+                <span class="cd-disk-serial"></span>
+            </div>
+        </div>
+    </label>
+</template>
