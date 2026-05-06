@@ -77,6 +77,7 @@ done
 [ -f "$EXTRACT_DIR/usr/sbin/ntfsclone" ] && cp "$EXTRACT_DIR/usr/sbin/ntfsclone" usr/sbin/ntfsclone && chmod +x usr/sbin/ntfsclone && echo "    + ntfsclone"
 [ -f "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" ] && cp "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" usr/sbin/mkfs.ntfs && chmod +x usr/sbin/mkfs.ntfs && echo "    + mkfs.ntfs"
 [ -f "$EXTRACT_DIR/usr/sbin/ntfsfix" ]   && cp "$EXTRACT_DIR/usr/bin/ntfsfix" usr/bin/ntfsfix && chmod +x usr/bin/ntfsfix && echo "    + ntfsfix"
+[ -f "$EXTRACT_DIR/usr/sbin/ntfslabel" ] && cp "$EXTRACT_DIR/usr/sbin/ntfslabel" usr/sbin/ntfslabel && chmod +x usr/sbin/ntfslabel && echo "    + ntfslabel"
 
 # sgdisk
 [ -f "$EXTRACT_DIR/usr/bin/sgdisk" ] && cp "$EXTRACT_DIR/usr/bin/sgdisk" usr/bin/sgdisk && chmod +x usr/bin/sgdisk && echo "    + sgdisk"

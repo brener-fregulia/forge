@@ -48,6 +48,46 @@ inventory_disks() {
     export DISKS="[$DISKS_INNER]"
 }
 
+inventory_drive_letters() {
+    LETTERS_TMP=/tmp/forge-letters.tmp
+    > $LETTERS_TMP
+
+    for dev in $(lsblk -b -n -o NAME,FSTYPE | awk '$2=="ntfs"{print $1}' | sed 's/[├└│─ ]//g'); do
+        MNT="/tmp/mnt_$dev"
+        mkdir -p "$MNT"
+        ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || continue
+
+        HIVE="$MNT/Windows/System32/config/SYSTEM"
+        if [ ! -f "$HIVE" ]; then
+            umount "$MNT" 2>/dev/null
+            rmdir "$MNT" 2>/dev/null
+            continue
+        fi
+
+        LETTER=$(hivexget "$HIVE" \
+            'HKEY_LOCAL_MACHINE\SYSTEM\MountedDevices' 2>/dev/null \
+            | grep -i "DosDevices" \
+            | grep -oP '(?<=DosDevices\\)[A-Z](?=:)' \
+            | head -1)
+
+        LABEL=$(cat "$MNT/.windows_label" 2>/dev/null \
+            || ntfslabel "/dev/$dev" 2>/dev/null \
+            || echo "")
+
+        LABEL=$(echo "$LABEL" | sed 's/"/\\"/g')
+        [ -z "$LETTER" ] && LETTER=""
+
+        printf '{"device":"%s","letter":"%s","label":"%s"},' \
+            "$dev" "$LETTER" "$LABEL" >> $LETTERS_TMP
+
+        umount "$MNT" 2>/dev/null
+        rmdir "$MNT" 2>/dev/null
+    done
+
+    LETTERS_INNER=$(sed 's/,$//' $LETTERS_TMP)
+    export DRIVE_LETTERS="[$LETTERS_INNER]"
+}
+
 inventory_smart() {
     SMART_TMP=/tmp/forge-smart.json
     printf '{' > $SMART_TMP
@@ -203,5 +243,6 @@ inventory_collect_disks() {
     inventory_disks
     inventory_smart
     inventory_users
-    echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":$USERS_JSON}"
+    inventory_drive_letters
+    echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":$USERS_JSON,\"drive_letters\":$DRIVE_LETTERS}"
 }
