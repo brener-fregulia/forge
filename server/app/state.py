@@ -23,6 +23,7 @@ class Client:
         self.smart: dict[str, Any] = {}
         self.alias: str | None = None
         self.deploy_plan: dict | None = None
+        self.drive_letters: list[dict] = []
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -40,6 +41,7 @@ class Client:
             "log_tail": self.log[-20:],
             "alias": self.alias,
             "deploy_plan": self.deploy_plan,
+            "drive_letters": self.drive_letters,
         }
 
 

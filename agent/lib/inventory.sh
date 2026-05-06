@@ -52,36 +52,30 @@ inventory_drive_letters() {
     LETTERS_TMP=/tmp/forge-letters.tmp
     > $LETTERS_TMP
 
+    NEXT_LETTER=68 # D em ASCII
+
     for dev in $(lsblk -b -n -o NAME,FSTYPE | awk '$2=="ntfs"{print $1}' | sed 's/[├└│─ ]//g'); do
+        SIZE=$(lsblk -b -n -o SIZE /dev/$dev 2>/dev/null | tr -d ' ')
+        [ "${SIZE:-0}" -lt 2147483648 ] && continue # ignora partições < 2GB (recovery)
+
+        LABEL=$(ntfslabel /dev/$dev 2>/dev/null | tr -d '\n' | sed 's/"/\\"/g')
+
         MNT="/tmp/mnt_$dev"
         mkdir -p "$MNT"
         ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || continue
 
-        HIVE="$MNT/Windows/System32/config/SYSTEM"
-        if [ ! -f "$HIVE" ]; then
-            umount "$MNT" 2>/dev/null
-            rmdir "$MNT" 2>/dev/null
-            continue
+        if [ -f "$MNT/Windows/System32/winload.efi" ] || [ -f "$MNT/Windows/System32/winload.exe" ]; then
+            LETTER="C"
+        else
+            LETTER=$(printf "\\$(printf '%03o' $NEXT_LETTER)")
+            NEXT_LETTER=$((NEXT_LETTER + 1))
         fi
-
-        LETTER=$(hivexget "$HIVE" \
-            'HKEY_LOCAL_MACHINE\SYSTEM\MountedDevices' 2>/dev/null \
-            | grep -i "DosDevices" \
-            | grep -oP '(?<=DosDevices\\)[A-Z](?=:)' \
-            | head -1)
-
-        LABEL=$(cat "$MNT/.windows_label" 2>/dev/null \
-            || ntfslabel "/dev/$dev" 2>/dev/null \
-            || echo "")
-
-        LABEL=$(echo "$LABEL" | sed 's/"/\\"/g')
-        [ -z "$LETTER" ] && LETTER=""
-
-        printf '{"device":"%s","letter":"%s","label":"%s"},' \
-            "$dev" "$LETTER" "$LABEL" >> $LETTERS_TMP
 
         umount "$MNT" 2>/dev/null
         rmdir "$MNT" 2>/dev/null
+
+        printf '{"device":"%s","letter":"%s","label":"%s"},' \
+            "$dev" "$LETTER" "$LABEL" >> $LETTERS_TMP
     done
 
     LETTERS_INNER=$(sed 's/,$//' $LETTERS_TMP)

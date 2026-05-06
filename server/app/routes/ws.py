@@ -44,6 +44,7 @@ def _handle_message(client: Client, msg: dict) -> None:
         client.disks = msg.get("disks", [])
         client.smart = _parse_smart(msg.get("smart"))
         client.users = msg.get("users") or client.users
+        client.drive_letters = msg.get("drive_letters", [])
     elif msg_type == "status":
         client.status   = msg.get("status", client.status)
         client.progress = msg.get("progress", client.progress)
