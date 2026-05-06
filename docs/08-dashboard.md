@@ -32,11 +32,14 @@
 
 ### Deploy
 - Botao "Configurar Deploy" abre modal com:
-  - Modal de configuracao de deploy com abas (Disco alvo, Backup, Instalacao SO, Pos-Instalacao)
-  - Navegacao entre abas via botoes Anterior/Proximo
-  - Componente de abas reutilizavel (tabs.js + tabs.css)
-  - Aba Pos-Instalacao habilitada somente quando SO selecionado
-  - Botao Salvar aparece apenas na ultima aba
+  - Modal config-deploy com abas: Disco alvo, Backup, Instalacao SO, Pos-Instalacao
+  - Navegacao via botoes Anterior/Proximo/Salvar (sempre visiveis, desabilitados quando nao aplicavel)
+  - Aba Pos-Instalacao habilitada somente ao selecionar uma ISO
+  - Salvar disponivel na aba SO (ao selecionar "Nao instalar") ou na aba Pos-Instalacao
+  - Plano persistido no banco, restaurado ao reabrir o modal
+  - Botao "Executar" ativo somente apos plano configurado
+  - Componentes reutilizaveis: tabs.js, tabs.css
+  - CSS por aba: config-deploy/base.css, disco.css, so.css, pos.css
 - Botao "Executar" ativo somente apos plano configurado
 
 ### Outros
@@ -84,6 +87,9 @@
 - [x] Arquitetura JS modular (lib/, components/, pages/dashboard/, pages/client/)
 - [x] Templates HTML com partials por responsabilidade
 - [x] Agent modular (network.sh, inventory.sh, websocket.sh, json.sh)
+- [x] Modal config-deploy com abas funcionais (Disco alvo, Instalacao SO, Pos-Instalacao)
+- [x] ISOs organizadas em /home/isos/windows/ e /home/isos/linux/ (symlink /srv/isos)
+- [x] Endpoint /api/server/isos lista subpastas com campo category
 
 ### Pipeline de deploy
 - [ ] Backup seletivo via ntfsclone -> hot cache

@@ -20,6 +20,7 @@
 
 ## Dashboard — polimento
 
+- [ ] Aba Backup no modal config-deploy
 - [ ] Console de comandos estilo terminal (prompt + historico)
 - [ ] Terminal interativo real (xterm.js) — pos-MVP
 - [ ] Indicador de progresso por etapa do deploy
