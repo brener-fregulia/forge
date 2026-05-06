@@ -2,6 +2,7 @@ import { initModal } from "../../lib/modal.js";
 import { initTabs } from "../../lib/tabs.js";
 import { renderDisco, collectDisco } from "./tabs/disco.js";
 import { renderSo, collectSo, onSoChange } from "./tabs/so.js";
+import { renderPos, collectPos } from "./tabs/pos.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
@@ -15,7 +16,8 @@ export function initConfigDeploy(getMac) {
 
         const isosData = await fetch("/api/server/isos").then(r => r.json());
         renderSo(isosData.isos, clientData.deploy_plan?.windows_iso ?? null);
-
+        renderPos(clientData.deploy_plan);
+        
         modal.open();
     });
 
