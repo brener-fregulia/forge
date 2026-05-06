@@ -1,6 +1,7 @@
 import { initModal } from "../../lib/modal.js";
 import { initTabs } from "../../lib/tabs.js";
 import { renderDisco, collectDisco } from "./tabs/disco.js";
+import { renderBackup, collectBackup } from "./tabs/backup.js";
 import { renderSo, collectSo, onSoChange } from "./tabs/so.js";
 import { renderPos, collectPos } from "./tabs/pos.js";
 
@@ -16,6 +17,7 @@ export function initConfigDeploy(getMac) {
                 fetch("/api/server/isos").then(r => r.json()),
             ]);
             renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
+            renderBackup(clientData.deploy_plan);
             renderSo(isosData.isos, clientData.deploy_plan ? clientData.deploy_plan.windows_iso : undefined);
             renderPos(clientData.deploy_plan);
             modal.open();
@@ -63,6 +65,7 @@ export function initConfigDeploy(getMac) {
         const plan = {
             target_disk,
             windows_iso,
+            ...collectBackup(),
             ...collectPos(),
             backup: false,
             backup_users: [],
