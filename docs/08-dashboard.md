@@ -32,11 +32,11 @@
 
 ### Deploy
 - Botao "Configurar Deploy" abre modal com:
-  - Disco alvo (radio, detectado dinamicamente)
-  - Backup (checkbox + selecao de usuarios)
-  - ISO Windows (lista dinamica de /srv/isos/)
-  - Pos-instalacao: drivers SDIO, debloat, restaurar backup
-  - Plano salvo persiste no banco e no estado em memoria
+  - Modal de configuracao de deploy com abas (Disco alvo, Backup, Instalacao SO, Pos-Instalacao)
+  - Navegacao entre abas via botoes Anterior/Proximo
+  - Componente de abas reutilizavel (tabs.js + tabs.css)
+  - Aba Pos-Instalacao habilitada somente quando SO selecionado
+  - Botao Salvar aparece apenas na ultima aba
 - Botao "Executar" ativo somente apos plano configurado
 
 ### Outros

@@ -55,8 +55,15 @@
             command.html       <- form de comando shell
             log.html           <- log + limpar
           modals/
-            smart.html         <- modal SMART
-            deploy.html        <- modal configuracao de deploy
+            smart.html
+            deploy.html              <- modal antigo (backup temporario)
+            config-deploy/
+              index.html             <- modal shell (overlay, header, footer)
+              tabs/
+                disco.html
+                backup.html
+                so.html
+                pos.html
       static/
         css/
           style.css            <- entry point (imports)
@@ -69,6 +76,7 @@
             modal.css
             progress.css
             loading.css
+            tabs.css                 <- componente de abas reutilizavel
           pages/
             dashboard.css
             server-status.css
@@ -76,6 +84,7 @@
           modals/
             smart.css
             deploy.css
+            config-deploy.css
           tables/
             disks.css
             users.css
@@ -91,7 +100,14 @@
             disks-table.js     <- renderDisks, initSmartModal
             users-table.js     <- renderUsers
             hardware-card.js   <- renderHardware, modal RAM
-            deploy-modal.js    <- initDeployModal, collectPlan
+            deploy-modal.js          <- modal antigo (backup temporario)
+            config-deploy/
+              index.js               <- orquestrador (modal, abas, navegacao)
+              tabs/
+                disco.js
+                backup.js
+                so.js
+                pos.js
           pages/
             dashboard/
               client-grid.js   <- grid de cards via WebSocket
