@@ -37,6 +37,9 @@ export function initConfigDeploy(getMac) {
                 if (nextBtn) nextBtn.style.display = hasSo ? "" : "none";
                 if (saveBtn) saveBtn.style.display = (!hasSo || val === null) ? "" : "none";
             }
+            if (tabId === "pos") {
+                if (saveBtn) saveBtn.disabled = collectSo() === undefined;
+            }
         },
         clickable: false,
     });
@@ -71,6 +74,9 @@ export function initConfigDeploy(getMac) {
         const target_disk = collectDisco();
         if (!target_disk) { alert("Selecione um disco alvo"); return; }
 
+        const windows_iso = collectSo();
+        if (windows_iso === undefined) { alert("Selecione uma opção em Instalação SO"); return; }
+
         const plan = {
             target_disk,
             windows_iso: collectSo(),
@@ -85,7 +91,6 @@ export function initConfigDeploy(getMac) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(plan),
         });
-
         if (res.ok) {
             modal.close();
             const execBtn = document.getElementById("execute-deploy-btn");
