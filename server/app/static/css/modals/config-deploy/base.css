@@ -1,9 +1,3 @@
-.cd-disco-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
 .cd-disk-option {
     display: flex;
     align-items: center;

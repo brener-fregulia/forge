@@ -1,6 +1,7 @@
 import { initModal } from "../../lib/modal.js";
 import { initTabs } from "../../lib/tabs.js";
 import { renderDisco, collectDisco } from "./tabs/disco.js";
+import { renderSo, collectSo, onSoChange } from "./tabs/so.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
@@ -11,6 +12,10 @@ export function initConfigDeploy(getMac) {
     ?.addEventListener("click", async () => {
         const clientData = await fetch(`/api/clients/${getMac()}`).then(r => r.json());
         renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
+
+        const isosData = await fetch("/api/server/isos").then(r => r.json());
+        renderSo(isosData.isos, clientData.deploy_plan?.windows_iso ?? null);
+
         modal.open();
     });
 
@@ -24,6 +29,11 @@ export function initConfigDeploy(getMac) {
     const tabs = initTabs("config-deploy-tabs", {
         onChange: (tabId) => updateNav(tabId),
         clickable: false,
+    });
+
+    onSoChange((iso) => {
+        if (iso !== null) tabs.enable("pos");
+        else tabs.disable("pos");
     });
 
     prevBtn?.addEventListener("click", () => {
