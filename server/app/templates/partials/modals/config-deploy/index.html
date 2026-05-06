@@ -4,11 +4,36 @@
             <h3>Configurar Deploy</h3>
             <button class="modal-close" id="config-deploy-close">✕</button>
         </div>
-        <div id="config-deploy-body">
-            <!-- abas aqui -->
+
+        <div id="config-deploy-tabs">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="disco">Disco alvo</button>
+                <button class="tab-btn" data-tab="backup">Backup</button>
+                <button class="tab-btn" data-tab="so">Instalacao SO</button>
+                <button class="tab-btn" data-tab="pos" disabled>Pos-Instalacao</button>
+            </div>
+
+            <div class="tab-panel active" data-tab="disco">
+                {% include "partials/modals/config-deploy/tabs/disco.html" %}
+            </div>
+            <div class="tab-panel" data-tab="backup">
+                {% include "partials/modals/config-deploy/tabs/backup.html" %}
+            </div>
+            <div class="tab-panel" data-tab="so">
+                {% include "partials/modals/config-deploy/tabs/so.html" %}
+            </div>
+            <div class="tab-panel" data-tab="pos">
+                {% include "partials/modals/config-deploy/tabs/pos.html" %}
+            </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn-small" id="config-deploy-cancel">Cancelar</button>
+            <div style="display:flex; gap:0.5rem; margin-left:auto">
+                <button class="btn-small" id="config-deploy-prev">Anterior</button>
+                <button class="btn-small" id="config-deploy-next">Proximo</button>
+                <button class="btn-primary" id="config-deploy-save" style="display:none">Salvar</button>
+            </div>
         </div>
     </div>
 </div>

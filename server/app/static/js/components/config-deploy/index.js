@@ -1,4 +1,7 @@
 import { initModal } from "../../lib/modal.js";
+import { initTabs } from "../../lib/tabs.js";
+
+const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
 export function initConfigDeploy(getMac) {
     const modal = initModal("config-deploy-modal");
@@ -8,4 +11,38 @@ export function initConfigDeploy(getMac) {
 
     document.getElementById("config-deploy-cancel")
         ?.addEventListener("click", () => modal.close());
+
+    const prevBtn = document.getElementById("config-deploy-prev");
+    const nextBtn = document.getElementById("config-deploy-next");
+    const saveBtn = document.getElementById("config-deploy-save");
+
+    const tabs = initTabs("config-deploy-tabs", {
+        onChange: (tabId) => updateNav(tabId),
+        clickable: false,
+    });
+
+    prevBtn?.addEventListener("click", () => {
+        const current = TAB_ORDER.indexOf(tabs.current());
+        if (current > 0) tabs.goTo(TAB_ORDER[current - 1]);
+    });
+
+    nextBtn?.addEventListener("click", () => {
+        const current = TAB_ORDER.indexOf(tabs.current());
+        const nextTab = TAB_ORDER[current + 1];
+        if (!nextTab) return;
+        const nextBtn_ = document.querySelector(`.tab-btn[data-tab="${nextTab}"]`);
+        if (nextBtn_?.disabled) return;
+        tabs.goTo(nextTab);
+    });
+
+    function updateNav(tabId) {
+        console.log("updateNav", tabId, "prevBtn:", prevBtn);
+        const idx = TAB_ORDER.indexOf(tabId);
+        const isFirst = idx === 0;
+        const isLast  = idx === TAB_ORDER.length - 1;
+
+        if (prevBtn) prevBtn.style.visibility = isFirst ? "hidden" : "visible";
+        if (nextBtn) nextBtn.style.display = isLast ? "none" : "";
+        if (saveBtn) saveBtn.style.display = isLast ? "" : "none";
+    }
 }

@@ -7,25 +7,32 @@
  *   tabs.enable("pos");
  *   tabs.disable("pos");
  */
-export function initTabs(containerId, { onChange } = {}) {
+export function initTabs(containerId, { onChange, clickable = false } = {}) {
     const container = document.getElementById(containerId);
     if (!container) return null;
 
     const buttons = container.querySelectorAll(".tab-btn");
     const panels  = container.querySelectorAll(".tab-panel");
+    let currentTab = null;
 
     function activate(tabId) {
         buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tabId));
         panels.forEach(panel => panel.classList.toggle("active", panel.dataset.tab === tabId));
+        currentTab = tabId;
         onChange?.(tabId);
     }
 
-    buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (btn.disabled) return;
-            activate(btn.dataset.tab);
+    if (clickable) {
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                if (btn.disabled) return;
+                activate(btn.dataset.tab);
+            });
         });
-    });
+    } else {
+        // Remove cursor pointer das abas quando nao clicavel
+        buttons.forEach(btn => btn.style.cursor = "default");
+    }
 
     // Ativa a primeira aba por padrao
     const first = container.querySelector(".tab-btn:not(:disabled)");
@@ -41,6 +48,6 @@ export function initTabs(containerId, { onChange } = {}) {
             const btn = container.querySelector(`.tab-btn[data-tab="${tabId}"]`);
             if (btn) btn.disabled = true;
         },
-        current: () => container.querySelector(".tab-btn.active")?.dataset.tab,
+        current: () => currentTab,
     };
 }
