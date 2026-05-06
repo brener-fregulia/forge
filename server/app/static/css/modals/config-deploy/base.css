@@ -1,3 +1,15 @@
+#config-deploy-modal .modal {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#config-deploy-modal .modal > #config-deploy-tabs {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
 .cd-disk-option {
     display: flex;
     align-items: center;
