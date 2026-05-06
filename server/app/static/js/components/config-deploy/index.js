@@ -16,7 +16,7 @@ export function initConfigDeploy(getMac) {
                 fetch("/api/server/isos").then(r => r.json()),
             ]);
             renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
-            renderSo(isosData.isos, clientData.deploy_plan?.windows_iso ?? undefined);
+            renderSo(isosData.isos, clientData.deploy_plan ? clientData.deploy_plan.windows_iso : undefined);
             renderPos(clientData.deploy_plan);
             modal.open();
         });
@@ -75,11 +75,12 @@ export function initConfigDeploy(getMac) {
         if (!target_disk) { alert("Selecione um disco alvo"); return; }
 
         const windows_iso = collectSo();
+        console.log("collectSo:", collectSo());
         if (windows_iso === undefined) { alert("Selecione uma opção em Instalação SO"); return; }
-
+    
         const plan = {
             target_disk,
-            windows_iso: collectSo(),
+            windows_iso,
             ...collectPos(),
             backup: false,
             backup_users: [],

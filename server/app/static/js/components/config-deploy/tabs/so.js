@@ -6,11 +6,11 @@ let _onChangeCb = null;
 export function onSoChange(cb) { _onChangeCb = cb; }
 export function collectSo() { return _selected; }
 
-export function renderSo(isos, savedIso = null) {
+export function renderSo(isos, savedIso = undefined) {
     const container = document.getElementById("cd-so-list");
     if (!container) return;
 
-    _selected = savedIso ?? undefined;
+    _selected = savedIso !== undefined ? savedIso : undefined;
     container.innerHTML = "";
 
     const optionTpl = document.getElementById("cd-so-option-tpl");
@@ -53,7 +53,10 @@ function _appendOption(parent, tpl, iso, savedIso, labelOverride = null) {
     const name  = node.querySelector(".cd-disk-name");
     const meta  = node.querySelector(".cd-disk-meta");
 
-    const isSelected = savedIso !== undefined && savedIso === iso.filename;
+    const isSelected = savedIso !== undefined && (
+        (iso.filename === "" && savedIso === null) || savedIso === iso.filename
+    );
+
     label.dataset.name = iso.filename;
     if (isSelected) label.classList.add("selected");
 
