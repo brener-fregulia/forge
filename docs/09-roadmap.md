@@ -16,6 +16,7 @@
 1. [ ] Servico systemd para FORGE iniciar no boot
 2. [ ] Pagina de configuracao do servidor (/server/config)
 3. [ ] safe-reboot no agent (sync antes de reiniciar)
+4. [ ] NUT (Network UPS Tools) para shutdown gracioso automatico via USB do nobreak
 
 ## Dashboard — polimento
 
