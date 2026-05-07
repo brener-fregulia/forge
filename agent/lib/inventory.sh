@@ -82,6 +82,12 @@ inventory_drive_letters() {
     export DRIVE_LETTERS="[$LETTERS_INNER]"
 }
 
+inventory_spindown_hdds() {
+    for dev in $(lsblk -b -n -d -o NAME,ROTA | awk '$2=="1"{print $1}'); do
+        hdparm -y /dev/$dev > /dev/null 2>&1
+    done
+}
+
 inventory_smart() {
     SMART_TMP=/tmp/forge-smart.json
     printf '{' > $SMART_TMP
@@ -238,5 +244,6 @@ inventory_collect_disks() {
     inventory_smart
     inventory_users
     inventory_drive_letters
+    inventory_spindown_hdds
     echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":$USERS_JSON,\"drive_letters\":$DRIVE_LETTERS}"
 }

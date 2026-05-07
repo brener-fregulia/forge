@@ -55,7 +55,7 @@ sudo umount /mnt/modloop
 echo ">>> Adicionando lsblk + smartctl"
 APK_DIR="$PROJECT_ROOT/build"
 
-APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++ ntfs-3g ntfs-3g-libs ntfs-3g-progs sgdisk dosfstools wimlib popt fuse3-libs"
+APKS="lsblk libmount libsmartcols libblkid libncursesw libuuid smartmontools libgcc libstdc++ ntfs-3g ntfs-3g-libs ntfs-3g-progs sgdisk dosfstools wimlib popt fuse3-libs hdparm"
 
 EXTRACT_DIR=$(mktemp -d)
 for apk in $APKS; do
@@ -78,6 +78,7 @@ done
 [ -f "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" ] && cp "$EXTRACT_DIR/usr/sbin/mkfs.ntfs" usr/sbin/mkfs.ntfs && chmod +x usr/sbin/mkfs.ntfs && echo "    + mkfs.ntfs"
 [ -f "$EXTRACT_DIR/usr/sbin/ntfsfix" ]   && cp "$EXTRACT_DIR/usr/bin/ntfsfix" usr/bin/ntfsfix && chmod +x usr/bin/ntfsfix && echo "    + ntfsfix"
 [ -f "$EXTRACT_DIR/usr/sbin/ntfslabel" ] && cp "$EXTRACT_DIR/usr/sbin/ntfslabel" usr/sbin/ntfslabel && chmod +x usr/sbin/ntfslabel && echo "    + ntfslabel"
+[ -f "$EXTRACT_DIR/sbin/hdparm" ] && cp "$EXTRACT_DIR/sbin/hdparm" sbin/hdparm && chmod +x sbin/hdparm && echo "    + hdparm"
 
 # sgdisk
 [ -f "$EXTRACT_DIR/usr/bin/sgdisk" ] && cp "$EXTRACT_DIR/usr/bin/sgdisk" usr/bin/sgdisk && chmod +x usr/bin/sgdisk && echo "    + sgdisk"
