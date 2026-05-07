@@ -47,3 +47,10 @@
 .disk-serial code { color: var(--text-dim); font-size: 0.75rem; }
 .disk-name-link { color: var(--accent); text-decoration: none; }
 .disk-name-link:hover { text-decoration: underline; }
+
+.disk-drive-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: monospace;
+    margin-left: 0.25rem;
+}

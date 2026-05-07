@@ -43,7 +43,7 @@ function updateClient(c) {
     }
     if (c.disks?.length) {
         els.disks.textContent = JSON.stringify(c.disks, null, 2);
-        renderDisks(c.disks, c.smart);
+        renderDisks(c.disks, c.smart, c.drive_letters);
         initSmartModal(c.smart);
     }
     if (Array.isArray(c.users)) {

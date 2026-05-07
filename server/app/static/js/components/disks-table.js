@@ -5,12 +5,34 @@ export function tryInitialRender() {
     if (raw && raw !== "[]" && raw !== "null") {
         try {
             const disks = JSON.parse(raw);
-            if (disks?.length) renderDisks(disks, {});
+            if (disks?.length) renderDisks(disks, {}, []);
         } catch {}
     }
 }
 
-export function renderDisks(disks, smart) {
+function _driveLabel(name, driveLetters, disks, isDisk) {
+    if (!driveLetters?.length) return null;
+
+    if (isDisk) {
+        // Disco físico: busca letras das partições filhas
+        const children = (disks || [])
+            .filter(d => d.type === "part" && d.name.startsWith(name))
+            .map(d => (driveLetters || []).find(dl => dl.device === d.name))
+            .filter(Boolean);
+        if (!children.length) return null;
+        const letters = children.map(e => {
+            const label = e.label || (e.letter === "C" ? "Windows" : "Dados");
+            return `${e.letter}: — ${label}`;
+        });
+        return `(${letters.join(", ")})`;
+    }
+
+    const entry = (driveLetters || []).find(d => d.device === name);
+    if (!entry) return null;
+    return `(${entry.letter}:)`;
+}
+
+export function renderDisks(disks, smart, driveLetters) {
     const container = document.getElementById("disks-rendered");
     if (!container || !disks?.length) return;
 
@@ -29,7 +51,15 @@ export function renderDisks(disks, smart) {
         const tr     = row.querySelector("tr");
 
         // Nome
-        tr.querySelector(".disk-name").textContent = d.name;
+        const nameEl = tr.querySelector(".disk-name");
+        const dlabel = _driveLabel(d.name, driveLetters, disks, !isPart);
+        nameEl.textContent = d.name;
+        if (dlabel) {
+            const span = document.createElement("span");
+            span.className = "disk-drive-label";
+            span.textContent = " " + dlabel;
+            nameEl.appendChild(span);
+        }
 
         // Botão SMART (só discos físicos)
         const smartBtn = tr.querySelector(".disk-smart-btn");
