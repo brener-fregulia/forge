@@ -9,3 +9,4 @@ build/*.tmp
 build/*.apk
 build/websocat
 build/initramfs-work/
+drivers/
