@@ -16,7 +16,7 @@ export function initConfigDeploy(getMac) {
                 fetch(`/api/clients/${getMac()}`).then(r => r.json()),
                 fetch("/api/server/isos").then(r => r.json()),
             ]);
-            renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null);
+            renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null, clientData.drive_letters);
             renderBackup(clientData.deploy_plan);
             renderSo(isosData.isos, clientData.deploy_plan ? clientData.deploy_plan.windows_iso : undefined);
             renderPos(clientData.deploy_plan);

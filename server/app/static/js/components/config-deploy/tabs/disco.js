@@ -2,7 +2,7 @@ import { formatBytes } from "../../../lib/format.js";
 
 let _selected = null;
 
-export function renderDisco(disks, savedDisk = null) {
+export function renderDisco(disks, savedDisk = null, driveLetters = []) {
     const container = document.getElementById("cd-disco-list");
     const tpl       = document.getElementById("cd-disco-option-tpl");
     if (!container || !tpl) return;
@@ -28,6 +28,13 @@ export function renderDisco(disks, savedDisk = null) {
         if (savedDisk === d.name) radio.checked = true;
 
         node.querySelector(".cd-disk-name").innerHTML  = `<code>${d.name}</code>`;
+        const entry = (driveLetters || []).find(dl => dl.device === d.name ||
+            disks.filter(p => p.type === "part" && p.name.startsWith(d.name))
+                .some(p => dl.device === p.name));
+        const driveLabel = entry
+            ? ` (${entry.letter}: ${entry.label || (entry.letter === "C" ? "Windows" : "Dados")})`
+            : "";
+        node.querySelector(".cd-disk-name").innerHTML = `<code>${d.name}</code><span class="cd-disk-drive-label">${driveLabel}</span>`;
         node.querySelector(".cd-disk-model").textContent = [d.vendor, d.model].filter(Boolean).join(" ") || "Disco desconhecido";
         node.querySelector(".cd-disk-size").textContent  = formatBytes(d.size);
 

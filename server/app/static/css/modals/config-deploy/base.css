@@ -30,3 +30,10 @@
 .cd-disk-model { font-size: 0.85rem; color: var(--text-dim); }
 .cd-disk-meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-dim); font-family: monospace; }
 .cd-disk-serial { color: var(--border); }
+
+.cd-disk-drive-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: monospace;
+    margin-left: 0.25rem;
+}
