@@ -1,9 +1,57 @@
 <div id="smart-modal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3 id="smart-modal-title">SMART — /dev/sda</h3>
+            <h3 id="smart-modal-title">SMART - /dev/sda</h3>
             <button class="modal-close" id="smart-modal-close">✕</button>
         </div>
-        <div id="smart-modal-body"></div>
+        <div id="smart-modal-body">
+            <button class="btn-small btn-copy-smart" style="float:right;margin-bottom:0.5rem">Copiar JSON</button>
+            <div id="smart-summary"></div>
+            <div id="smart-table-container"></div>
+        </div>
     </div>
 </div>
+
+<template id="smart-summary-tpl">
+    <div class="smart-summary">
+        <div class="smart-summary-item">
+            <span class="smart-status-badge"></span>
+            <span>Status</span>
+        </div>
+        <div class="smart-summary-item">
+            <strong class="smart-temp"></strong>
+            <span>Temperatura</span>
+        </div>
+        <div class="smart-summary-item">
+            <strong class="smart-hours"></strong>
+            <span>Horas ligado</span>
+        </div>
+    </div>
+</template>
+
+<template id="smart-table-tpl">
+    <table class="smart-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Atributo</th>
+                <th>Valor</th>
+                <th>Pior</th>
+                <th>Thresh</th>
+                <th>Raw</th>
+            </tr>
+        </thead>
+        <tbody id="smart-tbody"></tbody>
+    </table>
+</template>
+
+<template id="smart-row-tpl">
+    <tr>
+        <td class="smart-col-id"></td>
+        <td class="smart-col-name"></td>
+        <td class="smart-col-value"></td>
+        <td class="smart-col-worst"></td>
+        <td class="smart-col-thresh"></td>
+        <td class="smart-col-raw"></td>
+    </tr>
+</template>

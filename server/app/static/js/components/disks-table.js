@@ -129,15 +129,16 @@ export function initSmartModal(smart) {
     close?.addEventListener("click", () => overlay.classList.remove("open"));
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") overlay.classList.remove("open"); });
 
-    document.querySelectorAll(".disk-smart-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            const disk = btn.dataset.disk;
-            const data = smart?.[disk];
-            title.textContent = `SMART — /dev/${disk}`;
-            body.innerHTML = data ? renderSmartBody(data) : '<p class="empty">Sem dados SMART para este disco.</p>';
-            overlay.classList.add("open");
-        });
+    document.getElementById("disks-rendered")?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".disk-smart-btn");
+        if (!btn) return;
+        e.preventDefault();
+        const disk = btn.dataset.disk;
+        const data = smart?.[disk];
+        title.textContent = `SMART — /dev/${disk}`;
+        renderSmartBody(data);
+        if (!data) document.getElementById("smart-table-container").innerHTML = '<p class="empty">Sem dados SMART para este disco.</p>';
+        overlay.classList.add("open");
     });
 
     body.addEventListener("click", async (e) => {
@@ -159,49 +160,55 @@ export function initSmartModal(smart) {
 }
 
 function renderSmartBody(s) {
-    const passed = s.smart_status?.passed;
-    const temp   = s.temperature?.current ?? "—";
-    const hours  = s.power_on_time?.hours ?? "—";
-    const attrs  = s.ata_smart_attributes?.table || [];
+    const passed   = s.smart_status?.passed;
+    const temp     = s.temperature?.current;
+    const hours    = s.power_on_time?.hours;
+    const attrs    = s.ata_smart_attributes?.table || [];
     const critical = new Set([5, 10, 184, 187, 188, 196, 197, 198, 201]);
 
-    const statusBadge = passed === true
-        ? '<span class="health-badge health-ok">PASSED</span>'
-        : passed === false
-            ? '<span class="health-badge health-fail">FAILED</span>'
-            : '<span class="health-badge health-unknown">UNKNOWN</span>';
+    const summaryTpl = document.getElementById("smart-summary-tpl");
+    const summary    = summaryTpl.content.cloneNode(true);
+    const badge      = summary.querySelector(".smart-status-badge");
+    badge.className  = `smart-status-badge health-badge ${passed === true ? "health-ok" : passed === false ? "health-fail" : "health-unknown"}`;
+    badge.textContent = passed === true ? "PASSED" : passed === false ? "FAILED" : "UNKNOWN";
+    summary.querySelector(".smart-temp").textContent  = temp != null ? `${temp}°C` : "—";
+    summary.querySelector(".smart-hours").textContent = hours != null ? `${hours}h` : "—";
 
-    let html = `
-        <button class="btn-small btn-copy-smart" style="float:right;margin-bottom:0.5rem">Copiar JSON</button>
-        <div class="smart-summary">
-            <div class="smart-summary-item">${statusBadge}<span>Status</span></div>
-            <div class="smart-summary-item"><strong>${temp}°C</strong><span>Temperatura</span></div>
-            <div class="smart-summary-item"><strong>${hours}h</strong><span>Horas ligado</span></div>
-        </div>`;
+    document.getElementById("smart-summary").innerHTML = "";
+    document.getElementById("smart-summary").appendChild(summary);
 
-    if (attrs.length) {
-        html += `<table class="smart-table">
-            <thead><tr>
-                <th>ID</th><th>Atributo</th><th>Valor</th><th>Pior</th><th>Thresh</th><th>Raw</th>
-            </tr></thead><tbody>`;
-        for (const a of attrs) {
-            const isCritical = critical.has(a.id);
-            const rawVal = Number(a.raw?.value ?? 0);
-            const isFail = isCritical && rawVal > 0;
-            const cls = isFail ? "smart-fail" : isCritical ? "smart-warn" : "";
-            html += `<tr class="${cls}">
-                <td>${a.id}</td>
-                <td>${a.name}</td>
-                <td>${a.value}</td>
-                <td>${a.worst}</td>
-                <td>${a.thresh}</td>
-                <td>${a.raw?.string ?? a.raw?.value ?? "—"}</td>
-            </tr>`;
-        }
-        html += `</tbody></table>`;
-    } else {
-        html += `<p class="empty">Sem atributos ATA disponíveis.</p>`;
+    const tableContainer = document.getElementById("smart-table-container");
+    tableContainer.innerHTML = "";
+
+    if (!attrs.length) {
+        tableContainer.innerHTML = '<p class="empty">Sem atributos ATA disponíveis.</p>';
+        return;
     }
 
-    return html;
+    const tableTpl = document.getElementById("smart-table-tpl");
+    const rowTpl   = document.getElementById("smart-row-tpl");
+    const table    = tableTpl.content.cloneNode(true);
+    const tbody    = table.getElementById("smart-tbody");
+
+    const criticalAttrs = attrs.filter(a => critical.has(a.id));
+    const normalAttrs   = attrs.filter(a => !critical.has(a.id));
+
+    for (const a of [...criticalAttrs, ...normalAttrs]) {
+        const rawVal  = Number(a.raw?.value ?? 0);
+        const isFail  = critical.has(a.id) && rawVal > 0;
+        const row     = rowTpl.content.cloneNode(true);
+        const tr      = row.querySelector("tr");
+
+        tr.className = isFail ? "smart-fail" : critical.has(a.id) ? "smart-warn" : "";
+        tr.querySelector(".smart-col-id").textContent     = a.id;
+        tr.querySelector(".smart-col-name").textContent   = a.name;
+        tr.querySelector(".smart-col-value").textContent  = a.value;
+        tr.querySelector(".smart-col-worst").textContent  = a.worst;
+        tr.querySelector(".smart-col-thresh").textContent = a.thresh;
+        tr.querySelector(".smart-col-raw").textContent    = a.raw?.string ?? a.raw?.value ?? "—";
+
+        tbody.appendChild(tr);
+    }
+
+    tableContainer.appendChild(table);
 }
