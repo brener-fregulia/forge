@@ -98,7 +98,7 @@ async function _loadChildren(container, device, path) {
     container.innerHTML = '<span class="loading"><span class="spinner"></span></span>';
 
     const mntPath = `/tmp/mnt_${device}/${path}`;
-    const cmd     = `find ${mntPath} -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sed 's|.*/||' | awk '{print "d\\t"$0}'; find ${mntPath} -maxdepth 1 -mindepth 1 -type f 2>/dev/null | sed 's|.*/||' | awk '{print "f\\t"$0}'`;
+    const cmd = `sh /usr/lib/forge/forge-ls.sh /tmp/mnt_${device}/${path}`;
 
     const output = await _sendCommand(cmd);
     container.innerHTML = "";

@@ -9,7 +9,6 @@ const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
 export function initConfigDeploy(getMac) {
     const modal = initModal("config-deploy-modal");
-    let _ws = null;
 
     document.getElementById("deploy-btn")
         ?.addEventListener("click", async () => {
