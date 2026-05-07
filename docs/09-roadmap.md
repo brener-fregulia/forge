@@ -20,7 +20,10 @@
 
 ## Dashboard — polimento
 
-- [ ] Aba Backup no modal config-deploy
+- [x] Aba Backup no modal config-deploy (visual completo)
+- [ ] Aba Backup — modo Avancado funcional (race condition command/exec pendente)
+- [ ] Aba Backup — modo Minimo (lista programas instalados via manifesto)
+- [ ] Aba Backup — Raw Image
 - [ ] Console de comandos estilo terminal (prompt + historico)
 - [ ] Terminal interativo real (xterm.js) — pos-MVP
 - [ ] Indicador de progresso por etapa do deploy
@@ -28,6 +31,8 @@
 - [ ] Deteccao de portas do switch via SNMP (CRS326 + IF-MIB)
 - [ ] Wake-on-LAN via FORGE dashboard
 - [ ] ARP scan + leases dnsmasq para detectar dispositivos ligados nao-Alpine
+- [ ] Systemd service para FORGE iniciar no boot
+- [ ] Solucao HTTP para comandos pontuais ao agent (substituir race condition do Future)
 
 ## Hardware pendente
 

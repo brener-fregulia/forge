@@ -26,3 +26,8 @@
 | Switch LS1008G adicionava 20-30s de delay no boot | STP (Spanning Tree) habilitado por padrao | Aguardar CRS326 com suporte a PortFast |
 | inventory_base perdido no snapshot apos reload | browser reconectava antes do agent | Nao limpar grid no snapshot vazio |
 | Log limpava ao reconectar | snapshot sobrescrevia log_tail inteiro | Comparar conteudo antes de sobrescrever |
+| Watchdog matava websocat sem razão | Servidor não respondia após inventário | Servidor envia ack após inventory_base, inventory_disks e status |
+| drive_letters vazio no frontend | Cliente conectava antes do fix do state.py | Reiniciar servidor e cliente após adicionar campo |
+| Partições NTFS montadas duas vezes | inventory_users rodava antes de inventory_drive_letters | Inverter ordem: drive_letters primeiro, users reutiliza mount |
+| find travava em arquivos especiais Windows | hiberfil.sys e pagefile.sys bloqueavam | Adicionar timeout 5 no forge-ls.sh |
+| command/exec sempre retornava vazio | command_output chegava antes do Future ser aguardado | Pendente — race condition entre WS agent e asyncio.Future |

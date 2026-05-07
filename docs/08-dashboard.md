@@ -31,16 +31,19 @@
 - Detectado via ntfs-3g montando particoes NTFS em modo leitura
 
 ### Deploy
-- Botao "Configurar Deploy" abre modal com:
-  - Modal config-deploy com abas: Disco alvo, Backup, Instalacao SO, Pos-Instalacao
-  - Navegacao via botoes Anterior/Proximo/Salvar (sempre visiveis, desabilitados quando nao aplicavel)
-  - Aba Pos-Instalacao habilitada somente ao selecionar uma ISO
-  - Salvar disponivel na aba SO (ao selecionar "Nao instalar") ou na aba Pos-Instalacao
-  - Plano persistido no banco, restaurado ao reabrir o modal
-  - Botao "Executar" ativo somente apos plano configurado
-  - Componentes reutilizaveis: tabs.js, tabs.css
-  - CSS por aba: config-deploy/base.css, disco.css, so.css, pos.css
+- Botao "Configurar Deploy" abre modal config-deploy com abas:
+  - Disco alvo: lista discos fisicos com letra e label Windows (C:, D:, etc)
+  - Backup: modos Sem backup / Minimo / Avancado / Raw Image
+    - Avancado: arvore de arquivos interativa por volume NTFS
+    - Arvore expande pasta a pasta via REST POST /api/clients/{mac}/command/exec
+  - Instalacao SO: lista ISOs por categoria (windows/, linux/), opcao "Nao instalar"
+  - Pos-Instalacao: drivers SDIO, debloat, restaurar backup
+- Navegacao via botoes Anterior/Proximo/Salvar (sempre visiveis, desabilitados quando inaplicavel)
+- Aba Pos-Instalacao habilitada somente ao selecionar ISO
+- Salvar disponivel na aba SO ("Nao instalar") ou na ultima aba
+- Plano persistido no banco, restaurado ao reabrir o modal
 - Botao "Executar" ativo somente apos plano configurado
+- CSS por aba: config-deploy/base.css, disco.css, so.css, pos.css, backup.css
 
 ### Outros
 - Alias editavel — persiste no banco PostgreSQL
@@ -90,6 +93,15 @@
 - [x] Modal config-deploy com abas funcionais (Disco alvo, Instalacao SO, Pos-Instalacao)
 - [x] ISOs organizadas em /home/isos/windows/ e /home/isos/linux/ (symlink /srv/isos)
 - [x] Endpoint /api/server/isos lista subpastas com campo category
+- [x] Letra e label Windows por particao (ntfslabel + heuristica winload.efi)
+- [x] drive_letters propagado no inventario e exibido na tabela de discos e usuarios
+- [x] Partições NTFS mantidas montadas apos inventario para uso no deploy
+- [x] Spindown de HDDs apos inventario via hdparm -y
+- [x] Servidor envia ack apos inventory/status para evitar watchdog timeout
+- [x] Endpoint REST POST /api/clients/{mac}/command/exec para comandos pontuais
+- [x] forge-ls.sh no initramfs para listagem de diretorios via REST
+- [x] Modal config-deploy — aba Backup com arvore de volumes (Avancado pendente de fix)
+- [x] Modal legado deploy.html + deploy-modal.js removidos
 
 ### Pipeline de deploy
 - [ ] Backup seletivo via ntfsclone -> hot cache
