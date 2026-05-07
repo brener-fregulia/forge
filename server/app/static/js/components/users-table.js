@@ -1,6 +1,6 @@
 import { formatBytes } from "../lib/format.js";
 
-export function renderUsers(users) {
+export function renderUsers(users, driveLetters) {
     const container = document.getElementById("users-rendered");
     if (!container) return;
 
@@ -18,7 +18,11 @@ export function renderUsers(users) {
     const rowTpl = document.getElementById("user-row-tpl");
     for (const u of users) {
         const row = rowTpl.content.cloneNode(true);
-        row.querySelector(".user-device").textContent = u.device;
+        const entry = (driveLetters || []).find(d => d.device === u.device);
+        const deviceLabel = entry
+            ? `${entry.letter}: ${entry.label || (entry.letter === "C" ? "Windows" : "Dados")}`
+            : u.device;
+        row.querySelector(".user-device").textContent = deviceLabel;
         row.querySelector(".user-name").textContent = u.username;
         row.querySelector(".user-size").textContent = formatBytes(u.size);
         tbody.appendChild(row);

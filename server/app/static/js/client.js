@@ -48,7 +48,7 @@ function updateClient(c) {
     }
     if (Array.isArray(c.users)) {
         els.users.textContent = JSON.stringify(c.users, null, 2);
-        renderUsers(c.users);
+        renderUsers(c.users, c.drive_letters);
     }
     updateMeta(c);
     updateLog(c.log_tail, els.log);
