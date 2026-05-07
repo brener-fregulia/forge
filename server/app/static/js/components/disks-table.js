@@ -61,10 +61,6 @@ export function renderDisks(disks, smart, driveLetters) {
             nameEl.appendChild(span);
         }
 
-        // Botão SMART (só discos físicos)
-        const smartBtn = tr.querySelector(".disk-smart-btn");
-        if (smartBtn) smartBtn.dataset.disk = d.name;
-
         // Modelo + Serial
         tr.querySelector(".disk-model").textContent = [d.vendor, d.model].filter(Boolean).join(" ") || "—";
         const serialEl = tr.querySelector(".disk-serial");
@@ -86,22 +82,33 @@ export function renderDisks(disks, smart, driveLetters) {
         }
 
         // Saúde
-        const healthEl = tr.querySelector(".disk-health");
+        const healthEl    = tr.querySelector(".disk-health");
+        const smartBtn    = tr.querySelector(".disk-smart-btn");
+        if (smartBtn) smartBtn.dataset.disk = d.name;
+
         if (isPart) {
             healthEl.textContent = "—";
         } else if (smart && smart[d.name] !== undefined) {
-            const s = smart[d.name];
+            const s      = smart[d.name];
             const passed = s.smart_status?.passed;
             const temp   = s.temperature?.current;
-            let html = passed === true
-                ? '<span class="health-badge health-ok">OK</span>'
-                : passed === false
-                    ? '<span class="health-badge health-fail">FAIL</span>'
-                    : '<span class="health-badge health-unknown">?</span>';
-            if (temp != null) html += ` <span class="health-temp">${temp}°C</span>`;
-            healthEl.innerHTML = html;
+            const badge  = document.createElement("span");
+            badge.className = passed === true ? "health-badge health-ok"
+                : passed === false ? "health-badge health-fail"
+                : "health-badge health-unknown";
+            badge.textContent = passed === true ? "OK" : passed === false ? "FAIL" : "?";
+            healthEl.prepend(badge);
+            if (temp != null) {
+                const tempEl = document.createElement("span");
+                tempEl.className = "health-temp";
+                tempEl.textContent = `${temp}°C`;
+                badge.after(tempEl);
+            }
         } else {
-            healthEl.innerHTML = '<span class="loading"><span class="spinner"></span></span>';
+            const loading = document.createElement("span");
+            loading.className = "loading";
+            loading.innerHTML = '<span class="spinner"></span>';
+            healthEl.prepend(loading);
         }
 
         tbody.appendChild(tr);
