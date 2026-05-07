@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Any
 from fastapi import WebSocket
-
+import asyncio
 
 class Client:
     """Representa um cliente PXE conectado."""
@@ -24,6 +24,7 @@ class Client:
         self.alias: str | None = None
         self.deploy_plan: dict | None = None
         self.drive_letters: list[dict] = []
+        self.pending_command: asyncio.Future | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {

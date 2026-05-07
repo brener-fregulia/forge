@@ -52,6 +52,8 @@ def _handle_message(client: Client, msg: dict) -> None:
         client.log.append(msg.get("line", ""))
     elif msg_type == "command_output":
         client.log.append(f"[cmd] {msg.get('output', '')}")
+        if client.pending_command and not client.pending_command.done():
+            client.pending_command.set_result(msg.get("output", ""))
 
 
 @router.websocket("/ws/agent/{mac}")

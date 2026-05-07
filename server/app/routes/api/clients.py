@@ -1,7 +1,7 @@
 """Endpoints REST — clientes PXE."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
+import asyncio
 from app.state import state
 from app.db.base import AsyncSessionLocal
 
@@ -35,6 +35,32 @@ async def send_command(mac: str, payload: CommandRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
     return {"status": "sent", "command": payload.command}
+
+
+@router.post("/clients/{mac}/command/exec")
+async def exec_command(mac: str, payload: CommandRequest):
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+    client.pending_command = future
+
+    try:
+        await client.websocket.send_json({"type": "command", "command": payload.command})
+    except Exception as e:
+        client.pending_command = None
+        raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
+
+    try:
+        output = await asyncio.wait_for(future, timeout=15.0)
+    except asyncio.TimeoutError:
+        output = ""
+    finally:
+        client.pending_command = None
+
+    return {"output": output}
 
 
 @router.post("/clients/{mac}/log/clear")

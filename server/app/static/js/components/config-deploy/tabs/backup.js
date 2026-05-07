@@ -7,14 +7,11 @@ const MODES = [
 
 let _mode     = "none";
 let _mac      = null;
-let _wsListen = null;
-let _pending  = null;
 let _tree     = {};
 let _driveLetters = [];
 
-export function initBackup(mac, wsFactory) {
+export function initBackup(mac) {
     _mac       = mac;
-    _wsListen  = wsFactory;
 }
 
 export function renderBackup(plan, driveLetters) {
@@ -205,26 +202,18 @@ function _propagateUp(btn) {
     }
 }
 
-function _sendCommand(cmd) {
-    return new Promise((resolve) => {
-        const timeout = setTimeout(() => resolve(""), 15000);
-
-        const handler = (msg) => {
-            if (msg.type === "command_output") {
-                clearTimeout(timeout);
-                _wsListen.off("command_output", handler);
-                resolve(msg.output);
-            }
-        };
-
-        _wsListen.on("command_output", handler);
-
-        fetch(`/api/clients/${_mac}/command`, {
+async function _sendCommand(cmd) {
+    try {
+        const res = await fetch(`/api/clients/${_mac}/command/exec`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ command: cmd }),
         });
-    });
+        const data = await res.json();
+        return data.output ?? "";
+    } catch {
+        return "";
+    }
 }
 
 export function collectBackup() {

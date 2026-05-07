@@ -7,7 +7,7 @@ import { renderPos, collectPos } from "./tabs/pos.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
-export function initConfigDeploy(getMac, ws) {
+export function initConfigDeploy(getMac) {
     const modal = initModal("config-deploy-modal");
     let _ws = null;
 
@@ -18,7 +18,7 @@ export function initConfigDeploy(getMac, ws) {
                 fetch("/api/server/isos").then(r => r.json()),
             ]);
 
-            initBackup(getMac(), ws);
+            initBackup(getMac());
 
             renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null, clientData.drive_letters);
             renderBackup(clientData.deploy_plan, clientData.drive_letters);
