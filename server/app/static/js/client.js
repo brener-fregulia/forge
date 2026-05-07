@@ -17,7 +17,7 @@ const els = {
     log:   document.getElementById("log"),
 };
 
-createWS("/ws/dashboard", {
+const ws = createWS("/ws/dashboard", {
     client_update:    ({ mac: m, client: c }) => m === mac && updateClient(c),
     client_connected: ({ mac: m, client: c }) => m === mac && updateClient(c),
     snapshot:         ({ clients }) => {
@@ -59,6 +59,6 @@ function updateClient(c) {
 initAlias(mac);
 initCommand(mac);
 initLog(mac);
-initDeploy(mac);
+initDeploy(mac, ws);
 initClipboard();
 tryInitialRender();

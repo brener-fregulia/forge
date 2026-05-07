@@ -8,3 +8,23 @@
 </div>
 
 <div id="cd-backup-content" class="cd-backup-content"></div>
+
+<template id="cd-tree-volume-tpl">
+    <div class="cd-tree-volume">
+        <div class="cd-tree-volume-header">
+            <button class="cd-tree-check" data-state="none"></button>
+            <span class="cd-tree-volume-label"></span>
+        </div>
+        <div class="cd-tree-children" style="display:none"></div>
+    </div>
+</template>
+
+<template id="cd-tree-node-tpl">
+    <div class="cd-tree-node">
+        <button class="cd-tree-check" data-state="none"></button>
+        <span class="cd-tree-expand"></span>
+        <span class="cd-tree-icon"></span>
+        <span class="cd-tree-name"></span>
+        <div class="cd-tree-children" style="display:none"></div>
+    </div>
+</template>

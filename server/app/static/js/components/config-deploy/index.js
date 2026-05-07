@@ -1,14 +1,15 @@
 import { initModal } from "../../lib/modal.js";
 import { initTabs } from "../../lib/tabs.js";
 import { renderDisco, collectDisco } from "./tabs/disco.js";
-import { renderBackup, collectBackup } from "./tabs/backup.js";
+import { renderBackup, collectBackup, initBackup } from "./tabs/backup.js";
 import { renderSo, collectSo, onSoChange } from "./tabs/so.js";
 import { renderPos, collectPos } from "./tabs/pos.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
-export function initConfigDeploy(getMac) {
+export function initConfigDeploy(getMac, ws) {
     const modal = initModal("config-deploy-modal");
+    let _ws = null;
 
     document.getElementById("deploy-btn")
         ?.addEventListener("click", async () => {
@@ -16,10 +17,16 @@ export function initConfigDeploy(getMac) {
                 fetch(`/api/clients/${getMac()}`).then(r => r.json()),
                 fetch("/api/server/isos").then(r => r.json()),
             ]);
+
+            initBackup(getMac(), ws);
+
             renderDisco(clientData.disks, clientData.deploy_plan?.target_disk ?? null, clientData.drive_letters);
-            renderBackup(clientData.deploy_plan);
+            renderBackup(clientData.deploy_plan, clientData.drive_letters);
             renderSo(isosData.isos, clientData.deploy_plan ? clientData.deploy_plan.windows_iso : undefined);
             renderPos(clientData.deploy_plan);
+
+            console.log(clientData.drive_letters)
+
             modal.open();
         });
 
@@ -67,7 +74,6 @@ export function initConfigDeploy(getMac) {
             windows_iso,
             ...collectBackup(),
             ...collectPos(),
-            backup: false,
             backup_users: [],
             backup_root: false,
         };

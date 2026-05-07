@@ -116,7 +116,7 @@ inventory_users() {
         mkdir -p "$MNT"
 
         # Monta a partição NTFS
-        ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || continue
+        ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || true
 
         # Verifica se tem pasta Users (Windows)
         if [ -d "$MNT/Users" ]; then
@@ -140,9 +140,9 @@ inventory_users() {
             done
         fi
 
-        # Desmonta
-        umount "$MNT" 2>/dev/null
-        rmdir "$MNT" 2>/dev/null
+        # Desmonta - Não precisa, vamos utilizar o mnt para bkp
+        # umount "$MNT" 2>/dev/null
+        # rmdir "$MNT" 2>/dev/null
     done
 
     USERS_INNER=$(sed 's/,$//' $USERS_TMP)
@@ -242,8 +242,8 @@ inventory_collect_base() {
 inventory_collect_disks() {
     inventory_disks
     inventory_smart
-    inventory_users
     inventory_drive_letters
+    inventory_users
     inventory_spindown_hdds
     echo "{\"type\":\"inventory_disks\",\"disks\":$DISKS,\"smart\":$SMART_JSON,\"users\":$USERS_JSON,\"drive_letters\":$DRIVE_LETTERS}"
 }
