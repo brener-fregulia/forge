@@ -83,10 +83,14 @@ async def ws_agent(websocket: WebSocket, mac: str):
             _handle_message(client, msg)
 
             # Persiste hardware quando inventário base chega
-            if msg.get("type") == "inventory_base" and msg.get("hardware"):
+            msg_type = msg.get("type")
+            if msg_type == "inventory_base" and msg.get("hardware"):
                 async with AsyncSessionLocal() as db:
                     await update_machine_hardware(db, mac=mac, hardware=msg["hardware"])
                     await get_or_create_machine(db, mac=mac, hostname=msg.get("hostname"))
+
+            if msg_type in ("inventory_base", "inventory_disks", "status"):
+                await websocket.send_json({"type": "ack"})
 
             await state.broadcast_to_dashboard({
                 "type": "client_update",
