@@ -11,6 +11,12 @@
 
 .alias-display { margin-right: 0.5rem; }
 
+h3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .btn-secondary {
     background: none;
     border: 1px solid var(--accent);
