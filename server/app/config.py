@@ -17,6 +17,7 @@ COLD_STORAGE_PATH   = Path(os.getenv("COLD_STORAGE_PATH", "/mnt/cold"))
 HOT_CACHE_LABEL     = os.getenv("HOT_CACHE_LABEL", "forge-hot")
 COLD_STORAGE_LABEL  = os.getenv("COLD_STORAGE_LABEL", "forge-cold")
 DEFAULT_CLIENT_ALIAS = "local"
+STORAGE_MODE = os.getenv("STORAGE_MODE", "hot_cold_raid")
 
 # Rede
 SERVER_IP   = os.getenv("SERVER_IP", "192.168.100.1")
