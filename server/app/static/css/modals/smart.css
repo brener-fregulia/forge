@@ -1,7 +1,55 @@
+#smart-modal .modal {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#smart-modal-tabs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#smart-tabs-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#smart-tabs-content .tab-panel.active {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#smart-tabs-content .tab-panel:not(.active) {
+    display: none;
+}
+
+.smart-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.smart-panel-header {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.smart-panel-table {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Cabeçalho do painel */
 .smart-panel-header {
     display: flex;
     gap: 1.5rem;
-    margin-bottom: 1.5rem;
     flex-wrap: wrap;
 }
 
@@ -26,7 +74,7 @@
     padding: 0.2rem 0.6rem;
     border-radius: 4px;
 }
-.smart-health-status.health-ok   { background: rgba(63,185,80,0.15); color: var(--green); }
+.smart-health-status.health-ok   { background: rgba(63,185,80,0.15);  color: var(--green); }
 .smart-health-status.health-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
 .smart-health-status.health-fail { background: rgba(248,81,73,0.15);  color: var(--red); }
 
@@ -71,6 +119,7 @@
     word-break: break-all;
 }
 
+/* Tabela */
 .smart-dot {
     display: inline-block;
     width: 10px;
@@ -84,7 +133,4 @@
 
 .smart-table td:first-child { width: 24px; text-align: center; }
 .smart-col-id   { font-family: monospace; color: var(--text-dim); width: 48px; }
-.smart-col-name { }
 .smart-col-raw  { font-family: monospace; color: var(--text-dim); }
-
-.smart-panel-table { margin-top: 0.5rem; }

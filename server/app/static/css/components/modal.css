@@ -20,12 +20,6 @@
     overflow: hidden;
 }
 
-.modal > *:not(.modal-header):not(.modal-footer) {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-}
-
 .modal-header {
     display: flex;
     justify-content: space-between;
