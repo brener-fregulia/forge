@@ -1,16 +1,27 @@
 <div id="smart-modal" class="modal-overlay">
-    <div class="modal">
+    <div class="modal modal-wide">
         <div class="modal-header">
-            <h3 id="smart-modal-title">SMART - /dev/sda</h3>
+            <h3>SMART</h3>
             <button class="modal-close" id="smart-modal-close">✕</button>
         </div>
-        <div id="smart-modal-body">
-            <button class="btn-small btn-copy-smart" style="float:right;margin-bottom:0.5rem">Copiar JSON</button>
-            <div id="smart-summary"></div>
-            <div id="smart-table-container"></div>
+        <div id="smart-modal-tabs">
+            <div class="tabs-header" id="smart-tabs-header"></div>
+            <div id="smart-tabs-content"></div>
         </div>
     </div>
 </div>
+
+<template id="smart-tab-btn-tpl">
+    <button class="tab-btn"></button>
+</template>
+
+<template id="smart-tab-panel-tpl">
+    <div class="tab-panel">
+        <button class="btn-small btn-copy-smart" style="float:right;margin-bottom:0.5rem">Copiar JSON</button>
+        <div class="smart-summary"></div>
+        <div class="smart-table-container"></div>
+    </div>
+</template>
 
 <template id="smart-summary-tpl">
     <div class="smart-summary">
@@ -30,7 +41,7 @@
 </template>
 
 <template id="smart-table-tpl">
-    <table class="smart-table">
+    <table class="smart-table forge-table">
         <thead>
             <tr>
                 <th>ID</th>

@@ -1,4 +1,10 @@
-<h3>Discos <button class="btn-small btn-copy" data-target="disks">Copiar</button></h3>
+<h3>
+    Discos
+    <div style="display:flex; gap:0.5rem">
+        <button id="open-smart-btn" class="btn-small">SMART</button>
+        <button class="btn-small btn-copy" data-target="disks">Copiar</button>
+    </div>
+</h3>
 
 <div id="disks-rendered" class="disks-table">
     <span class="loading"><span class="spinner"></span>Detectando discos e saúde…</span>
@@ -24,9 +30,7 @@
         <td><code class="disk-name"></code></td>
         <td class="disk-size"></td>
         <td class="disk-fstype"></td>
-        <td class="disk-health">
-            <button class="btn-small btn-smart disk-smart-btn">SMART</button>
-        </td>
+        <td class="disk-health"></td>
         <td>
             <div class="disk-model"></div>
             <div class="disk-serial"></div>
