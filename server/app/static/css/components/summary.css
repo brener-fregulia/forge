@@ -1,0 +1,19 @@
+.info-summary {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bg);
+    border-radius: 6px;
+}
+
+.info-summary-item {
+    font-size: 0.9rem;
+}
+
+.info-summary-item span {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    display: block;
+}

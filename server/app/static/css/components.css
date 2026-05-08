@@ -1,9 +1,10 @@
-@import url('/static/css/components/button.css');
 @import url('/static/css/components/badge.css');
+@import url('/static/css/components/button.css');
 @import url('/static/css/components/form.css');
+@import url('/static/css/components/loading.css');
 @import url('/static/css/components/modal.css');
 @import url('/static/css/components/progress.css');
-@import url('/static/css/components/loading.css');
+@import url('/static/css/components/summary.css');
 @import url('/static/css/components/tabs.css');
 @import url('/static/css/components/tables/base.css');
 @import url('/static/css/components/tables/disks.css');

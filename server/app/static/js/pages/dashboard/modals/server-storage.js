@@ -16,21 +16,21 @@ export function renderStorageModal(d, isRaid) {
         </tr>`).join("");
 
     const raidInfo = isRaid && d.raid_detail ? `
-        <div class="smart-summary" style="margin-top:1rem">
+        <div class="info-summary" style="margin-top:1rem">
             ${Object.entries(d.raid_detail).map(([k, v]) =>
-                `<div class="smart-summary-item"><strong>${v}</strong><span>${k.replace(/_/g, " ")}</span></div>`
+                `<div class="info-summary-item"><strong>${v}</strong><span>${k.replace(/_/g, " ")}</span></div>`
             ).join("")}
         </div>` : "";
 
     return `
-        <div class="smart-summary">
-            <div class="smart-summary-item"><strong>${formatBytes(d.used)}</strong><span>Usado</span></div>
-            <div class="smart-summary-item"><strong>${formatBytes(d.free)}</strong><span>Livre</span></div>
-            <div class="smart-summary-item"><strong>${formatBytes(d.total)}</strong><span>Total</span></div>
-            <div class="smart-summary-item"><strong>${isRaid ? "RAID1" : "Sem RAID"}</strong><span>Configuração</span></div>
+        <div class="info-summary">
+            <div class="info-summary-item"><strong>${formatBytes(d.used)}</strong><span>Usado</span></div>
+            <div class="info-summary-item"><strong>${formatBytes(d.free)}</strong><span>Livre</span></div>
+            <div class="info-summary-item"><strong>${formatBytes(d.total)}</strong><span>Total</span></div>
+            <div class="info-summary-item"><strong>${isRaid ? "RAID1" : "Sem RAID"}</strong><span>Configuração</span></div>
         </div>
         ${raidInfo}
-        <table class="smart-table" style="margin-top:1rem">
+        <table class="forge-table" style="margin-top:1rem">
             <thead><tr><th>Disco</th><th>Modelo</th><th>Serial</th><th>Temp</th><th>Horas</th><th>Saúde</th></tr></thead>
             <tbody>${disks}</tbody>
         </table>`;
