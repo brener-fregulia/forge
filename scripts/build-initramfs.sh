@@ -108,11 +108,14 @@ cp "$AGENT_SCRIPT" usr/bin/forge-agent
 chmod +x usr/bin/websocat usr/bin/forge-agent
 
 # Copia libs do agent
-mkdir -p usr/lib/forge
+mkdir -p usr/lib/forge/inventory
 for lib in "$PROJECT_ROOT/agent/lib/"*.sh; do
     cp "$lib" usr/lib/forge/
 done
-echo "    libs do agent: $(ls usr/lib/forge/)"
+for lib in "$PROJECT_ROOT/agent/lib/inventory/"*.sh; do
+    cp "$lib" usr/lib/forge/inventory/
+done
+echo "    libs do agent: $(ls usr/lib/forge/) | inventory: $(ls usr/lib/forge/inventory/)"
 
 # 6. Patcha o /init
 echo ">>> Patchando /init"
