@@ -23,3 +23,16 @@
 .smart-table tr:last-child td { border-bottom: none; }
 .smart-table tr.smart-warn td { color: var(--yellow); }
 .smart-table tr.smart-fail td { color: var(--red); }
+
+.smart-separator td {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    padding: 0.5rem 0.6rem 0.25rem;
+    border-bottom: 1px solid var(--border);
+    border-top: 2px solid var(--border);
+}
+
+.smart-table tr.smart-warn td { color: var(--yellow); }
+.smart-table tr.smart-fail td { color: var(--red); }

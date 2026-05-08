@@ -193,13 +193,30 @@ function renderSmartBody(s) {
     const criticalAttrs = attrs.filter(a => critical.has(a.id));
     const normalAttrs   = attrs.filter(a => !critical.has(a.id));
 
+    if (criticalAttrs.length) {
+        const sep = document.createElement("tr");
+        sep.innerHTML = `<td colspan="6" class="smart-separator">Atributos críticos</td>`;
+        tbody.appendChild(sep);
+    }
+
+    let firstNormal = true;
     for (const a of [...criticalAttrs, ...normalAttrs]) {
         const rawVal  = Number(a.raw?.value ?? 0);
-        const isFail  = critical.has(a.id) && rawVal > 0;
-        const row     = rowTpl.content.cloneNode(true);
-        const tr      = row.querySelector("tr");
+        const isCrit  = critical.has(a.id);
+        const isFail  = isCrit && rawVal > 0;
+        const isWarn  = isCrit && rawVal === 0 ? false : isCrit;
 
-        tr.className = isFail ? "smart-fail" : critical.has(a.id) ? "smart-warn" : "";
+        if (!isCrit && firstNormal && criticalAttrs.length) {
+            firstNormal = false;
+            const sep = document.createElement("tr");
+            sep.innerHTML = `<td colspan="6" class="smart-separator">Outros atributos</td>`;
+            tbody.appendChild(sep);
+        }
+
+        const row = rowTpl.content.cloneNode(true);
+        const tr  = row.querySelector("tr");
+
+        tr.className = isFail ? "smart-fail" : (isCrit && rawVal > 0) ? "smart-warn" : "";
         tr.querySelector(".smart-col-id").textContent     = a.id;
         tr.querySelector(".smart-col-name").textContent   = a.name;
         tr.querySelector(".smart-col-value").textContent  = a.value;
