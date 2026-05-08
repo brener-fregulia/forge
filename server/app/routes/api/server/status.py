@@ -3,7 +3,7 @@ import shutil
 import psutil
 from pathlib import Path
 from fastapi import APIRouter
-from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH
+from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, STORAGE_MODE
 
 router = APIRouter()
 
@@ -55,14 +55,20 @@ def uptime() -> str:
 async def server_status():
     cpu = psutil.cpu_percent(interval=0.1)
     ram = psutil.virtual_memory()
+
+    hot  = disk_info(str(HOT_CACHE_PATH)) if STORAGE_MODE != "simple" else {}
+    cold = disk_info(str(COLD_STORAGE_PATH)) if STORAGE_MODE == "hot_cold_raid" else {}
+    raid = raid_status() if STORAGE_MODE == "hot_cold_raid" else "n/a"
+
     return {
         "cpu_name": _cpu_name_short(),
         "cpu_percent": cpu,
         "cpu_temp": cpu_temp(),
         "ram": {"total": ram.total, "used": ram.used, "percent": ram.percent},
-        "hot_cache": disk_info(str(HOT_CACHE_PATH)),
-        "cold_storage": disk_info(str(COLD_STORAGE_PATH)),
-        "raid_status": raid_status(),
+        "hot_cache": hot,
+        "cold_storage": cold,
+        "raid_status": raid,
+        "storage_mode": STORAGE_MODE,
         "uptime": uptime(),
     }
 

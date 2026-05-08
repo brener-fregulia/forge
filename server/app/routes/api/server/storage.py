@@ -93,13 +93,22 @@ def _cold_disks_and_raid() -> tuple[list[dict], dict]:
 
 @router.get("/server/storage")
 async def server_storage():
-    hot = disk_info(str(HOT_CACHE_PATH))
-    cold = disk_info(str(COLD_STORAGE_PATH))
-    cold_disks, raid_detail = _cold_disks_and_raid()
-    return {
-        "hot_cache": {**hot, "disks": _hot_disks(), "raid": False},
-        "cold_storage": {**cold, "disks": cold_disks, "raid": True, "raid_detail": raid_detail},
-    }
+    result = {}
+
+    if STORAGE_MODE in ("hot_cold", "hot_cold_raid"):
+        hot = disk_info(str(HOT_CACHE_PATH))
+        result["hot_cache"] = {**hot, "disks": _hot_disks(), "raid": False}
+
+    if STORAGE_MODE == "hot_cold_raid":
+        cold = disk_info(str(COLD_STORAGE_PATH))
+        cold_disks, raid_detail = _cold_disks_and_raid()
+        result["cold_storage"] = {**cold, "disks": cold_disks, "raid": True, "raid_detail": raid_detail}
+
+    if STORAGE_MODE == "simple":
+        simple = disk_info(str(HOT_CACHE_PATH))
+        result["storage"] = {**simple, "disks": [], "raid": False}
+
+    return result
 
 
 from app.config import HOT_CACHE_PATH
