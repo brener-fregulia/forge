@@ -45,7 +45,7 @@ inventory_smart() {
     FIRST=1
 
     for disk in $(lsblk -b -n -d -o NAME 2>/dev/null); do
-        DATA=$(smartctl -H -A -j "/dev/$disk" 2>/dev/null)
+        DATA=$(smartctl -H -i -A -j "/dev/$disk" 2>/dev/null)
         [ -z "$DATA" ] && continue
         ESC=$(echo "$DATA" | tr -d '\n' | sed 's/"/\\"/g')
         [ "$FIRST" = "1" ] && FIRST=0 || printf ',' >> $SMART_TMP
