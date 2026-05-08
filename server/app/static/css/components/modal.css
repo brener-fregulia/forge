@@ -16,8 +16,14 @@
     padding: 1.5rem;
     width: 90%;
     max-width: 700px;
-    max-height: 80vh;
+    max-height: 85vh;
+    overflow: hidden;
+}
+
+.modal > *:not(.modal-header):not(.modal-footer) {
+    flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 .modal-header {
