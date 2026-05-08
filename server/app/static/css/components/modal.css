@@ -20,6 +20,8 @@
     overflow: hidden;
 }
 
+.modal-wide { max-width: 800px; }
+
 .modal-header {
     display: flex;
     justify-content: space-between;
