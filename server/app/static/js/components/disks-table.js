@@ -116,6 +116,9 @@ export function renderDisks(disks, smart, driveLetters) {
     container.appendChild(table);
 
     document.getElementById("open-smart-btn")?.addEventListener("click", () => {
+        // Temporário em disks-table.js, antes do openSmartModal
+        console.log("[smart] disks:", _disks.filter(d => d.type === "disk").map(d => d.name));
+        console.log("[smart] smart keys:", Object.keys(_smart));
         openSmartModal(_disks, _smart);
     });
 }

@@ -15,28 +15,24 @@
     <button class="tab-btn"></button>
 </template>
 
-<template id="smart-tab-panel-tpl">
-    <div class="tab-panel">
-        <button class="btn-small btn-copy-smart" style="float:right;margin-bottom:0.5rem">Copiar JSON</button>
-        <div class="smart-summary"></div>
-        <div class="smart-table-container"></div>
+<template id="smart-panel-tpl">
+    <div class="tab-panel smart-panel">
+        <div class="smart-panel-header">
+            <div class="smart-health-block">
+                <div class="smart-health-status"></div>
+                <div class="smart-health-pct"></div>
+                <div class="smart-health-temp"></div>
+            </div>
+            <div class="smart-info-grid"></div>
+        </div>
+        <div class="smart-panel-table"></div>
     </div>
 </template>
 
-<template id="smart-summary-tpl">
-    <div class="smart-summary">
-        <div class="smart-summary-item">
-            <span class="smart-status-badge"></span>
-            <span>Status</span>
-        </div>
-        <div class="smart-summary-item">
-            <strong class="smart-temp"></strong>
-            <span>Temperatura</span>
-        </div>
-        <div class="smart-summary-item">
-            <strong class="smart-hours"></strong>
-            <span>Horas ligado</span>
-        </div>
+<template id="smart-info-row-tpl">
+    <div class="smart-info-row">
+        <span class="smart-info-label"></span>
+        <span class="smart-info-value"></span>
     </div>
 </template>
 
@@ -44,25 +40,21 @@
     <table class="smart-table forge-table">
         <thead>
             <tr>
+                <th></th>
                 <th>ID</th>
                 <th>Atributo</th>
-                <th>Valor</th>
-                <th>Pior</th>
-                <th>Thresh</th>
-                <th>Raw</th>
+                <th>Valor Bruto</th>
             </tr>
         </thead>
-        <tbody id="smart-tbody"></tbody>
+        <tbody></tbody>
     </table>
 </template>
 
 <template id="smart-row-tpl">
     <tr>
+        <td><span class="smart-dot"></span></td>
         <td class="smart-col-id"></td>
         <td class="smart-col-name"></td>
-        <td class="smart-col-value"></td>
-        <td class="smart-col-worst"></td>
-        <td class="smart-col-thresh"></td>
         <td class="smart-col-raw"></td>
     </tr>
 </template>
