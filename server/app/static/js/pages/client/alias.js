@@ -1,16 +1,18 @@
+import { qs, on, show, hide, setContent } from "../../lib/anvil/dom.js";
+
 export function initAlias(mac) {
-    document.getElementById("edit-alias-btn")?.addEventListener("click", () => {
-        document.getElementById("alias-form").style.display = "block";
-        document.getElementById("alias-input").focus();
+    on(qs("#edit-alias-btn"), "click", () => {
+        show(qs("#alias-form"));
+        qs("#alias-input")?.focus();
     });
 
-    document.getElementById("cancel-alias-btn")?.addEventListener("click", () => {
-        document.getElementById("alias-form").style.display = "none";
+    on(qs("#cancel-alias-btn"), "click", () => {
+        hide(qs("#alias-form"));
     });
 
-    document.getElementById("alias-edit-form")?.addEventListener("submit", async (e) => {
+    on(qs("#alias-edit-form"), "submit", async (e) => {
         e.preventDefault();
-        const alias = document.getElementById("alias-input").value.trim();
+        const alias = qs("#alias-input")?.value.trim();
         if (!alias) return;
         const res = await fetch(`/api/clients/${mac}/alias`, {
             method: "POST",
@@ -18,8 +20,8 @@ export function initAlias(mac) {
             body: JSON.stringify({ alias }),
         });
         if (res.ok) {
-            document.getElementById("machine-alias").textContent = alias;
-            document.getElementById("alias-form").style.display = "none";
+            setContent(qs("#machine-alias"), alias);
+            hide(qs("#alias-form"));
         } else {
             alert("Erro ao salvar nome");
         }
@@ -28,8 +30,7 @@ export function initAlias(mac) {
 
 export function updateAlias(alias) {
     if (!alias) return;
-    const display = document.getElementById("machine-alias");
-    if (display) display.textContent = alias;
-    const input = document.getElementById("alias-input");
+    setContent(qs("#machine-alias"), alias);
+    const input = qs("#alias-input");
     if (input && !input.value) input.value = alias;
 }
