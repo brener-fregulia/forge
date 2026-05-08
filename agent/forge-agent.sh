@@ -16,6 +16,6 @@ BASE_INVENTORY=$(inventory_collect_base)
 WS_URL="ws://$SERVER_IP:$SERVER_PORT/ws/agent/$MAC"
 
 DISKS_INVENTORY=$(inventory_collect_disks)
-spindown_hdds
+post_inventory_maintenance
 
 forge_loop "$BASE_INVENTORY" "$DISKS_INVENTORY" "$WS_URL"

@@ -5,3 +5,7 @@ spindown_hdds() {
         hdparm -y /dev/$dev > /dev/null 2>&1
     done
 }
+
+post_inventory_maintenance() {
+    spindown_hdds
+}
