@@ -3,12 +3,17 @@
 ```
 /opt/forge/
   agent/
-    forge-agent.sh             <- entrypoint (~20 linhas)
+    forge-agent.sh             <- entrypoint, orquestrador principal
     lib/
       network.sh               <- aguarda rede, detecta IFACE/MAC
-      inventory.sh             <- hardware, discos, SMART, usuarios, GPU, RAM slots
+      inventory.sh             <- orquestrador de inventario
+      inventory/
+        hardware.sh            <- CPU, RAM, GPU, slots de RAM
+        drives.sh              <- discos, SMART, drive letters, usuarios Windows
+      maintenance.sh           <- acoes pos-inventario (spindown HDDs, etc)
       websocket.sh             <- loop WebSocket, FIFO, watchdog, comandos
       json.sh                  <- escape JSON
+      forge-ls.sh              <- listagem de diretorios para o config-deploy
 
   server/
     .env                       <- configuracao local (nao commitado)
@@ -34,13 +39,13 @@
         ws.py                  <- endpoints WebSocket
         api/
           __init__.py          <- agrega routers
-          clients.py           <- /api/clients/*
+          clients.py           <- /api/clients/* (tags: clients)
           server/
             __init__.py
             status.py          <- /api/server/status
             cpu.py             <- /api/server/cpu
             ram.py             <- /api/server/ram
-            storage.py         <- /api/server/storage
+            storage.py         <- /api/server/storage (tags: server)
       templates/
         base.html
         dashboard.html
@@ -55,10 +60,9 @@
             command.html       <- form de comando shell
             log.html           <- log + limpar
           modals/
-            smart.html
-            deploy.html              <- modal antigo (backup temporario)
+            smart.html         <- modal SMART com templates
             config-deploy/
-              index.html             <- modal shell (overlay, header, footer)
+              index.html       <- modal shell (overlay, header, footer)
               tabs/
                 disco.html
                 backup.html
@@ -69,6 +73,7 @@
           style.css            <- entry point (imports)
           base.css             <- variaveis, reset, layout
           components.css       <- agregador de componentes
+          modals.css           <- agregador de modais
           components/
             button.css
             badge.css
@@ -76,18 +81,23 @@
             modal.css
             progress.css
             loading.css
-            tabs.css                 <- componente de abas reutilizavel
+            tabs.css
+            tables/
+              base.css         <- estilos base compartilhados entre tabelas
+              disks.css        <- estilos especificos da tabela de discos
+              users.css        <- estilos especificos da tabela de usuarios
           pages/
             dashboard.css
-            server-status.css
+            dashboard-server-status.css
             client.css
           modals/
             smart.css
-            deploy.css
-            config-deploy.css
-          tables/
-            disks.css
-            users.css
+            config-deploy/
+              base.css         <- estilos compartilhados entre abas
+              backup.css
+              disco.css
+              so.css
+              pos.css
         js/
           dashboard.js         <- entrypoint dashboard
           client.js            <- entrypoint client
@@ -96,38 +106,46 @@
             clipboard.js       <- botao copiar
             ws.js              <- wrapper WebSocket com reconexao automatica
             modal.js           <- utilitarios de modal reutilizaveis
+            tabs.js            <- componente de abas reutilizavel
           components/
             disks-table.js     <- renderDisks, initSmartModal
             users-table.js     <- renderUsers
             hardware-card.js   <- renderHardware, modal RAM
-            deploy-modal.js          <- modal antigo (backup temporario)
-            config-deploy/
-              index.js               <- orquestrador (modal, abas, navegacao)
-              tabs/
-                disco.js
-                backup.js
-                so.js
-                pos.js
           pages/
             dashboard/
               client-grid.js   <- grid de cards via WebSocket
               server-status.js <- polling status + abertura de modais
               modals/
-                server-cpu.js  <- renderCpuModal
-                server-ram.js  <- renderRamModal
-                server-storage.js <- renderStorageModal
+                server-cpu.js
+                server-ram.js
+                server-storage.js
             client/
-              alias.js         <- edicao de alias
-              command.js       <- envio de comandos shell
-              log.js           <- log + limpar
+              alias.js
+              command.js
+              log.js
               deploy.js        <- botao executar + initDeploy
+              modals/
+                config-deploy/
+                  index.js     <- orquestrador (modal, abas, navegacao)
+                  tabs/
+                    disco.js
+                    backup.js
+                    so.js
+                    pos.js
 
   scripts/
-    build-initramfs.sh         <- reconstroi initramfs Alpine completo
+    build-initramfs.sh         <- orquestrador do build
+    initramfs/
+      env.sh                   <- variaveis compartilhadas
+      01-check.sh              <- verifica dependencias
+      02-prepare.sh            <- limpa e prepara workdir
+      03-extract.sh            <- extrai initramfs base
+      04-drivers.sh            <- monta modloop, copia drivers
+      05-packages.sh           <- extrai apks, copia binarios e libs
+      06-agent.sh              <- copia websocat, forge-agent e libs
+      07-patch-init.sh         <- patcha o /init
+      08-repack.sh             <- reempacota e gera initramfs final
     client-shell.sh            <- shell remota netcat (debug)
-
-  drivers/
-    rtl8821au/                 <- driver WiFi USB (DKMS)
 
   build/                       <- .gitignored
     websocat                   <- binario estatico musl
