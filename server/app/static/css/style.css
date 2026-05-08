@@ -2,7 +2,7 @@
 @import url('/static/css/components.css');
 @import url('/static/css/modals.css');
 @import url('/static/css/pages/dashboard.css');
-@import url('/static/css/pages/server-status.css');
+@import url('/static/css/pages/dashboard-server-status.css');
 @import url('/static/css/pages/client.css');
 @import url('/static/css/tables/disks.css');
 @import url('/static/css/tables/users.css');
