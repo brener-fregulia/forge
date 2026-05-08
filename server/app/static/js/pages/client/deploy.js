@@ -1,4 +1,4 @@
-import { initConfigDeploy } from "../../components/config-deploy/index.js";
+import { initConfigDeploy } from "./modals/config-deploy/index.js";
 
 export function initDeploy(mac) {
     initConfigDeploy(() => mac);

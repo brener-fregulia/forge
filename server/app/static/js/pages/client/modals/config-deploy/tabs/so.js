@@ -1,4 +1,4 @@
-import { formatBytes } from "../../../lib/format.js";
+import { formatBytes } from "../../../../../lib/format.js";
 
 let _selected = null;
 let _onChangeCb = null;
