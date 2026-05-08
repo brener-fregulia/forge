@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from fastapi import APIRouter
 from app.routes.api.server.status import disk_info
-from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, HOT_CACHE_LABEL, COLD_STORAGE_LABEL
+from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, HOT_CACHE_LABEL, COLD_STORAGE_LABEL, STORAGE_MODE
 
 router = APIRouter()
 
@@ -25,14 +25,7 @@ def _disk_smart(dev: str) -> dict:
             ["sudo", "smartctl", "-H", "-i", "-A", "-j", dev],
             capture_output=True, text=True
         )
-        data = _json.loads(result.stdout)
-        return {
-            "passed": data.get("smart_status", {}).get("passed"),
-            "model": data.get("model_name", ""),
-            "serial": data.get("serial_number", ""),
-            "temp": data.get("temperature", {}).get("current"),
-            "power_on_hours": data.get("power_on_time", {}).get("hours"),
-        }
+        return _json.loads(result.stdout)
     except Exception:
         return {}
 
@@ -41,7 +34,6 @@ def _hot_disks() -> list[dict]:
     dev = _resolve_dev(HOT_LABEL)
     if not dev:
         return []
-    # Remove número da partição para obter o disco pai (sda1 → sda, nvme0n1p1 → nvme0n1)
     parent = re.sub(r'p?\d+$', '', dev.replace('/dev/', ''))
     try:
         out = subprocess.check_output(
@@ -50,12 +42,11 @@ def _hot_disks() -> list[dict]:
         )
         disks = []
         for d in _json.loads(out).get("blockdevices", []):
-            smart = _disk_smart(f"/dev/{d['name']}")
             disks.append({
                 "name": d["name"],
                 "size": d.get("size"),
                 "model": d.get("model"),
-                **smart
+                "smart": _disk_smart(f"/dev/{d['name']}"),
             })
         return disks
     except Exception:
@@ -74,12 +65,13 @@ def _cold_disks_and_raid() -> tuple[list[dict], dict]:
             capture_output=True, text=True
         )
         for line in detail.stdout.splitlines():
-            # Membros do RAID aparecem como: "active sync   /dev/sdb"
             match = re.search(r'/dev/(sd[a-z]+)\s*$', line)
             if match:
                 m = match.group(1)
-                smart = _disk_smart(f"/dev/{m}")
-                disks.append({"name": m, **smart})
+                disks.append({
+                    "name": m,
+                    "smart": _disk_smart(f"/dev/{m}"),
+                })
             if ":" in line:
                 k, _, v = line.strip().partition(":")
                 k = k.strip().lower().replace(" ", "_")
@@ -110,8 +102,6 @@ async def server_storage():
 
     return result
 
-
-from app.config import HOT_CACHE_PATH
 
 @router.get("/server/isos")
 async def list_isos():
