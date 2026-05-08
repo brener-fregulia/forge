@@ -5,7 +5,7 @@ import asyncio
 from app.state import state
 from app.db.base import AsyncSessionLocal
 
-router = APIRouter()
+router = APIRouter(tags=["clients"])
 
 
 class CommandRequest(BaseModel):
