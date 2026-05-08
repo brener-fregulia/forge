@@ -97,6 +97,10 @@ async function updateStatus() {
             const raidClass = { healthy: "ok", syncing: "warn", degraded: "critical" };
             set("ss-raid", s.raid_status, raidClass[s.raid_status] || "");
         }
+
+        //UPTIME
+        set("ss-uptime", s.uptime);
+        
     } catch (e) {
         console.warn("[FORGE] status error:", e);
     }
