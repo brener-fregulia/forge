@@ -70,17 +70,33 @@ async function updateStatus() {
         set("ss-ram", `${ram.text} (${s.ram.percent}%)`,
             s.ram.percent > 90 ? "critical" : s.ram.percent > 75 ? "warn" : "");
 
-        const hot = fmt(s.hot_cache.used, s.hot_cache.total);
-        set("ss-hot", s.hot_cache.error ? "indisponível" : hot.text,
-            s.hot_cache.error ? "warn" : hot.pct > 90 ? "critical" : "");
+        const mode = s.storage_mode ?? "hot_cold_raid";
 
-        const cold = fmt(s.cold_storage.used, s.cold_storage.total);
-        set("ss-cold", s.cold_storage.error ? "indisponível" : cold.text,
-            s.cold_storage.error ? "warn" : cold.pct > 90 ? "critical" : "");
+        // Hot Cache
+        const hotItem = document.getElementById("ss-item-hot");
+        if (hotItem) hotItem.style.display = mode === "simple" ? "none" : "";
+        if (mode !== "simple" && s.hot_cache) {
+            const hot = fmt(s.hot_cache.used, s.hot_cache.total);
+            set("ss-hot", s.hot_cache.error ? "indisponível" : hot.text,
+                s.hot_cache.error ? "warn" : hot.pct > 90 ? "critical" : "");
+        }
 
-        const raidClass = { healthy: "ok", syncing: "warn", degraded: "critical" };
-        set("ss-raid", s.raid_status, raidClass[s.raid_status] || "");
-        set("ss-uptime", s.uptime);
+        // Cold Storage
+        const coldItem = document.getElementById("ss-item-cold");
+        if (coldItem) coldItem.style.display = mode === "hot_cold_raid" ? "" : "none";
+        if (mode === "hot_cold_raid" && s.cold_storage) {
+            const cold = fmt(s.cold_storage.used, s.cold_storage.total);
+            set("ss-cold", s.cold_storage.error ? "indisponível" : cold.text,
+                s.cold_storage.error ? "warn" : cold.pct > 90 ? "critical" : "");
+        }
+
+        // RAID
+        const raidItem = document.getElementById("ss-item-raid");
+        if (raidItem) raidItem.style.display = mode === "hot_cold_raid" ? "" : "none";
+        if (mode === "hot_cold_raid") {
+            const raidClass = { healthy: "ok", syncing: "warn", degraded: "critical" };
+            set("ss-raid", s.raid_status, raidClass[s.raid_status] || "");
+        }
     } catch (e) {
         console.warn("[FORGE] status error:", e);
     }
