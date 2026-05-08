@@ -1,28 +1,3 @@
-.disks-table table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    margin: 1rem 0;
-}
-.disks-table th,
-.disks-table td {
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
-}
-.disks-table th {
-    background: var(--bg);
-    color: var(--text-dim);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-}
-.disks-table tr:last-child td { border-bottom: none; }
 .disks-table tr.disk-main td {
     font-weight: 600;
     background: rgba(247, 129, 102, 0.05);
@@ -47,7 +22,6 @@
 .disk-serial code { color: var(--text-dim); font-size: 0.75rem; }
 .disk-name-link { color: var(--accent); text-decoration: none; }
 .disk-name-link:hover { text-decoration: underline; }
-
 .disk-drive-label {
     font-size: 0.8rem;
     color: var(--text-dim);
