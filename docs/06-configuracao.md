@@ -9,6 +9,24 @@
         address 192.168.100.1
         netmask 255.255.255.0
 
+## Interfaces de rede
+
+Interfaces fixadas por MAC via systemd-network para evitar renomeacao apos mudancas de hardware:
+
+/etc/systemd/network/10-eth0.link
+    eth0  — 3c:7c:3f:7b:23:b8 — interface cabeada principal (PXE)
+
+/etc/systemd/network/11-sfp0.link
+    sfp0  — 90:e2:ba:72:79:f4 — porta SFP+ 0 (Intel X520)
+
+/etc/systemd/network/12-sfp1.link
+    sfp1  — 90:e2:ba:72:79:f5 — porta SFP+ 1 (Intel X520)
+
+/etc/network/interfaces:
+    eth0: 192.168.100.1/24 — rede PXE dos clientes
+
+dnsmasq.conf atualizado para interface=eth0.
+
 ## NAT (clientes com internet via WiFi)
 
     # /etc/sysctl.conf

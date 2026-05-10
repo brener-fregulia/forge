@@ -10,6 +10,7 @@
 | sdb + sdc 2x466GB HDD | HDD RAID1 (/dev/md127) | Cold Storage de longo prazo | /mnt/cold |
 | TP-Link Archer T2U Plus | WiFi USB | Uplink | wlan0 |
 | Intelbras XNB 600VA | Nobreak off-line | Protecao contra pisca-pisca e quedas curtas (temporario) | — |
+| Intel X520-DA2 | NIC 10GbE 2x SFP+ | Rede de alta velocidade | sfp0, sfp1 |
 
 Notas:
 - ISOs Windows ficam em /home/isos (symlink /srv/isos -> /home/isos) para nao encher a raiz do NVMe
@@ -44,7 +45,7 @@ DKMS recompila automaticamente em cada atualizacao de kernel.
 | SSD SATA x2 | A definir | Hot Cache em RAID1 |
 | HDD x2 inicial | 2x Seagate Ironwolf PRO NAS 4TB | Cold Storage |
 | HDD x4 futuro | 4x Seagate Ironwolf PRO NAS 4TB | Expansao Cold Storage |
-| NIC 10GbE | Intel X520-DA2 (2x SFP+, PCIe 2.0 x8) | Roda em PCIe 3.0 x8 no slot x16 do B450M — sem conflito com NVMe; requer cabos DAC SFP+ |
+| Intel X520-DA2 + cabos DAC SFP+ | [x] instalado e funcional — 10GbE confirmado nas duas portas |
 | Switch | MikroTik CRS326-24G-2S+RM | 24x GbE + 2x SFP+, SNMP v1/v2c — habilita deteccao de portas e WoL futuro |
 
 RAID do Cold Storage futuro ainda a definir. Candidatos: RAID5, RAID6 ou ZFS RAIDZ2.
