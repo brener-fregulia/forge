@@ -1,32 +1,37 @@
+import { qs, on, addClass, removeClass } from "./anvil/dom.js";
+
 /**
  * Cria e gerencia um modal genérico.
  * @param {string} overlayId - ID do elemento overlay
- * @param {Object} opts - opções
+ * @param {Object} [opts]
+ * @param {Function} [opts.onClose] - Callback executado ao fechar
+ * @returns {{ open: Function, close: Function }|null}
  */
 export function initModal(overlayId, { onClose } = {}) {
     const overlay = document.getElementById(overlayId);
     if (!overlay) return null;
 
     const close = () => {
-        overlay.classList.remove("open");
+        removeClass(overlay, "open");
         onClose?.();
     };
 
-    overlay.querySelector(".modal-close")?.addEventListener("click", close);
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+    on(qs(".modal-close", overlay), "click", close);
+    on(overlay, "click", (e) => { if (e.target === overlay) close(); });
+    on(document, "keydown", (e) => { if (e.key === "Escape") close(); });
 
     return {
-        open: () => overlay.classList.add("open"),
+        open:  () => addClass(overlay, "open"),
         close,
     };
 }
 
 /**
- * Renderiza um footer padrão de modal com botões Cancelar e ação primária.
- * @param {string} confirmId - ID do botão de confirmação
- * @param {string} confirmLabel - texto do botão (ex: "💾 Salvar")
- * @param {string} cancelId - ID do botão cancelar
+ * Renderiza um footer padrao de modal com botoes Cancelar e acao primaria.
+ * @param {string} confirmId - ID do botao de confirmacao
+ * @param {string} confirmLabel - Texto do botao (ex: "Salvar")
+ * @param {string} [cancelId="modal-cancel-btn"] - ID do botao cancelar
+ * @returns {string} HTML do footer
  */
 export function renderModalFooter(confirmId, confirmLabel, cancelId = "modal-cancel-btn") {
     return `
