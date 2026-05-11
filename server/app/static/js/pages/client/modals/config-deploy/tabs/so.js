@@ -1,20 +1,21 @@
+import { qs, qsa, setContent, setHtml, cloneTemplate, toggleClass } from "../../../../../lib/anvil/dom.js";
 import { formatBytes } from "../../../../../lib/format.js";
 
-let _selected = null;
+let _selected   = null;
 let _onChangeCb = null;
 
 export function onSoChange(cb) { _onChangeCb = cb; }
-export function collectSo() { return _selected; }
+export function collectSo()    { return _selected; }
 
 export function renderSo(isos, savedIso = undefined) {
-    const container = document.getElementById("cd-so-list");
+    const container = qs("#cd-so-list");
     if (!container) return;
 
     _selected = savedIso !== undefined ? savedIso : undefined;
-    container.innerHTML = "";
+    setHtml(container, "");
 
-    const optionTpl = document.getElementById("cd-so-option-tpl");
-    const groupTpl  = document.getElementById("cd-so-group-tpl");
+    const optionTpl = qs("#cd-so-option-tpl");
+    const groupTpl  = qs("#cd-so-group-tpl");
 
     _appendOption(container, optionTpl, { filename: "", size: null }, savedIso, "Não instalar");
 
@@ -27,19 +28,17 @@ export function renderSo(isos, savedIso = undefined) {
     const labels = { windows: "Windows", linux: "Linux", outros: "Outros" };
     for (const [cat, items] of Object.entries(groups)) {
         if (!items.length) continue;
-        const group = groupTpl.content.cloneNode(true);
+        const group   = groupTpl.content.cloneNode(true);
         const groupEl = group.querySelector(".cd-so-group");
-        groupEl.querySelector(".cd-so-group-label").textContent = labels[cat];
-        for (const iso of items) {
-            _appendOption(groupEl, optionTpl, iso, savedIso);
-        }
+        setContent(qs(".cd-so-group-label", groupEl), labels[cat]);
+        for (const iso of items) _appendOption(groupEl, optionTpl, iso, savedIso);
         container.appendChild(groupEl);
     }
 
-    container.querySelectorAll('input[name="cd-windows-iso"]').forEach(radio => {
+    qsa('input[name="cd-windows-iso"]', container).forEach(radio => {
         radio.addEventListener("change", () => {
-            container.querySelectorAll(".cd-disk-option")
-                .forEach(el => el.classList.toggle("selected", el.dataset.name === radio.value));
+            qsa(".cd-disk-option", container)
+                .forEach(el => toggleClass(el, "selected", el.dataset.name === radio.value));
             _selected = radio.value === "" ? null : radio.value;
             _onChangeCb?.(radio.value);
         });
@@ -58,13 +57,13 @@ function _appendOption(parent, tpl, iso, savedIso, labelOverride = null) {
     );
 
     label.dataset.name = iso.filename;
-    if (isSelected) label.classList.add("selected");
+    toggleClass(label, "selected", isSelected);
 
-    radio.value = iso.filename;
-    if (isSelected) radio.checked = true;
+    radio.value   = iso.filename;
+    radio.checked = isSelected;
 
-    name.textContent = labelOverride ?? iso.filename;
-    meta.textContent = iso.size ? formatBytes(iso.size) : "";
+    setContent(name, labelOverride ?? iso.filename);
+    setContent(meta, iso.size ? formatBytes(iso.size) : "");
 
     parent.appendChild(node);
 }
