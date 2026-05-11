@@ -1,20 +1,22 @@
+import { qs, setContent, cloneTemplate, toggleClass } from "../../../../../lib/anvil/dom.js";
+
 export function renderPos(plan) {
-    const container = document.getElementById("cd-pos-list");
-    const tpl       = document.getElementById("cd-pos-option-tpl");
-    if (!container || !tpl) return;
+    const container = qs("#cd-pos-list");
+    if (!container) return;
 
     container.innerHTML = "";
 
     const hasBackup = plan?.backup ?? false;
 
     const options = [
-        { id: "cd-pos-drivers",  label: "Injeção de drivers (SDIO)", checked: plan?.drivers ?? true,      disabled: false },
-        { id: "cd-pos-debloat",  label: "Debloat",                   checked: plan?.debloat ?? true,      disabled: false },
-        { id: "cd-pos-restore",  label: "Restaurar backup",          checked: plan?.restore ?? hasBackup, disabled: !hasBackup },
+        { id: "cd-pos-drivers", label: "Injeção de drivers (SDIO)", checked: plan?.drivers ?? true,      disabled: false },
+        { id: "cd-pos-debloat", label: "Debloat",                   checked: plan?.debloat ?? true,      disabled: false },
+        { id: "cd-pos-restore", label: "Restaurar backup",          checked: plan?.restore ?? hasBackup, disabled: !hasBackup },
     ];
 
     for (const opt of options) {
-        const node     = tpl.content.cloneNode(true);
+        const node     = cloneTemplate("cd-pos-option-tpl");
+        if (!node) continue;
         const checkbox = node.querySelector("input[type='checkbox']");
         const label    = node.querySelector("label");
         const wrapper  = node.querySelector(".cd-pos-option");
@@ -23,9 +25,9 @@ export function renderPos(plan) {
         checkbox.checked  = opt.checked;
         checkbox.disabled = opt.disabled;
         label.htmlFor     = opt.id;
-        label.textContent = opt.label;
+        setContent(label, opt.label);
 
-        if (opt.disabled) wrapper.classList.add("disabled");
+        toggleClass(wrapper, "disabled", opt.disabled);
 
         container.appendChild(node);
     }
@@ -33,8 +35,8 @@ export function renderPos(plan) {
 
 export function collectPos() {
     return {
-        drivers: document.getElementById("cd-pos-drivers")?.checked ?? false,
-        debloat: document.getElementById("cd-pos-debloat")?.checked  ?? false,
-        restore: document.getElementById("cd-pos-restore")?.checked  ?? false,
+        drivers: qs("#cd-pos-drivers")?.checked ?? false,
+        debloat: qs("#cd-pos-debloat")?.checked ?? false,
+        restore: qs("#cd-pos-restore")?.checked ?? false,
     };
 }
