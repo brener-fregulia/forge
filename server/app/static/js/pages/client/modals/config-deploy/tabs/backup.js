@@ -70,12 +70,13 @@ function _renderTree(container, driveLetters) {
         const header   = node.querySelector(".cd-tree-volume-header");
         const labelEl  = node.querySelector(".cd-tree-volume-label");
         const children = node.querySelector(".cd-tree-children");
+        const checkBtn = node.querySelector(".cd-tree-check");
 
         setContent(labelEl, `${vol.letter}: ${vol.label || (vol.letter === "C" ? "Windows" : "Dados")} (${vol.device})`);
         volEl.dataset.device = vol.device;
         volEl.dataset.path   = "";
 
-        _initCheck(node.querySelector(".cd-tree-check"), vol.device, "");
+        _initCheck(checkBtn, vol.device, "");
 
         header.addEventListener("click", (e) => {
             if (e.target.classList.contains("cd-tree-check")) return;
@@ -87,7 +88,7 @@ function _renderTree(container, driveLetters) {
             }
         });
 
-        container.appendChild(node);
+        container.appendChild(volEl);
     }
 }
 
