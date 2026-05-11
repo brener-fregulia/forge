@@ -1,4 +1,4 @@
-import { qs, on, show, hide, setContent, addClass, removeClass } from "../../lib/anvil/dom.js";
+import { qs, on, show, hide, setContent, setHtml, addClass, removeClass } from "../../lib/anvil/dom.js";
 import { formatBytes } from "../../lib/format.js";
 import { renderCpuModal } from "./modals/server-cpu.js";
 import { renderRamModal } from "./modals/server-ram.js";
@@ -16,18 +16,17 @@ on(document, "keydown", (e) => { if (e.key === "Escape") removeClass(modal, "ope
 
 async function openModal(title, endpoint, renderer) {
     setContent(modalTitle, title);
-    modalBody.innerHTML = '<span class="loading"><span class="spinner"></span>Carregando…</span>';
+    setHtml(modalBody, '<span class="loading"><span class="spinner"></span>Carregando…</span>');
     addClass(modal, "open");
     try {
-        const res  = await fetch(endpoint);
-        const data = await res.json();
-        
+        const res    = await fetch(endpoint);
+        const data   = await res.json();
         const result = renderer(data);
         modalBody.innerHTML = "";
         if (typeof result === "string") modalBody.innerHTML = result;
         else modalBody.appendChild(result);
     } catch (e) {
-        modalBody.innerHTML = `<p class="empty">Erro ao carregar: ${e}</p>`;
+        setHtml(modalBody, `<p class="empty">Erro ao carregar: ${e}</p>`);
     }
 }
 
