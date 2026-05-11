@@ -42,7 +42,10 @@ function _initRamModal(slots) {
     on(document,  "keydown", (e) => { if (e.key === "Escape") close(); });
 
     on(openBtn, "click", () => {
-        body.innerHTML = _renderRamSlots(slots);
+        const result = _renderRamSlots(slots);
+        body.innerHTML = "";
+        if (typeof result === "string") body.innerHTML = result;
+        else body.appendChild(result);
         addClass(overlay, "open");
     });
 }
@@ -51,8 +54,6 @@ function _renderRamSlots(slots) {
     if (!slots.length) return '<p class="empty">Sem informações de módulos.</p>';
 
     const table = cloneTemplate("ram-slots-table-tpl");
-    if (!table) return '';
-
     const tbody = table.getElementById("ram-slots-tbody");
 
     for (const s of slots) {
@@ -61,19 +62,17 @@ function _renderRamSlots(slots) {
         const tr  = row.querySelector("tr");
         if (s.size_mb === 0) tr.style.opacity = "0.4";
 
-        qs(".slot-locator",     tr).textContent = s.locator;
-        qs(".slot-bank",        tr).textContent = s.bank;
-        qs(".slot-size",        tr).textContent = s.size_mb === 0 ? "vazio" : `${(s.size_mb / 1024).toFixed(1)} GB`;
-        qs(".slot-type",        tr).textContent = s.type || "—";
-        qs(".slot-speed",       tr).textContent = s.speed_mts ? `${s.speed_mts} MT/s` : "—";
-        qs(".slot-width",       tr).textContent = s.width_bits ? `${s.width_bits} bits` : "—";
-        qs(".slot-manufacturer",tr).textContent = s.manufacturer || "—";
-        qs(".slot-part",        tr).textContent = s.part || "—";
+        qs(".slot-locator",      tr).textContent = s.locator;
+        qs(".slot-bank",         tr).textContent = s.bank;
+        qs(".slot-size",         tr).textContent = s.size_mb === 0 ? "vazio" : `${(s.size_mb / 1024).toFixed(1)} GB`;
+        qs(".slot-type",         tr).textContent = s.type || "—";
+        qs(".slot-speed",        tr).textContent = s.speed_mts ? `${s.speed_mts} MT/s` : "—";
+        qs(".slot-width",        tr).textContent = s.width_bits ? `${s.width_bits} bits` : "—";
+        qs(".slot-manufacturer", tr).textContent = s.manufacturer || "—";
+        qs(".slot-part",         tr).textContent = s.part || "—";
 
         tbody.appendChild(tr);
     }
 
-    const container = document.createElement("div");
-    container.appendChild(table);
-    return container.innerHTML;
+    return table;
 }
