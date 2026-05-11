@@ -1,0 +1,30 @@
+[Unit]
+Description=FORGE — Fleet Orchestration & Recovery Global Engine
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=exec
+User=forge
+Group=forge
+WorkingDirectory=/opt/forge/server
+
+# Carrega variáveis do .env
+EnvironmentFile=/opt/forge/server/.env
+
+ExecStart=/opt/forge/server/.venv/bin/uvicorn app.main:app \
+    --host 0.0.0.0 \
+    --port 8080 \
+    --ws-ping-interval 3 \
+    --ws-ping-timeout 2
+
+# Sem --reload em produção
+Restart=on-failure
+RestartSec=5
+
+# Hardening básico
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
