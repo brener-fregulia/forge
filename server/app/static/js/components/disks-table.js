@@ -1,3 +1,4 @@
+import { qs, on, setContent, setHtml, cloneTemplate } from "../lib/anvil/dom.js";
 import { formatBytes } from "../lib/format.js";
 import { openSmartModal } from "./smart-modal.js";
 
@@ -5,7 +6,7 @@ let _disks = [];
 let _smart = {};
 
 export function tryInitialRender() {
-    const raw = document.getElementById("disks")?.textContent?.trim();
+    const raw = qs("#disks")?.textContent?.trim();
     if (raw && raw !== "[]" && raw !== "null") {
         try {
             const disks = JSON.parse(raw);
@@ -39,26 +40,23 @@ export function renderDisks(disks, smart, driveLetters) {
     _disks = disks;
     _smart = smart;
 
-    const container = document.getElementById("disks-rendered");
+    const container = qs("#disks-rendered");
     if (!container || !disks?.length) return;
 
-    const tableTpl = document.getElementById("disks-table-tpl");
-    const mainTpl  = document.getElementById("disk-row-main-tpl");
-    const partTpl  = document.getElementById("disk-row-part-tpl");
-    if (!tableTpl || !mainTpl || !partTpl) return;
-
-    const table = tableTpl.content.cloneNode(true);
+    const table = cloneTemplate("disks-table-tpl");
+    if (!table) return;
     const tbody = table.getElementById("disks-tbody");
 
     for (const d of disks) {
         const isPart = d.type === "part";
-        const tpl    = isPart ? partTpl : mainTpl;
-        const row    = tpl.content.cloneNode(true);
-        const tr     = row.querySelector("tr");
+        const row    = cloneTemplate(isPart ? "disk-row-part-tpl" : "disk-row-main-tpl");
+        if (!row) continue;
+        const tr = row.querySelector("tr");
 
-        const nameEl = tr.querySelector(".disk-name");
+        // Nome + drive label
+        const nameEl = qs(".disk-name", tr);
         const dlabel = _driveLabel(d.name, driveLetters, disks, !isPart);
-        nameEl.textContent = d.name;
+        setContent(nameEl, d.name);
         if (dlabel) {
             const span = document.createElement("span");
             span.className   = "disk-drive-label";
@@ -66,34 +64,38 @@ export function renderDisks(disks, smart, driveLetters) {
             nameEl.appendChild(span);
         }
 
-        tr.querySelector(".disk-model").textContent = [d.vendor, d.model].filter(Boolean).join(" ") || "—";
-        const serialEl = tr.querySelector(".disk-serial");
+        // Modelo / serial
+        setContent(qs(".disk-model", tr), [d.vendor, d.model].filter(Boolean).join(" ") || "—");
+        const serialEl = qs(".disk-serial", tr);
         if (d.serial) {
             serialEl.className = "disk-serial";
             serialEl.innerHTML = `<code>${d.serial}</code>`;
         }
 
-        tr.querySelector(".disk-size").textContent = d.size ? formatBytes(d.size) : "—";
+        // Tamanho
+        setContent(qs(".disk-size", tr), d.size ? formatBytes(d.size) : "—");
 
-        const fstypeEl = tr.querySelector(".disk-fstype");
+        // Filesystem
+        const fstypeEl = qs(".disk-fstype", tr);
         if (d.fstype) {
             const isNtfs = d.fstype.toLowerCase() === "ntfs";
-            fstypeEl.innerHTML = `<span class="fs-badge ${isNtfs ? 'fs-ntfs' : 'fs-other'}">${d.fstype}</span>`;
+            fstypeEl.innerHTML = `<span class="fs-badge ${isNtfs ? "fs-ntfs" : "fs-other"}">${d.fstype}</span>`;
         } else {
-            fstypeEl.textContent = "—";
+            setContent(fstypeEl, "—");
         }
 
-        const healthEl = tr.querySelector(".disk-health");
+        // Saúde SMART
+        const healthEl = qs(".disk-health", tr);
         if (isPart) {
-            healthEl.textContent = "—";
+            setContent(healthEl, "—");
         } else if (smart && smart[d.name] !== undefined) {
             const s      = smart[d.name];
             const passed = s.smart_status?.passed;
             const temp   = s.temperature?.current;
             const badge  = document.createElement("span");
-            badge.className   = passed === true ? "health-badge health-ok"
-                : passed === false ? "health-badge health-fail"
-                : "health-badge health-unknown";
+            badge.className   = passed === true  ? "health-badge health-ok"
+                              : passed === false ? "health-badge health-fail"
+                              : "health-badge health-unknown";
             badge.textContent = passed === true ? "OK" : passed === false ? "FAIL" : "?";
             healthEl.prepend(badge);
             if (temp != null) {
@@ -112,11 +114,10 @@ export function renderDisks(disks, smart, driveLetters) {
         tbody.appendChild(tr);
     }
 
-    container.innerHTML = "";
+    setHtml(container, "");
     container.appendChild(table);
 
-    document.getElementById("open-smart-btn")?.addEventListener("click", () => {
-        // Temporário em disks-table.js, antes do openSmartModal
+    on(qs("#open-smart-btn"), "click", () => {
         console.log("[smart] disks:", _disks.filter(d => d.type === "disk").map(d => d.name));
         console.log("[smart] smart keys:", Object.keys(_smart));
         openSmartModal(_disks, _smart);
