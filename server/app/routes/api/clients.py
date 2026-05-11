@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import asyncio
 from app.state import state
 from app.db.base import AsyncSessionLocal
+import uuid
 
 router = APIRouter(tags=["clients"])
 
@@ -41,26 +42,47 @@ async def send_command(mac: str, payload: CommandRequest):
 async def exec_command(mac: str, payload: CommandRequest):
     client = state.get_client(mac)
     if not client:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        raise HTTPException(status_code=404)
 
-    loop = asyncio.get_event_loop()
+    cmd_id = str(uuid.uuid4())
+    loop   = asyncio.get_event_loop()
     future = loop.create_future()
-    client.pending_command = future
+    client.pending_commands[cmd_id] = future
 
     try:
-        await client.websocket.send_json({"type": "command", "command": payload.command})
+        await client.websocket.send_json({
+            "type":    "command",
+            "command": payload.command,
+            "id":      cmd_id,
+        })
     except Exception as e:
-        client.pending_command = None
+        del client.pending_commands[cmd_id]
         raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
 
     try:
-        output = await asyncio.wait_for(future, timeout=15.0)
+        output = await asyncio.wait_for(future, timeout=30.0)
     except asyncio.TimeoutError:
         output = ""
     finally:
-        client.pending_command = None
+        client.pending_commands.pop(cmd_id, None)
 
     return {"output": output}
+
+
+@router.post("/clients/{mac}/command/result")
+async def command_result(mac: str, payload: dict):
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404)
+
+    cmd_id = payload.get("id")
+    output = payload.get("output", "")
+
+    future = client.pending_commands.get(cmd_id)
+    if future and not future.done():
+        future.set_result(output)
+
+    return {"status": "ok"}
 
 
 @router.post("/clients/{mac}/log/clear")

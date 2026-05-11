@@ -24,7 +24,7 @@ class Client:
         self.alias: str | None = None
         self.deploy_plan: dict | None = None
         self.drive_letters: list[dict] = []
-        self.pending_command: asyncio.Future | None = None
+        self.pending_commands: dict[str, asyncio.Future] = {}
 
     def to_dict(self) -> dict[str, Any]:
         return {

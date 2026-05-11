@@ -71,11 +71,16 @@ forge_loop() {
                 "$WS_URL" < "$FIFO" | while read -r line; do
                 echo "$(date +%s)" > $LAST_MSG_FILE
                 CMD=$(cmd_extract "$line")
+                ID=$(echo "$line" | awk -F'"id":"' '{split($2,a,"\""); print a[1]}')
                 if [ -n "$CMD" ]; then
                     echo "[FORGE] cmd: $CMD" >&2
                     OUTPUT=$(sh -c "$CMD" 2>&1)
                     ESC=$(echo "$OUTPUT" | sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g')
-                    echo "{\"type\":\"command_output\",\"output\":\"$ESC\"}" > "$FIFO" &
+                    wget -qO- \
+                        --header="Content-Type: application/json" \
+                        --post-data="{\"id\":\"$ID\",\"output\":\"$ESC\"}" \
+                        "http://$SERVER_IP:$SERVER_PORT/api/clients/$MAC/command/result" \
+                        > /dev/null 2>&1 &
                 fi
             done
         )
