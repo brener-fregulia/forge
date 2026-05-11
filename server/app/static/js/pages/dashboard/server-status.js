@@ -20,7 +20,11 @@ async function openModal(title, endpoint, renderer) {
     try {
         const res  = await fetch(endpoint);
         const data = await res.json();
-        modalBody.innerHTML = renderer(data);
+        
+        const result = renderer(data);
+        modalBody.innerHTML = "";
+        if (typeof result === "string") modalBody.innerHTML = result;
+        else modalBody.appendChild(result);
     } catch (e) {
         modalBody.innerHTML = `<p class="empty">Erro ao carregar: ${e}</p>`;
     }

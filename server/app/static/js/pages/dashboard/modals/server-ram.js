@@ -1,25 +1,19 @@
 import { formatBytes } from "../../../lib/format.js";
+import { buildSummary, buildTable } from "../../../lib/anvil/builders.js";
 
 export function renderRamModal(d) {
-    const modules = (d.modules || []).map(m => `
-        <tr>
-            <td>${m.locator || "—"}</td>
-            <td>${m.size || "—"}</td>
-            <td>${m.type || "—"}</td>
-            <td>${m.speed || "—"}</td>
-            <td>${m.manufacturer || "—"}</td>
-            <td>${m.part_number || "—"}</td>
-        </tr>`).join("");
-    return `
-        <div class="info-summary">
-            <div class="info-summary-item"><strong>${formatBytes(d.total)}</strong><span>Total</span></div>
-            <div class="info-summary-item"><strong>${formatBytes(d.used)}</strong><span>Em uso</span></div>
-            <div class="info-summary-item"><strong>${formatBytes(d.available)}</strong><span>Disponível</span></div>
-            <div class="info-summary-item"><strong>${d.percent}%</strong><span>Uso</span></div>
-            <div class="info-summary-item"><strong>${d.slots_used} / ${d.slots_total}</strong><span>Slots usados</span></div>
-        </div>
-        <table class="forge-table" style="margin-top:1rem">
-            <thead><tr><th>Slot</th><th>Tamanho</th><th>Tipo</th><th>Velocidade</th><th>Fabricante</th><th>Modelo</th></tr></thead>
-            <tbody>${modules}</tbody>
-        </table>`;
+    const el = document.createDocumentFragment();
+    el.appendChild(buildSummary([
+        { label: "Total",        value: formatBytes(d.total) },
+        { label: "Em uso",       value: formatBytes(d.used) },
+        { label: "Disponível",   value: formatBytes(d.available) },
+        { label: "Uso",          value: `${d.percent}%` },
+        { label: "Slots usados", value: `${d.slots_used} / ${d.slots_total}` },
+    ]));
+    el.appendChild(buildTable(
+        ["Slot", "Tamanho", "Tipo", "Velocidade", "Fabricante", "Modelo"],
+        (d.modules || []).map(m => [m.locator, m.size, m.type, m.speed, m.manufacturer, m.part_number]),
+        { style: "margin-top:1rem" }
+    ));
+    return el;
 }
