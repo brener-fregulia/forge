@@ -1,4 +1,4 @@
-import { qsa, on, addClass, removeClass } from "./anvil/dom.js";
+import { qsa, on, addClass, removeClass } from "../anvil/dom.js";
 
 export function initClipboard() {
     qsa(".btn-copy").forEach(btn => {

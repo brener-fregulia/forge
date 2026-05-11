@@ -1,4 +1,4 @@
-import { qs, qsa, on, toggleClass } from "./anvil/dom.js";
+import { qs, qsa, on, toggleClass } from "../anvil/dom.js";
 
 /**
  * Componente de abas reutilizavel.

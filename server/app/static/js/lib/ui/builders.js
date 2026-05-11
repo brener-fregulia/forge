@@ -1,7 +1,7 @@
 /**
  * Builders do FORGE — componentes UI específicos do design system
  */
-import { el, append } from "./anvil/element.js";
+import { el, append } from "../anvil/element.js";
 
 /**
  * Constrói um bloco .info-summary com itens { label, value }

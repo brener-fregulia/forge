@@ -1,6 +1,6 @@
 import { qs, on, enable, disable } from "../../../../lib/anvil/dom.js";
-import { initModal } from "../../../../lib/modal.js";
-import { initTabs } from "../../../../lib/tabs.js";
+import { initModal } from "../../../../lib/ui/modal.js";
+import { initTabs } from "../../../../lib/ui/tabs.js";
 import { renderDisco, collectDisco } from "./tabs/disco.js";
 import { renderBackup, collectBackup, initBackup } from "./tabs/backup.js";
 import { renderSo, collectSo, onSoChange } from "./tabs/so.js";

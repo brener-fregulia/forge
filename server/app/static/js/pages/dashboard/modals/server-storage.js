@@ -1,5 +1,5 @@
 import { formatBytes } from "../../../lib/format.js";
-import { buildSummary, buildTable } from "../../../lib/builders.js";
+import { buildSummary, buildTable } from "../../../lib/ui/builders.js";
 import { el, append } from "../../../lib/anvil/element.js";
 import { openSmartModal } from "../../../components/smart-modal.js";
 

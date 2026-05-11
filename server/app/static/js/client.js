@@ -1,5 +1,5 @@
 import { createWS } from "./lib/ws.js";
-import { initClipboard } from "./lib/clipboard.js";
+import { initClipboard } from "./lib/ui/clipboard.js";
 import { renderHardware } from "./components/hardware-card.js";
 import { renderDisks, tryInitialRender } from "./components/disks-table.js";
 import { renderUsers } from "./components/users-table.js";

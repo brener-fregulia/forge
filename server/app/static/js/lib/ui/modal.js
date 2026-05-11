@@ -1,4 +1,4 @@
-import { qs, on, addClass, removeClass } from "./anvil/dom.js";
+import { qs, on, addClass, removeClass } from "../anvil/dom.js";
 
 /**
  * Cria e gerencia um modal genérico.

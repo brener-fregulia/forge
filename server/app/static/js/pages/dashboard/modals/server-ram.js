@@ -1,5 +1,5 @@
 import { formatBytes } from "../../../lib/format.js";
-import { buildSummary, buildTable } from "../../../lib/builders.js";
+import { buildSummary, buildTable } from "../../../lib/ui/builders.js";
 
 export function renderRamModal(d) {
     const el = document.createDocumentFragment();
