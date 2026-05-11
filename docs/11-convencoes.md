@@ -26,6 +26,12 @@
 
 ### JavaScript
 
+#### Anvil — framework UI proprio
+- Todos os arquivos JS devem usar os helpers de dom.js (qs, qsa, on, show, hide, etc)
+- Nunca usar document.querySelector, addEventListener ou classList diretamente nas features
+- Helpers DOM centralizados em lib/anvil/dom.js
+- Estado reativo via createStore em lib/anvil/state.js
+
 #### Separacao de responsabilidades por sufixo
 - `*.model.js` — logica pura sem DOM, testavel (ex: calcular saude, montar plano de deploy)
 - `*.view.js` — manipulacao DOM e renderizacao, nao testavel unitariamente
@@ -96,6 +102,27 @@ Todas as configuracoes em server/.env (nao commitado).
 Template em server/.env.example (commitado).
 Nunca hardcodar IPs, portas ou caminhos no codigo.
 STORAGE_MODE define o perfil de storage: simple | hot_cold | hot_cold_raid
+
+## Servico systemd (producao)
+
+Arquivos prontos mas nao ativados durante desenvolvimento:
+- `server/forge.service` — unit file do systemd
+- `scripts/setup-user.sh` — cria usuario forge, ajusta permissoes e sudoers
+
+Ativar apenas quando o projeto estiver estavel para producao:
+
+    sudo bash /opt/forge/scripts/setup-user.sh
+    sudo cp /opt/forge/server/forge.service /etc/systemd/system/forge.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable forge
+    sudo systemctl start forge
+
+Durante desenvolvimento, usar run.sh diretamente (suporta --reload para html/css/js):
+
+    cd /opt/forge/server && bash run.sh
+
+O usuario forge (sistema) tem sudo restrito para: smartctl, mdadm, dmidecode.
+O usuario brener pertence ao grupo forge para manter acesso de edicao via VSCode.
 
 ## Testes
 
