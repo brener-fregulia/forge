@@ -56,7 +56,14 @@ export function renderDisks(disks, smart, driveLetters) {
         // Nome + drive label
         const nameEl = qs(".disk-name", tr);
         const dlabel = _driveLabel(d.name, driveLetters, disks, !isPart);
-        setContent(nameEl, d.name);
+
+        if (!isPart) {
+            const expand = document.createElement("span");
+            expand.className   = "disk-expand";
+            expand.textContent = "▶";
+            nameEl.appendChild(expand);
+        }
+        nameEl.appendChild(document.createTextNode(d.name));
         if (dlabel) {
             const span = document.createElement("span");
             span.className   = "disk-drive-label";
@@ -113,6 +120,18 @@ export function renderDisks(disks, smart, driveLetters) {
 
         tbody.appendChild(tr);
     }
+
+    // Toggle expansão das rows pai
+    tbody.querySelectorAll("tr.disk-main").forEach(mainRow => {
+        mainRow.addEventListener("click", () => {
+            const isExpanded = mainRow.classList.toggle("expanded");
+            let next = mainRow.nextElementSibling;
+            while (next?.classList.contains("disk-part")) {
+                next.classList.toggle("visible", isExpanded);
+                next = next.nextElementSibling;
+            }
+        });
+    });
 
     setHtml(container, "");
     container.appendChild(table);

@@ -28,3 +28,15 @@
     font-family: monospace;
     margin-left: 0.25rem;
 }
+
+.disk-main { cursor: pointer; user-select: none; }
+.disk-main .disk-expand {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    margin-right: 0.4rem;
+    display: inline-block;
+    transition: transform 0.15s;
+}
+.disk-main.expanded .disk-expand { transform: rotate(90deg); }
+.disk-part { display: none; }
+.disk-part.visible { display: table-row; }
