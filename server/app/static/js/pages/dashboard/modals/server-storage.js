@@ -1,5 +1,5 @@
 import { formatBytes } from "../../../lib/format.js";
-import { buildSummary, buildTable } from "../../../lib/anvil/builders.js";
+import { buildSummary, buildTable } from "../../../lib/builders.js";
 
 function _healthBadge(passed) {
     if (passed === true)  { const s = document.createElement("span"); s.className = "health-badge health-ok";   s.textContent = "OK";   return s; }

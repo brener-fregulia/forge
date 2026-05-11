@@ -1,4 +1,4 @@
-import { buildSummary, buildTable } from "../../../lib/anvil/builders.js";
+import { buildSummary, buildTable } from "../../../lib/builders.js";
 
 export function renderCpuModal(d) {
     const bar = (pct) => {
