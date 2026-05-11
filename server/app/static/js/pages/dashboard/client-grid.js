@@ -1,6 +1,7 @@
 import { createWS } from "../../lib/ws.js";
+import { qs, setHtml } from "../../lib/anvil/dom.js";
 
-const grid = document.getElementById("clients-grid");
+const grid = qs("#clients-grid");
 
 export function initClientGrid() {
     createWS("/ws/dashboard", {
@@ -13,23 +14,22 @@ export function initClientGrid() {
 
 function renderAll(clients) {
     if (!clients.length) return;
-    grid.innerHTML = "";
+    setHtml(grid, "");
     clients.forEach(upsertClient);
 }
 
 function upsertClient(c) {
-    grid.querySelector(".empty")?.remove();
-    const existing = grid.querySelector(`[data-mac="${c.mac}"]`);
-    const label = c.alias || c.hostname || "—";
-    const html = renderCard(c, label);
+    qs(".empty", grid)?.remove();
+    const existing = qs(`[data-mac="${c.mac}"]`, grid);
+    const html = renderCard(c, c.alias || c.hostname || "—");
     if (existing) existing.outerHTML = html;
     else grid.insertAdjacentHTML("beforeend", html);
 }
 
 function removeClient(mac) {
-    grid.querySelector(`[data-mac="${mac}"]`)?.remove();
+    qs(`[data-mac="${mac}"]`, grid)?.remove();
     if (!grid.children.length)
-        grid.innerHTML = '<p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>';
+        setHtml(grid, '<p class="empty">Nenhum cliente conectado. Aguardando boot PXE…</p>');
 }
 
 function renderCard(c, label) {
