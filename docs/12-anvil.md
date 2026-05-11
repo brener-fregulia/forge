@@ -11,17 +11,30 @@ Vanilla JS puro, sem bundler, sem dependencias externas.
 - Helpers DOM centralizados em dom.js — nunca repetir querySelector inline
 - Testabilidade — logica em *.model.js nao toca o DOM
 
-## Arquivos base
+## Estrutura de arquivos
 
-| Arquivo | Responsabilidade |
-|---|---|
-| lib/dom.js | Helpers DOM (qs, show, hide, on, cloneTemplate, etc) |
-| lib/state.js | Gerenciador de estado reativo (createStore) |
-| lib/ws.js | Wrapper WebSocket com reconexao automatica |
-| lib/modal.js | Utilitarios de modal |
-| lib/tabs.js | Componente de abas reutilizavel |
-| lib/format.js | Formatacao de dados (bytes, etc) |
-| lib/clipboard.js | Botao copiar |
+```
+lib/
+  anvil/
+    dom.js        — helpers DOM (qs, qsa, show, hide, on, cloneTemplate, etc)
+    state.js      — gerenciador de estado reativo (createStore)
+    element.js    — helpers genéricos para criação de elementos (el, append)
+  ui/
+    builders.js   — componentes UI do projeto (buildSummary, buildTable)
+    modal.js      — utilitarios de modal reutilizaveis
+    tabs.js       — componente de abas reutilizavel
+    clipboard.js  — botao copiar
+  format.js       — formatacao de dados (bytes, etc) — sem DOM
+  ws.js           — wrapper WebSocket com reconexao automatica — sem DOM
+```
+
+### Separacao de responsabilidades
+
+| Camada | Onde | Criterio |
+|---|---|---|
+| Anvil core | lib/anvil/ | Primitivos genericos, sem opiniao sobre CSS do projeto |
+| UI do projeto | lib/ui/ | Usa classes CSS do FORGE (forge-table, info-summary, etc) |
+| Utilitarios puros | lib/ | Sem DOM, sem CSS |
 
 ## Convencoes de sufixo
 
@@ -31,6 +44,15 @@ Vanilla JS puro, sem bundler, sem dependencias externas.
 | *.view.js | Manipulacao DOM, renderizacao | Nao |
 | *.service.js | Chamadas HTTP/WS | Com mock |
 | sem sufixo | Utilitarios genericos | Depende |
+
+## Regras de uso
+
+- Nunca usar `document.querySelector` ou `addEventListener` diretamente nas features — sempre via `dom.js`
+- Nunca usar `innerHTML` para renderizar listas ou componentes — usar `cloneTemplate` + `appendChild`
+- `innerHTML` permitido apenas para strings simples de loading/erro em `openModal`
+- Funcoes que retornam elementos DOM devem retornar `HTMLElement` ou `DocumentFragment`, nunca string HTML
+- Ao appendar `DocumentFragment`, guardar referencias dos elementos filho ANTES do `appendChild`
+- `buildTable` e `buildSummary` aceitam `Node` nas celulas — nunca passar HTML como string
 
 ## Padrao de componente
 
@@ -48,13 +70,15 @@ export function validatePlan(plan) { ... }
 
 // deploy.view.js — DOM, nao testavel
 import { buildDeployPlan } from "./deploy.model.js";
-import { qs, on } from "../../lib/dom.js";
+import { qs, on } from "../../lib/anvil/dom.js";
 export function initDeployView(store) { ... }
 ```
 
 ## Roadmap Anvil
 
 - [x] Fase 1: dom.js + state.js + documentacao
-- [ ] Fase 2: migrar utilitarios existentes para dom.js
+- [x] Fase 2: migracao de todos os arquivos JS para dom.js
+- [x] Fase 2+: reorganizacao lib/ em anvil/, ui/ e utilitarios puros
+- [x] Fase 2+: element.js (el, append) e builders.js (buildSummary, buildTable)
 - [ ] Fase 3: componente base com state + render + mount
 - [ ] Fase 4: componentes de deploy (progresso, log, etapas)

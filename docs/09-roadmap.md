@@ -28,11 +28,14 @@
 
 - [x] Aba Backup no modal config-deploy (visual completo)
 - [x] Anvil fase 2 — migracao de todos os arquivos JS para dom.js
+- [x] Anvil fase 2+ — reorganizacao lib/ (anvil/, ui/, utilitarios puros)
+- [x] Anvil fase 2+ — element.js e builders.js (buildSummary, buildTable)
+- [x] Botao SMART nos modais de Hot Cache e Cold Storage
+- [x] Tabela de discos com rows filhas colapsadas e toggle por clique
 - [ ] Aba Backup — modo Avancado funcional (race condition command/exec pendente)
-- [ ] Aba Backup — modo Minimo (lista programas instalados via manifesto)
+- [ ] Aba Backup — modo Minimo
 - [ ] Aba Backup — Raw Image
 - [ ] Refactor server-storage.js para templates HTML
-- [ ] Botao SMART no dashboard (hot cache e cold storage)
 - [ ] Console de comandos estilo terminal (prompt + historico)
 - [ ] Terminal interativo real (xterm.js) — pos-MVP
 - [ ] Indicador de progresso por etapa do deploy
