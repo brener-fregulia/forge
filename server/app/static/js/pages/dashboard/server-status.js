@@ -3,6 +3,7 @@ import { formatBytes } from "../../lib/format.js";
 import { renderCpuModal } from "./modals/server-cpu.js";
 import { renderRamModal } from "./modals/server-ram.js";
 import { renderStorageModal } from "./modals/server-storage.js";
+import { initSmartModal } from "../../components/smart-modal.js";
 
 // Modal genérico
 const modal     = qs("#server-modal");
@@ -113,5 +114,6 @@ function _toggleDisplay(el, visible) {
 
 export function initServerStatus() {
     updateStatus();
+    initSmartModal();
     setInterval(updateStatus, 5000);
 }

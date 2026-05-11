@@ -42,11 +42,15 @@ def _hot_disks() -> list[dict]:
         )
         disks = []
         for d in _json.loads(out).get("blockdevices", []):
+            smart_data = _disk_smart(f"/dev/{d['name']}")
             disks.append({
                 "name": d["name"],
                 "size": d.get("size"),
                 "model": d.get("model"),
-                "smart": _disk_smart(f"/dev/{d['name']}"),
+                "temp": smart_data.get("temperature", {}).get("current"),
+                "power_on_hours": smart_data.get("power_on_time", {}).get("hours"),
+                "passed": smart_data.get("smart_status", {}).get("passed"),
+                "smart": smart_data,
             })
         return disks
     except Exception:
@@ -68,9 +72,13 @@ def _cold_disks_and_raid() -> tuple[list[dict], dict]:
             match = re.search(r'/dev/(sd[a-z]+)\s*$', line)
             if match:
                 m = match.group(1)
+                smart_data = _disk_smart(f"/dev/{m}")
                 disks.append({
                     "name": m,
-                    "smart": _disk_smart(f"/dev/{m}"),
+                    "temp": smart_data.get("temperature", {}).get("current"),
+                    "power_on_hours": smart_data.get("power_on_time", {}).get("hours"),
+                    "passed": smart_data.get("smart_status", {}).get("passed"),
+                    "smart": smart_data,
                 })
             if ":" in line:
                 k, _, v = line.strip().partition(":")
