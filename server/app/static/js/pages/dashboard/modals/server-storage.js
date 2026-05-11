@@ -1,37 +1,43 @@
 import { formatBytes } from "../../../lib/format.js";
+import { buildSummary, buildTable } from "../../../lib/anvil/builders.js";
+
+function _healthBadge(passed) {
+    if (passed === true)  { const s = document.createElement("span"); s.className = "health-badge health-ok";   s.textContent = "OK";   return s; }
+    if (passed === false) { const s = document.createElement("span"); s.className = "health-badge health-fail"; s.textContent = "FAIL"; return s; }
+    return "—";
+}
 
 export function renderStorageModal(d, isRaid) {
-    const disks = (d.disks || []).map(disk => `
-        <tr>
-            <td><code>${disk.name || "—"}</code></td>
-            <td>${disk.model || "—"}</td>
-            <td>${disk.serial || "—"}</td>
-            <td>${disk.temp != null ? disk.temp + "°C" : "—"}</td>
-            <td>${disk.power_on_hours != null ? disk.power_on_hours + "h" : "—"}</td>
-            <td>${disk.passed === true
-                ? '<span class="health-badge health-ok">OK</span>'
-                : disk.passed === false
-                    ? '<span class="health-badge health-fail">FAIL</span>'
-                    : "—"}</td>
-        </tr>`).join("");
+    const el = document.createDocumentFragment();
 
-    const raidInfo = isRaid && d.raid_detail ? `
-        <div class="info-summary" style="margin-top:1rem">
-            ${Object.entries(d.raid_detail).map(([k, v]) =>
-                `<div class="info-summary-item"><strong>${v}</strong><span>${k.replace(/_/g, " ")}</span></div>`
-            ).join("")}
-        </div>` : "";
+    el.appendChild(buildSummary([
+        { label: "Usado",         value: formatBytes(d.used) },
+        { label: "Livre",         value: formatBytes(d.free) },
+        { label: "Total",         value: formatBytes(d.total) },
+        { label: "Configuração",  value: isRaid ? "RAID1" : "Sem RAID" },
+    ]));
 
-    return `
-        <div class="info-summary">
-            <div class="info-summary-item"><strong>${formatBytes(d.used)}</strong><span>Usado</span></div>
-            <div class="info-summary-item"><strong>${formatBytes(d.free)}</strong><span>Livre</span></div>
-            <div class="info-summary-item"><strong>${formatBytes(d.total)}</strong><span>Total</span></div>
-            <div class="info-summary-item"><strong>${isRaid ? "RAID1" : "Sem RAID"}</strong><span>Configuração</span></div>
-        </div>
-        ${raidInfo}
-        <table class="forge-table" style="margin-top:1rem">
-            <thead><tr><th>Disco</th><th>Modelo</th><th>Serial</th><th>Temp</th><th>Horas</th><th>Saúde</th></tr></thead>
-            <tbody>${disks}</tbody>
-        </table>`;
+    if (isRaid && d.raid_detail) {
+        el.appendChild(buildSummary(
+            Object.entries(d.raid_detail).map(([k, v]) => ({
+                label: k.replace(/_/g, " "),
+                value: v,
+            }))
+        ));
+    }
+
+    el.appendChild(buildTable(
+        ["Disco", "Modelo", "Serial", "Temp", "Horas", "Saúde"],
+        (d.disks || []).map(disk => [
+            disk.name || "—",
+            disk.model || "—",
+            disk.serial || "—",
+            disk.temp != null ? `${disk.temp}°C` : "—",
+            disk.power_on_hours != null ? `${disk.power_on_hours}h` : "—",
+            _healthBadge(disk.passed),
+        ]),
+        { style: "margin-top:1rem" }
+    ));
+
+    return el;
 }
