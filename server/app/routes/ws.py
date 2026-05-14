@@ -120,3 +120,26 @@ async def ws_dashboard(websocket: WebSocket):
         pass
     finally:
         state.dashboard_sockets.discard(websocket)
+
+
+@router.post("/clients/{mac}/command/result")
+async def command_result(mac: str, payload: dict):
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404)
+
+    cmd_id = payload.get("id")
+    output = payload.get("output", "")
+
+    client.log.append(f"[cmd] {output}")
+    await state.broadcast_to_dashboard({
+        "type":   "client_update",
+        "mac":    mac,
+        "client": client.to_dict(),
+    })
+
+    future = client.pending_commands.get(cmd_id)
+    if future and not future.done():
+        future.set_result(output)
+
+    return {"status": "ok"}
