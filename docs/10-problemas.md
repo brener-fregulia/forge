@@ -31,3 +31,13 @@
 | Partições NTFS montadas duas vezes | inventory_users rodava antes de inventory_drive_letters | Inverter ordem: drive_letters primeiro, users reutiliza mount |
 | find travava em arquivos especiais Windows | hiberfil.sys e pagefile.sys bloqueavam | Adicionar timeout 5 no forge-ls.sh |
 | command/exec sempre retornava vazio | command_output chegava antes do Future ser aguardado | Pendente — race condition entre WS agent e asyncio.Future |
+| PXE boot falhava no MikroTik CRS326 com dnsmasq TFTP | Chip 98DX3236 descartava pacotes com blksize negociado | tftpd-hpa com -r blksize resolve blksize, mas nao o problema todo |
+| Cliente UEFI nao ACKava OACK do servidor TFTP | MAC do cliente marcado como External (flag E) no bridge do CRS326 com hw=yes | Setar hw=no em todas as portas do bridge |
+| TFTP com checksum invalido [bad udp cksum] | Intel X520 com tx-checksumming ativo no bond | ethtool -K sfp1/sfp2/bond0 tx-checksumming off (persiste via systemd forge-offload.service) |
+| tftpd-hpa parava apos 1 bloco de dados | Cliente pedia windowsize 4 e servidor nao implementa RFC 7440 | Usar dnsmasq TFTP nativo (sem tftpd-hpa) |
+| iPXE carregava mas vmlinuz dava Connection Reset | dhcp no boot.ipxe causava loop: dnsmasq detectava user class iPXE e reenviava script | Compilar iPXE com script embutido (EMBED=) para eliminar segundo DHCP |
+| Alpine bootava mas /sbin/init not found | initramfs sem modloop montado nao tem sysroot completo | Passar modloop=http://... como parametro do kernel |
+| forge-agent nao subia automaticamente | OpenRC em netboot tem ordering quirks | Injetar agent no /init do Alpine via patch Python antes do switch_root |
+| PXE-E99 Unexpected network error com ipxe.efi | ipxe.efi usa drivers proprios incompativeis com chip 98DX3236 do CRS326 | Usar snponly.efi (SNP — driver do firmware UEFI) em vez de ipxe.efi |
+| allow-fast-path=no no CRS326 nao resolvia descarte de pacotes | Configuracao nao era suficiente sem hw=no nas portas | hw=no em todas as portas e bridge e obrigatorio independente do fast-path |
+| bond 802.3ad causava delay no PXE boot | LACP precisava negociar antes do link subir, firmware UEFI dava timeout | Usar active-backup no bond do servidor (sem LACP no MikroTik) |
