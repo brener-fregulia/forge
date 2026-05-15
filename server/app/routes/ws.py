@@ -92,11 +92,20 @@ async def ws_agent(websocket: WebSocket, mac: str):
             if msg_type in ("inventory_base", "inventory_disks", "status"):
                 await websocket.send_json({"type": "ack"})
 
-            await state.broadcast_to_dashboard({
-                "type": "client_update",
-                "mac": mac,
-                "client": client.to_dict(),
-            })
+            if msg_type != "status":
+                await state.broadcast_to_dashboard({
+                    "type": "client_update",
+                    "mac": mac,
+                    "client": client.to_dict(),
+                })
+            else:
+                await state.broadcast_to_dashboard({
+                    "type": "client_status",
+                    "mac": mac,
+                    "status": client.status,
+                    "progress": client.progress,
+                    "last_seen": client.last_seen.isoformat(),
+                })
 
     except WebSocketDisconnect:
         pass

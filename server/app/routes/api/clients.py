@@ -78,9 +78,17 @@ async def command_result(mac: str, payload: dict):
     cmd_id = payload.get("id")
     output = payload.get("output", "")
 
+    client.log.append(f"[cmd] {output}")
+
     future = client.pending_commands.get(cmd_id)
     if future and not future.done():
         future.set_result(output)
+
+    await state.broadcast_to_dashboard({
+        "type": "client_update",
+        "mac": mac,
+        "client": client.to_dict(),
+    })
 
     return {"status": "ok"}
 

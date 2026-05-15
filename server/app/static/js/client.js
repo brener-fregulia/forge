@@ -19,6 +19,10 @@ const els = {
 };
 
 createWS("/ws/dashboard", {
+    client_status: ({ mac: m, status, progress }) => {
+        if (m !== mac) return;
+        updateMeta({ status, ip: null });
+    },
     client_update:    ({ mac: m, client: c }) => m === mac && updateClient(c),
     client_connected: ({ mac: m, client: c }) => m === mac && updateClient(c),
     snapshot:         ({ clients }) => {

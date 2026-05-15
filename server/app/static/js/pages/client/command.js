@@ -7,15 +7,16 @@ export function initCommand(mac) {
         e.preventDefault();
         const cmd = input.value.trim();
         if (!cmd) return;
-        const res = await fetch(`/api/clients/${mac}/command/exec`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ command: cmd }),
-        });
-        if (res.ok) {
-            input.value = "";
-        } else {
-            alert("Erro ao enviar comando: " + await res.text());
+        try {
+            const res = await fetch(`/api/clients/${mac}/command/exec`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({ command: cmd }),
+            });
+            if (res.ok) input.value = "";
+            else alert("Erro: " + await res.text());
+        } catch (err) {
+            console.error("[cmd] erro:", err);
         }
     });
 }
