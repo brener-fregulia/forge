@@ -9,7 +9,6 @@ export function initLog(mac) {
 }
 
 export function updateLog(logTail, el) {
-    console.log(logTail);
     const newLog = (logTail || []).join("\n");
-    if (el.textContent !== newLog) setContent(el, newLog);
+    setContent(el, newLog);
 }
