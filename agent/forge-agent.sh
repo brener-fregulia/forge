@@ -1,7 +1,7 @@
 #!/bin/sh
 SERVER_IP="192.168.100.1"
 SERVER_PORT="8080"
-LIB="/usr/lib/forge"
+LIB="${LIB:-/usr/lib/forge}"
 
 . "$LIB/json.sh"
 . "$LIB/network.sh"

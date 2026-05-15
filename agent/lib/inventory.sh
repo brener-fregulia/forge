@@ -1,6 +1,6 @@
 #!/bin/sh
 
-LIB_INV="/usr/lib/forge/inventory"
+LIB_INV="${LIB:-/usr/lib/forge}/inventory"
 . "$LIB_INV/hardware.sh"
 . "$LIB_INV/drives.sh"
 

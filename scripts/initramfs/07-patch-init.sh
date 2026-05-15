@@ -26,7 +26,7 @@ echo "###### FORGE: chegou no ponto de injecao ######" > /dev/console 2>&1
     echo "PWD: $(pwd)"
     echo "sysroot: $sysroot"
     echo "--- ls /usr/bin ---"
-    ls -la /usr/bin/forge-agent /usr/bin/websocat 2>&1
+    ls -la /usr/bin/forge-bootstrap /usr/bin/websocat 2>&1
     echo "--- ip route ---"
     ip route 2>&1
     echo "--- ip a ---"
@@ -34,7 +34,10 @@ echo "###### FORGE: chegou no ponto de injecao ######" > /dev/console 2>&1
     echo "=== END FORGE INIT DEBUG ==="
 } 2>&1 | nc -w 2 192.168.100.1 9997 2>/dev/null || true
 
-setsid /usr/bin/forge-agent > /tmp/forge-agent.log 2>&1 < /dev/null &
+setsid /usr/bin/forge-bootstrap > /tmp/forge-bootstrap.log 2>&1 < /dev/null &
+
+# Aguarda 10s e envia log do bootstrap
+(sleep 10 && nc -w 2 192.168.100.1 9997 < /tmp/forge-bootstrap.log) &
 
 '''
 
