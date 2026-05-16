@@ -33,20 +33,20 @@ forge_loop() {
         mkfifo "$FIFO"
 
         # Producer: inventário + heartbeat
-        (
+        setsid sh -c "
             # Fase 1: inventário base imediato
-            echo "$BASE_INVENTORY"
+            echo '$BASE_INVENTORY'
             # Fase 2: discos + SMART (demora mais)
-            echo "$DISKS_INVENTORY"
+            echo '$DISKS_INVENTORY'
             # Heartbeat contínuo
             while true; do
-                sleep 30
-                echo '{"type":"status","status":"alive"}'
+                sleep 10
+                echo '{\"type\":\"status\",\"status\":\"alive\"}'
             done
-        ) > "$FIFO" &
+        " > "$FIFO" &
         PROD_PID=$!
 
-       # Watchdog: mata websocat se ficar mais de 20s sem receber nada do servidor
+        # Watchdog: mata websocat se ficar mais de 10s sem receber nada do servidor
         LAST_MSG_FILE=/tmp/forge-last-msg
         echo "$(date +%s)" > $LAST_MSG_FILE
 
@@ -55,7 +55,7 @@ forge_loop() {
                 sleep 5
                 LAST=$(cat $LAST_MSG_FILE 2>/dev/null || echo 0)
                 NOW=$(date +%s)
-                if [ $((NOW - LAST)) -gt 60 ]; then
+                if [ $((NOW - LAST)) -gt 10 ]; then
                     echo "[FORGE] watchdog: sem resposta do servidor, matando websocat" >&2
                     pkill -f "websocat" 2>/dev/null
                     break
@@ -64,30 +64,30 @@ forge_loop() {
         ) &
         WATCHDOG_PID=$!
 
-        (
-            websocat -t \
-                --ping-interval 3 \
-                --ping-timeout 5 \
-                "$WS_URL" < "$FIFO" | while read -r line; do
-                echo "$(date +%s)" > $LAST_MSG_FILE
-                CMD=$(cmd_extract "$line")
-                ID=$(echo "$line" | awk -F'"id":"' '{split($2,a,"\""); print a[1]}')
-                if [ -n "$CMD" ]; then
-                    echo "[FORGE] cmd: $CMD" >&2
-                    OUTPUT=$(sh -c "$CMD" 2>&1)
-                    ESC=$(echo "$OUTPUT" | sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g')
-                    wget -qO- \
-                        --header="Content-Type: application/json" \
-                        --post-data="{\"id\":\"$ID\",\"output\":\"$ESC\"}" \
-                        "http://$SERVER_IP:$SERVER_PORT/api/clients/$MAC/command/result" \
-                        > /dev/null 2>&1 &
-                fi
-            done
-        )
+        websocat -t \
+            --ping-interval 3 \
+            --ping-timeout 5 \
+            "$WS_URL" < "$FIFO" | while read -r line; do
+            echo "$(date +%s)" > $LAST_MSG_FILE
+            CMD=$(cmd_extract "$line")
+            ID=$(echo "$line" | awk -F'"id":"' '{split($2,a,"\""); print a[1]}')
+            if [ -n "$CMD" ]; then
+                echo "[FORGE] cmd: $CMD" >&2
+                OUTPUT=$(sh -c "$CMD" 2>&1)
+                ESC=$(echo "$OUTPUT" | sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g')
+                wget -qO- \
+                    --tries=1 \
+                    --header="Content-Type: application/json" \
+                    --post-data="{\"id\":\"$ID\",\"output\":\"$ESC\"}" \
+                    "http://$SERVER_IP:$SERVER_PORT/api/clients/$MAC/command/result" \
+                    > /dev/null 2>&1 &
+            fi
+        done
 
-        # Limpeza após desconexão
+        # Limpeza após desconexão - mata grupo de processos inteiro
         kill $WATCHDOG_PID 2>/dev/null
-        kill $PROD_PID 2>/dev/null
+        kill -- -$PROD_PID 2>/dev/null
+        wait $PROD_PID 2>/dev/null
         rm -f "$FIFO"
         echo "[FORGE] Conexão perdida, reconectando em 3s..."
         sleep 3
