@@ -11,3 +11,5 @@ build/websocat
 build/initramfs-work/
 drivers/
 agent/bin/
+vendor/
+server/app/static/vendor/xterm/*.map

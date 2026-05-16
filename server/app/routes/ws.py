@@ -1,13 +1,13 @@
 """Endpoints WebSocket — comunicação com agentes e dashboard."""
 import json
+import asyncio
 from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.state import state, Client
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine, update_machine_hardware
-from app.db.models import Client as DBClient, Machine as DBMachine  # noqa — garante init dos models
-import asyncio, random
+from app.db.models import Client as DBClient, Machine as DBMachine  # noqa
 
 router = APIRouter()
 
@@ -63,10 +63,8 @@ async def ws_agent(websocket: WebSocket, mac: str):
     client = Client(mac=mac, ip=ip, websocket=websocket)
     state.add_client(client)
 
-    # Registra ou atualiza máquina no banco
     async with AsyncSessionLocal() as db:
         machine = await get_or_create_machine(db, mac=mac)
-        # Carrega alias salvo no banco para o estado em memória
         if machine.alias:
             client.alias = machine.alias
 
@@ -83,7 +81,6 @@ async def ws_agent(websocket: WebSocket, mac: str):
 
             _handle_message(client, msg)
 
-            # Persiste hardware quando inventário base chega
             msg_type = msg.get("type")
             if msg_type == "inventory_base" and msg.get("hardware"):
                 async with AsyncSessionLocal() as db:
@@ -132,78 +129,60 @@ async def ws_dashboard(websocket: WebSocket):
         state.dashboard_sockets.discard(websocket)
 
 
-@router.post("/clients/{mac}/command/result")
-async def command_result(mac: str, payload: dict):
-    client = state.get_client(mac)
-    if not client:
-        raise HTTPException(status_code=404)
-
-    cmd_id = payload.get("id")
-    output = payload.get("output", "")
-
-    client.log.append(f"[cmd] {output}")
-    await state.broadcast_to_dashboard({
-        "type":   "client_update",
-        "mac":    mac,
-        "client": client.to_dict(),
-    })
-
-    future = client.pending_commands.get(cmd_id)
-    if future and not future.done():
-        future.set_result(output)
-
-    return {"status": "ok"}
-
-
-@router.websocket("/ws/terminal/{mac}/{session_id}")
-async def ws_terminal(websocket: WebSocket, mac: str, session_id: str):
+@router.websocket("/ws/terminal/{mac}/{session_id}/{port}")
+async def ws_terminal(websocket: WebSocket, mac: str, session_id: str, port: int):
     client = state.get_client(mac)
     if not client:
         await websocket.close(code=4004)
         return
 
     await websocket.accept()
+    print(f"[terminal] ws aceito, ip={client.ip} port={port}")
 
-    # Abre sessão PTY no agent
-    port = random.randint(7600, 7699)
-    cmd = (
-        f"nohup sh -c 'LD_LIBRARY_PATH=$LIB/../bin "
-        f"$LIB/../bin/socat "
-        f"PTY,raw,echo=0 "
-        f"TCP-LISTEN:{port},reuseaddr' "
-        f"> /tmp/socat-{port}.log 2>&1 &"
-    )
-    await client.websocket.send_json({"type": "command", "command": cmd})
-    await asyncio.sleep(0.8)
+    # Retry para aguardar o socat iniciar
+    reader, writer = None, None
+    for attempt in range(10):
+        try:
+            reader, writer = await asyncio.open_connection(client.ip, port)
+            print(f"[terminal] TCP conectado em {client.ip}:{port} (tentativa {attempt+1})")
+            break
+        except Exception as e:
+            print(f"[terminal] tentativa {attempt+1} falhou: {e}")
+            await asyncio.sleep(0.3)
 
-    # Conecta ao PTY via TCP
-    try:
-        reader, writer = await asyncio.open_connection(client.ip, port)
-    except Exception as e:
-        await websocket.send_text(f"\r\nErro ao conectar ao terminal: {e}\r\n")
+    if not reader:
+        await websocket.send_text(f"\r\nErro: não foi possível conectar ao terminal\r\n")
         await websocket.close()
         return
 
     async def ws_to_tcp():
         try:
             while True:
-                data = await websocket.receive_bytes()
-                writer.write(data)
-                await writer.drain()
-        except Exception:
-            pass
+                msg = await websocket.receive()
+                print(f"[terminal] ws msg type: {msg['type']}")
+                if msg["type"] == "websocket.disconnect":
+                    break
+                data = msg.get("bytes") or (msg.get("text", "").encode())
+                if data:
+                    print(f"[terminal] ws→tcp: {len(data)} bytes")
+                    writer.write(data)
+                    await writer.drain()
+        except Exception as e:
+            print(f"[terminal] ws→tcp erro: {e}")
 
     async def tcp_to_ws():
         try:
             while True:
                 data = await reader.read(1024)
+                print(f"[terminal] tcp→ws: {len(data)} bytes")
                 if not data:
+                    print("[terminal] tcp fechou")
                     break
                 await websocket.send_bytes(data)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[terminal] tcp→ws erro: {e}")
 
+    print("[terminal] iniciando gather")
     await asyncio.gather(ws_to_tcp(), tcp_to_ws())
+    print("[terminal] gather encerrado")
     writer.close()
-
-

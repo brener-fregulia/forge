@@ -1,11 +1,11 @@
 """Endpoints REST — clientes PXE."""
+import asyncio
+import random
+import uuid
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import asyncio
 from app.state import state
 from app.db.base import AsyncSessionLocal
-import uuid
-import random
 
 router = APIRouter(tags=["clients"])
 
@@ -80,16 +80,15 @@ async def command_result(mac: str, payload: dict):
     output = payload.get("output", "")
 
     client.log.append(f"[cmd] {output}")
+    await state.broadcast_to_dashboard({
+        "type":   "client_update",
+        "mac":    mac,
+        "client": client.to_dict(),
+    })
 
     future = client.pending_commands.get(cmd_id)
     if future and not future.done():
         future.set_result(output)
-
-    await state.broadcast_to_dashboard({
-        "type": "client_update",
-        "mac": mac,
-        "client": client.to_dict(),
-    })
 
     return {"status": "ok"}
 
@@ -107,26 +106,23 @@ async def clear_log(mac: str):
     })
     return {"status": "cleared"}
 
+
 class AliasRequest(BaseModel):
     alias: str
 
 
 @router.post("/clients/{mac}/alias")
 async def set_alias(mac: str, payload: AliasRequest):
-    """Define alias para uma máquina."""
     client = state.get_client(mac)
     if not client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
-    # Salva no estado em memória
     client.alias = payload.alias.strip()
 
-    # Persiste no banco
     async with AsyncSessionLocal() as db:
         from app.db.services.machine import set_machine_alias
         await set_machine_alias(db, mac=mac, alias=client.alias)
 
-    # Propaga para o dashboard
     await state.broadcast_to_dashboard({
         "type": "client_update",
         "mac": mac,
@@ -149,7 +145,6 @@ class DeployPlan(BaseModel):
 
 @router.post("/clients/{mac}/deploy/plan")
 async def create_deploy_plan(mac: str, plan: DeployPlan):
-    """Salva o plano de deploy para um cliente."""
     client = state.get_client(mac)
     if not client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
@@ -172,14 +167,12 @@ async def open_terminal(mac: str):
     if not client:
         raise HTTPException(status_code=404)
 
-    # Porta aleatória entre 7600-7699 para evitar colisão entre sessões
     port = random.randint(7600, 7699)
-
     cmd = (
         f"nohup sh -c 'LD_LIBRARY_PATH=$LIB/../bin "
         f"$LIB/../bin/socat "
-        f"PTY,raw,echo=0 "
-        f"TCP-LISTEN:{port},reuseaddr' "
+        f"TCP4-LISTEN:{port},reuseaddr "
+        f"EXEC:/bin/sh,pty,setsid,ctty,stderr' "
         f"> /tmp/socat-{port}.log 2>&1 &"
     )
 
@@ -188,9 +181,5 @@ async def open_terminal(mac: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    # Aguarda socat iniciar
-    await asyncio.sleep(0.5)
-
+    await asyncio.sleep(0.8)
     return {"port": port, "ip": client.ip}
-
-

@@ -5,20 +5,22 @@
 <section>
     {% include "partials/client/header.html" %}
 
-    <div class="client-tabs-header">
-        <button class="tab-btn active" data-tab="info">Informações</button>
-        <button class="tab-btn" data-tab="terminal">Terminal</button>
-    </div>
+    <div id="client-main-tabs">
+        <div class="client-tabs-header">
+            <button class="tab-btn active" data-tab="info">Informações</button>
+            <button class="tab-btn" data-tab="terminal">Terminal</button>
+        </div>
 
-    <div class="tab-panel active" data-tab="info">
-        {% include "partials/client/hardware.html" %}
-        {% include "partials/client/disks.html" %}
-        {% include "partials/client/users.html" %}
-        {% include "partials/client/log.html" %}
-    </div>
+        <div class="tab-panel active" data-tab="info">
+            {% include "partials/client/hardware.html" %}
+            {% include "partials/client/disks.html" %}
+            {% include "partials/client/users.html" %}
+            {% include "partials/client/log.html" %}
+        </div>
 
-    <div class="tab-panel" data-tab="terminal">
-        {% include "partials/client/terminal.html" %}
+        <div class="tab-panel" data-tab="terminal">
+            {% include "partials/client/terminal.html" %}
+        </div>
     </div>
 </section>
 
@@ -27,6 +29,9 @@
 {% endblock %}
 
 {% block scripts %}
+<link rel="stylesheet" href="/static/vendor/xterm/xterm.css">
+<script src="/static/vendor/xterm/xterm.js"></script>
+<script src="/static/vendor/xterm/xterm-addon-fit.js"></script>
 <script>
     window.CLIENT_MAC = "{{ client.mac }}";
 </script>

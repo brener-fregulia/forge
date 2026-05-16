@@ -8,6 +8,8 @@ import { initAlias, updateAlias } from "./pages/client/alias.js";
 import { initCommand } from "./pages/client/command.js";
 import { initLog, updateLog } from "./pages/client/log.js";
 import { initDeploy, updateDeployState } from "./pages/client/deploy.js";
+import { initTabs } from "./lib/ui/tabs.js";
+import { initTerminal, fitAll } from "./pages/client/terminal.js";
 
 const mac = window.CLIENT_MAC;
 
@@ -60,10 +62,15 @@ function updateClient(c) {
     updateDeployState(c.deploy_plan);
 }
 
+initTerminal(mac);
 initSmartModal();
 initAlias(mac);
 initCommand(mac);
 initLog(mac);
 initDeploy(mac);
 initClipboard();
+initTabs("client-main-tabs", {
+    clickable: true,
+    onChange: (tabId) => { if (tabId === "terminal") fitAll(); }
+});
 tryInitialRender();
