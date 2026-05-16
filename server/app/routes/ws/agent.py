@@ -67,7 +67,7 @@ async def ws_agent(websocket: WebSocket, mac: str):
         if machine.alias:
             client.alias = machine.alias
 
-    await state.broadcast_to_dashboard({"type": "client_connected", "client": client.to_dict()})
+    await state.broadcast_to_dashboard({"type": "client_connected", "client": client.to_summary()})
 
     try:
         while True:
@@ -89,18 +89,24 @@ async def ws_agent(websocket: WebSocket, mac: str):
             if msg_type in ("inventory_base", "inventory_disks", "status"):
                 await websocket.send_json({"type": "ack"})
 
-            if msg_type != "status":
+            if msg_type in ("inventory_base", "inventory_disks"):
                 await state.broadcast_to_dashboard({
-                    "type": "client_update",
-                    "mac": mac,
+                    "type":   "client_update",
+                    "mac":    mac,
                     "client": client.to_dict(),
+                })
+            elif msg_type != "status":
+                await state.broadcast_to_dashboard({
+                    "type":   "client_update",
+                    "mac":    mac,
+                    "client": client.to_summary(),
                 })
             else:
                 await state.broadcast_to_dashboard({
-                    "type": "client_status",
-                    "mac": mac,
-                    "status": client.status,
-                    "progress": client.progress,
+                    "type":      "client_status",
+                    "mac":       mac,
+                    "status":    client.status,
+                    "progress":  client.progress,
                     "last_seen": client.last_seen.isoformat(),
                 })
 

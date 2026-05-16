@@ -9,7 +9,7 @@ router = APIRouter(tags=["machines"])
 
 @router.get("/clients")
 async def list_clients():
-    return [c.to_dict() for c in state.clients.values()]
+    return [c.to_summary() for c in state.clients.values()]
 
 
 @router.get("/clients/{mac}")
@@ -38,8 +38,8 @@ async def set_alias(mac: str, payload: AliasRequest):
 
     await state.broadcast_to_dashboard({
         "type": "client_update",
-        "mac": mac,
-        "client": client.to_dict(),
+        "mac":mac,
+        "client": client.to_summary(),
     })
 
     return {"status": "ok", "alias": client.alias}

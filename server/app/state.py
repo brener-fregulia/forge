@@ -45,6 +45,18 @@ class Client:
             "drive_letters": self.drive_letters,
         }
 
+    def to_summary(self) -> dict[str, Any]:
+        return {
+            "mac":          self.mac,
+            "ip":           self.ip,
+            "hostname":     self.hostname,
+            "status":       self.status,
+            "progress":     self.progress,
+            "alias":        self.alias,
+            "connected_at": self.connected_at.isoformat(),
+            "last_seen":    self.last_seen.isoformat(),
+        }
+
 
 class State:
     """Estado global da aplicação."""

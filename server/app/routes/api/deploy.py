@@ -29,7 +29,7 @@ async def create_deploy_plan(mac: str, plan: DeployPlan):
     await state.broadcast_to_dashboard({
         "type": "client_update",
         "mac": mac,
-        "client": client.to_dict(),
+        "client": client.to_summary(),
     })
 
     return {"status": "ok", "plan": client.deploy_plan}
