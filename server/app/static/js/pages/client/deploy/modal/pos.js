@@ -1,4 +1,4 @@
-import { qs, setContent, cloneTemplate, toggleClass } from "../../../../../lib/anvil/dom.js";
+import { qs, qsa, setContent, cloneTemplate, toggleClass } from "../../../../lib/anvil/dom.js";
 
 export function renderPos(plan) {
     const container = qs("#cd-pos-list");

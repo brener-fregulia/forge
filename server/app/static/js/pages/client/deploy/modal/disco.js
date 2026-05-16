@@ -1,5 +1,5 @@
-import { qs, qsa, setContent, setHtml, cloneTemplate, toggleClass } from "../../../../../lib/anvil/dom.js";
-import { formatBytes } from "../../../../../lib/format.js";
+import { qs, qsa, setContent, setHtml, cloneTemplate, toggleClass } from "../../../../lib/anvil/dom.js";
+import { formatBytes } from "../../../../lib/format.js";
 
 let _selected = null;
 

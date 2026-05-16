@@ -1,5 +1,5 @@
-import { qs, on, enable } from "../../lib/anvil/dom.js";
-import { initConfigDeploy } from "./modals/config-deploy/index.js";
+import { qs, on, enable } from "../../../lib/anvil/dom.js";
+import { initConfigDeploy } from "./modal/index.js";
 
 export function initDeploy(mac) {
     initConfigDeploy(() => mac);

@@ -1,4 +1,4 @@
-import { qs, qsa, setContent, cloneTemplate, toggleClass } from "../../../../../lib/anvil/dom.js";
+import { qs, qsa, setContent, cloneTemplate, toggleClass } from "../../../../lib/anvil/dom.js";
 
 const MODES = [
     { value: "none",     label: "Sem backup" },

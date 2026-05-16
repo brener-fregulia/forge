@@ -1,5 +1,5 @@
-import { qs, on } from "../../lib/anvil/dom.js";
-import { el } from "../../lib/anvil/element.js";
+import { qs, on } from "../../../lib/anvil/dom.js";
+import { el } from "../../../lib/anvil/element.js";
 
 let _mac = null;
 let _sessions = [];

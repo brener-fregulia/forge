@@ -7,9 +7,9 @@ import { initSmartModal } from "./components/smart-modal.js";
 import { initAlias, updateAlias } from "./pages/client/alias.js";
 import { initCommand } from "./pages/client/command.js";
 import { initLog, updateLog } from "./pages/client/log.js";
-import { initDeploy, updateDeployState } from "./pages/client/deploy.js";
+import { initDeploy, updateDeployState } from "./pages/client/deploy/index.js";
 import { initTabs } from "./lib/ui/tabs.js";
-import { initTerminal, fitAll } from "./pages/client/terminal.js";
+import { initTerminal, fitAll } from "./pages/client/terminal/index.js";
 
 const mac = window.CLIENT_MAC;
 
