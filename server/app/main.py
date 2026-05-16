@@ -5,7 +5,18 @@ from fastapi.staticfiles import StaticFiles
 from app.config import APP_TITLE, APP_VERSION, STATIC_DIR
 from app.routes import pages, api, ws
 
-app = FastAPI(title=APP_TITLE, version=APP_VERSION)
+from contextlib import asynccontextmanager
+import asyncio
+from app.disk_io import io_monitor_loop
+
+@asynccontextmanager
+async def lifespan(app):
+    task = asyncio.create_task(io_monitor_loop())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
 
 # Arquivos estáticos
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

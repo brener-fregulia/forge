@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from app.routes.api.server.status import disk_info
 from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, HOT_CACHE_LABEL, COLD_STORAGE_LABEL, STORAGE_MODE
+from app.disk_io import get_io
 
 router = APIRouter()
 
@@ -127,3 +128,11 @@ async def list_isos():
         return {"isos": isos}
     except Exception as e:
         return {"isos": [], "error": str(e)}
+
+
+@router.get("/server/disk-io")
+async def disk_io(disks: str = ""):
+    disk_list = [d.strip() for d in disks.split(",") if d.strip()]
+    if not disk_list:
+        return {}
+    return get_io(disk_list)

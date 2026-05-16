@@ -76,26 +76,21 @@ async function updateStatus() {
         const hotItem = qs("#ss-item-hot");
         if (hotItem) _toggleDisplay(hotItem, mode !== "simple");
         if (mode !== "simple" && s.hot_cache) {
-            const hot = fmt(s.hot_cache.used, s.hot_cache.total);
-            set("ss-hot", s.hot_cache.error ? "indisponível" : hot.text,
-                s.hot_cache.error ? "warn" : hot.pct > 90 ? "critical" : "");
+            _setStorage("ss-item-hot", s.hot_cache.used, s.hot_cache.total, s.hot_cache.error);
         }
 
         // Cold Storage
         const coldItem = qs("#ss-item-cold");
         if (coldItem) _toggleDisplay(coldItem, mode === "hot_cold_raid");
         if (mode === "hot_cold_raid" && s.cold_storage) {
-            const cold = fmt(s.cold_storage.used, s.cold_storage.total);
-            set("ss-cold", s.cold_storage.error ? "indisponível" : cold.text,
-                s.cold_storage.error ? "warn" : cold.pct > 90 ? "critical" : "");
+            _setStorage("ss-item-cold", s.cold_storage.used, s.cold_storage.total, s.cold_storage.error);
         }
 
         // RAID
         const raidItem = qs("#ss-item-raid");
         if (raidItem) _toggleDisplay(raidItem, mode === "hot_cold_raid");
-        if (mode === "hot_cold_raid") {
-            const raidClass = { healthy: "ok", syncing: "warn", degraded: "critical" };
-            set("ss-raid", s.raid_status, raidClass[s.raid_status] || "");
+        if (mode === "hot_cold_raid" && s.cold_storage) {
+            _setStorage("ss-item-cold", s.cold_storage.used, s.cold_storage.total, s.cold_storage.error);
         }
 
         // Uptime
@@ -111,8 +106,69 @@ function _toggleDisplay(el, visible) {
     if (visible) show(el); else hide(el);
 }
 
+// discos fixos ainda - trazer de config futuramente
+const IO_DISKS = {
+    "ss-item-hot":  ["sda"],
+    "ss-item-cold": ["md127"],
+};
+
+let _ioInterval = null;
+
+async function _updateDiskIO() {
+    const allDisks = [...IO_DISKS["ss-item-hot"], ...IO_DISKS["ss-item-cold"]];
+    try {
+        const res  = await fetch(`/api/server/disk-io?disks=${allDisks.join(",")}`);
+        const data = await res.json();
+
+        for (const [itemId, disks] of Object.entries(IO_DISKS)) {
+            const item = qs(`#${itemId}`);
+            if (!item) continue;
+
+            // Soma MB/s de todos os discos do grupo
+            const total_mb  = disks.reduce((sum, d) => sum + (data[d]?.total_mb ?? 0), 0);
+            const read_mb   = disks.reduce((sum, d) => sum + (data[d]?.read_mb  ?? 0), 0);
+            const write_mb  = disks.reduce((sum, d) => sum + (data[d]?.write_mb ?? 0), 0);
+            const pct       = Math.max(...disks.map(d => data[d]?.pct ?? 0));
+            const ceiling   = data[disks[0]]?.ceiling ?? 150;
+
+            // Atualiza sublabel com MB/s
+            let sublabel = qs(".ss-sublabel", item);
+            if (!sublabel) {
+                sublabel = document.createElement("span");
+                sublabel.className = "ss-sublabel";
+                item.appendChild(sublabel);
+            }
+            setContent(sublabel, `↑${write_mb.toFixed(1)} ↓${read_mb.toFixed(1)} MB/s`);
+
+            // Atualiza barra
+            _setIOBar(item, pct);
+        }
+    } catch (e) {
+        console.warn("[FORGE] disk-io error:", e);
+    }
+}
+
+function _setIOBar(item, pct) {
+    const cls = pct > 90 ? "critical" : pct > 60 ? "warn" : "ok";
+    let bar = qs(".ss-storage-bar", item);
+    if (!bar) {
+        bar = document.createElement("div");
+        bar.className = "ss-storage-bar";
+        const fill = document.createElement("div");
+        fill.className = "ss-storage-fill";
+        bar.appendChild(fill);
+        item.appendChild(bar);
+    }
+    const fill = qs(".ss-storage-fill", bar);
+    if (fill) {
+        fill.style.width = `${pct}%`;
+        fill.className   = `ss-storage-fill ${cls}`;
+    }
+}
+
 export function initServerStatus() {
     updateStatus();
-    initSmartModal();
     setInterval(updateStatus, 5000);
+    _updateDiskIO();
+    setInterval(_updateDiskIO, 1000);
 }
