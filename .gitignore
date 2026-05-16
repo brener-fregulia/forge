@@ -10,3 +10,4 @@ build/*.apk
 build/websocat
 build/initramfs-work/
 drivers/
+agent/bin/

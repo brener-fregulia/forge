@@ -18,10 +18,16 @@ wget -qO "$RUNTIME_DIR/lib/maintenance.sh"        "$FILES_SERVER/agent/lib/maint
 wget -qO "$RUNTIME_DIR/lib/websocket.sh"          "$FILES_SERVER/agent/lib/websocket.sh"
 wget -qO "$RUNTIME_DIR/lib/json.sh"               "$FILES_SERVER/agent/lib/json.sh"
 wget -qO "$RUNTIME_DIR/lib/forge-ls.sh"           "$FILES_SERVER/agent/lib/forge-ls.sh"
+mkdir -p "$RUNTIME_DIR/bin"
+wget -qO "$RUNTIME_DIR/bin/socat"              "$FILES_SERVER/agent/bin/socat"
+wget -qO "$RUNTIME_DIR/bin/libreadline.so.8"   "$FILES_SERVER/agent/bin/libreadline.so.8"
+wget -qO "$RUNTIME_DIR/bin/libreadline.so.8.3" "$FILES_SERVER/agent/bin/libreadline.so.8.3"
 
+chmod +x "$RUNTIME_DIR/bin/socat"
 chmod +x "$RUNTIME_DIR/forge-agent.sh"
 
 export LIB="$RUNTIME_DIR/lib"
+export LD_LIBRARY_PATH="$RUNTIME_DIR/bin:$LD_LIBRARY_PATH"
 export SERVER_IP
 export SERVER_PORT
 
