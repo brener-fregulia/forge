@@ -4,15 +4,26 @@
 {% block content %}
 <section>
     {% include "partials/client/header.html" %}
-    {% include "partials/client/meta.html" %}
-    {% include "partials/client/hardware.html" %}
-    {% include "partials/client/disks.html" %}
-    {% include "partials/client/users.html" %}
-    {% include "partials/client/command.html" %}
-    {% include "partials/client/log.html" %}
+
+    <div class="client-tabs-header">
+        <button class="tab-btn active" data-tab="info">Informações</button>
+        <button class="tab-btn" data-tab="terminal">Terminal</button>
+    </div>
+
+    <div class="tab-panel active" data-tab="info">
+        {% include "partials/client/hardware.html" %}
+        {% include "partials/client/disks.html" %}
+        {% include "partials/client/users.html" %}
+        {% include "partials/client/log.html" %}
+    </div>
+
+    <div class="tab-panel" data-tab="terminal">
+        {% include "partials/client/terminal.html" %}
+    </div>
 </section>
 
 {% include "partials/modals/config-deploy/index.html" %}
+{% include "partials/modals/smart.html" %}
 {% endblock %}
 
 {% block scripts %}

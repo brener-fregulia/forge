@@ -1,8 +1,15 @@
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem">
-    <h2 style="margin:0">
-        <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
-        <button class="btn-small" id="edit-alias-btn">Editar nome</button>
-    </h2>
+    <div>
+        <h2 style="margin:0 0 0.25rem 0">
+            <span id="machine-alias" class="alias-display">{{ client.alias or client.hostname or client.mac }}</span>
+            <button class="btn-small" id="edit-alias-btn">Editar nome</button>
+        </h2>
+        <div class="client-header-meta">
+            <span class="meta-item"><strong>MAC</strong> <span id="meta-mac">{{ client.mac }}</span></span>
+            <span class="meta-item"><strong>IP</strong> <span id="meta-ip">{{ client.ip }}</span></span>
+            <span class="meta-item"><strong>Status</strong> <span id="meta-status" class="status status-{{ client.status }}">{{ client.status }}</span></span>
+        </div>
+    </div>
     <div style="display:flex; gap:0.5rem; align-items:center">
         <button id="deploy-btn" class="btn-secondary">⚙ Configurar Deploy</button>
         <button id="execute-deploy-btn" class="btn-execute" disabled>▶ Executar</button>

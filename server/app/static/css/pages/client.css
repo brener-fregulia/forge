@@ -79,3 +79,63 @@ h3 {
     min-width: 100px;
 }
 .hw-value { font-family: monospace; }
+
+.client-tabs-header {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    gap: 0;
+}
+
+.client-header-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.client-header-meta strong { color: var(--text); margin-right: 0.3rem; }
+
+.meta-item { display: flex; align-items: center; gap: 0.3rem; }
+
+.terminal-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 280px);
+    min-height: 400px;
+}
+
+.terminal-tabs-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+    gap: 0;
+}
+
+.terminal-new-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    line-height: 1;
+}
+.terminal-new-btn:hover { color: var(--accent); opacity: 1; }
+
+#terminal-panels {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.terminal-panel {
+    position: absolute;
+    inset: 0;
+    display: none;
+    padding: 0.5rem;
+    background: #000;
+    border-radius: 0 0 6px 6px;
+}
+.terminal-panel.active { display: block; }
