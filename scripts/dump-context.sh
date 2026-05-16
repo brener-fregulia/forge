@@ -5,6 +5,7 @@ FORGE="/opt/forge"
 OUT="${1:-/tmp/forge-dump.$(date +%Y%m%d-%H%M%S).txt}"
 
 FILES=(
+    agent/bootstrap.sh
     agent/forge-agent.sh
     agent/lib/network.sh
     agent/lib/inventory.sh
@@ -19,19 +20,26 @@ FILES=(
     server/app/main.py
     server/app/config.py
     server/app/state.py
+    server/app/disk_io.py
     server/app/db/base.py
     server/app/db/models/client.py
     server/app/db/models/deploy.py
     server/app/db/services/machine.py
     server/app/routes/pages.py
-    server/app/routes/ws.py
     server/app/routes/api/__init__.py
-    server/app/routes/api/clients.py
+    server/app/routes/api/machines.py
+    server/app/routes/api/commands.py
+    server/app/routes/api/deploy.py
+    server/app/routes/api/terminal.py
     server/app/routes/api/server/__init__.py
     server/app/routes/api/server/status.py
     server/app/routes/api/server/cpu.py
     server/app/routes/api/server/ram.py
     server/app/routes/api/server/storage.py
+    server/app/routes/ws/__init__.py
+    server/app/routes/ws/agent.py
+    server/app/routes/ws/dashboard.py
+    server/app/routes/ws/terminal.py
     server/app/templates/base.html
     server/app/templates/dashboard.html
     server/app/templates/client.html
@@ -40,6 +48,7 @@ FILES=(
     server/app/templates/partials/client/hardware.html
     server/app/templates/partials/client/disks.html
     server/app/templates/partials/client/users.html
+    server/app/templates/partials/client/terminal.html
     server/app/templates/partials/client/command.html
     server/app/templates/partials/client/log.html
     server/app/templates/partials/modals/smart.html
@@ -76,11 +85,13 @@ FILES=(
     server/app/static/js/client.js
     server/app/static/js/lib/anvil/dom.js
     server/app/static/js/lib/anvil/state.js
+    server/app/static/js/lib/anvil/element.js
+    server/app/static/js/lib/ui/builders.js
+    server/app/static/js/lib/ui/modal.js
+    server/app/static/js/lib/ui/tabs.js
+    server/app/static/js/lib/ui/clipboard.js
     server/app/static/js/lib/format.js
-    server/app/static/js/lib/clipboard.js
     server/app/static/js/lib/ws.js
-    server/app/static/js/lib/modal.js
-    server/app/static/js/lib/tabs.js
     server/app/static/js/components/disks-table.js
     server/app/static/js/components/users-table.js
     server/app/static/js/components/hardware-card.js
@@ -93,13 +104,16 @@ FILES=(
     server/app/static/js/pages/client/alias.js
     server/app/static/js/pages/client/command.js
     server/app/static/js/pages/client/log.js
-    server/app/static/js/pages/client/deploy.js
-    server/app/static/js/pages/client/modals/config-deploy/index.js
-    server/app/static/js/pages/client/modals/config-deploy/tabs/disco.js
-    server/app/static/js/pages/client/modals/config-deploy/tabs/backup.js
-    server/app/static/js/pages/client/modals/config-deploy/tabs/so.js
-    server/app/static/js/pages/client/modals/config-deploy/tabs/pos.js
+    server/app/static/js/pages/client/terminal/index.js
+    server/app/static/js/pages/client/deploy/index.js
+    server/app/static/js/pages/client/deploy/modal/index.js
+    server/app/static/js/pages/client/deploy/modal/disco.js
+    server/app/static/js/pages/client/deploy/modal/backup.js
+    server/app/static/js/pages/client/deploy/modal/so.js
+    server/app/static/js/pages/client/deploy/modal/pos.js
     scripts/build-initramfs.sh
+    scripts/setup-agent-bins.sh
+    scripts/setup-user.sh
     scripts/initramfs/env.sh
     scripts/initramfs/01-check.sh
     scripts/initramfs/02-prepare.sh
