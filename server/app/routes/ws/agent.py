@@ -1,6 +1,5 @@
-"""Endpoints WebSocket — comunicação com agentes e dashboard."""
+"""WebSocket — comunicação com o agent Alpine."""
 import json
-import asyncio
 from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -110,70 +109,3 @@ async def ws_agent(websocket: WebSocket, mac: str):
     finally:
         state.remove_client(mac)
         await state.broadcast_to_dashboard({"type": "client_disconnected", "mac": mac})
-
-
-@router.websocket("/ws/dashboard")
-async def ws_dashboard(websocket: WebSocket):
-    await websocket.accept()
-    state.dashboard_sockets.add(websocket)
-    await websocket.send_json({
-        "type": "snapshot",
-        "clients": [c.to_dict() for c in state.clients.values()],
-    })
-    try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        pass
-    finally:
-        state.dashboard_sockets.discard(websocket)
-
-
-@router.websocket("/ws/terminal/{mac}/{session_id}/{port}")
-async def ws_terminal(websocket: WebSocket, mac: str, session_id: str, port: int):
-    client = state.get_client(mac)
-    if not client:
-        await websocket.close(code=4004)
-        return
-
-    await websocket.accept()
-
-    # Retry para aguardar o socat iniciar
-    reader, writer = None, None
-    for attempt in range(10):
-        try:
-            reader, writer = await asyncio.open_connection(client.ip, port)
-            break
-        except Exception as e:
-            await asyncio.sleep(0.3)
-
-    if not reader:
-        await websocket.send_text(f"\r\nErro: não foi possível conectar ao terminal\r\n")
-        await websocket.close()
-        return
-
-    async def ws_to_tcp():
-        try:
-            while True:
-                msg = await websocket.receive()
-                if msg["type"] == "websocket.disconnect":
-                    break
-                data = msg.get("bytes") or (msg.get("text", "").encode())
-                if data:
-                    writer.write(data)
-                    await writer.drain()
-        except Exception as e:
-            pass
-
-    async def tcp_to_ws():
-        try:
-            while True:
-                data = await reader.read(1024)
-                if not data:
-                    break
-                await websocket.send_bytes(data)
-        except Exception:
-            pass
-
-    await asyncio.gather(ws_to_tcp(), tcp_to_ws())
-    writer.close()
