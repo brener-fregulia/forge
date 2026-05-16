@@ -137,17 +137,14 @@ async def ws_terminal(websocket: WebSocket, mac: str, session_id: str, port: int
         return
 
     await websocket.accept()
-    print(f"[terminal] ws aceito, ip={client.ip} port={port}")
 
     # Retry para aguardar o socat iniciar
     reader, writer = None, None
     for attempt in range(10):
         try:
             reader, writer = await asyncio.open_connection(client.ip, port)
-            print(f"[terminal] TCP conectado em {client.ip}:{port} (tentativa {attempt+1})")
             break
         except Exception as e:
-            print(f"[terminal] tentativa {attempt+1} falhou: {e}")
             await asyncio.sleep(0.3)
 
     if not reader:
@@ -159,30 +156,24 @@ async def ws_terminal(websocket: WebSocket, mac: str, session_id: str, port: int
         try:
             while True:
                 msg = await websocket.receive()
-                print(f"[terminal] ws msg type: {msg['type']}")
                 if msg["type"] == "websocket.disconnect":
                     break
                 data = msg.get("bytes") or (msg.get("text", "").encode())
                 if data:
-                    print(f"[terminal] ws→tcp: {len(data)} bytes")
                     writer.write(data)
                     await writer.drain()
         except Exception as e:
-            print(f"[terminal] ws→tcp erro: {e}")
+            pass
 
     async def tcp_to_ws():
         try:
             while True:
                 data = await reader.read(1024)
-                print(f"[terminal] tcp→ws: {len(data)} bytes")
                 if not data:
-                    print("[terminal] tcp fechou")
                     break
                 await websocket.send_bytes(data)
-        except Exception as e:
-            print(f"[terminal] tcp→ws erro: {e}")
+        except Exception:
+            pass
 
-    print("[terminal] iniciando gather")
     await asyncio.gather(ws_to_tcp(), tcp_to_ws())
-    print("[terminal] gather encerrado")
     writer.close()
