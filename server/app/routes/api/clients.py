@@ -5,6 +5,7 @@ import asyncio
 from app.state import state
 from app.db.base import AsyncSessionLocal
 import uuid
+import random
 
 router = APIRouter(tags=["clients"])
 
@@ -163,4 +164,33 @@ async def create_deploy_plan(mac: str, plan: DeployPlan):
     })
 
     return {"status": "ok", "plan": client.deploy_plan}
+
+
+@router.post("/clients/{mac}/terminal/open")
+async def open_terminal(mac: str):
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404)
+
+    # Porta aleatória entre 7600-7699 para evitar colisão entre sessões
+    port = random.randint(7600, 7699)
+
+    cmd = (
+        f"nohup sh -c 'LD_LIBRARY_PATH=$LIB/../bin "
+        f"$LIB/../bin/socat "
+        f"PTY,raw,echo=0 "
+        f"TCP-LISTEN:{port},reuseaddr' "
+        f"> /tmp/socat-{port}.log 2>&1 &"
+    )
+
+    try:
+        await client.websocket.send_json({"type": "command", "command": cmd})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    # Aguarda socat iniciar
+    await asyncio.sleep(0.5)
+
+    return {"port": port, "ip": client.ip}
+
 

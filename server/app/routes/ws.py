@@ -7,6 +7,7 @@ from app.state import state, Client
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine, update_machine_hardware
 from app.db.models import Client as DBClient, Machine as DBMachine  # noqa — garante init dos models
+import asyncio, random
 
 router = APIRouter()
 
@@ -152,3 +153,57 @@ async def command_result(mac: str, payload: dict):
         future.set_result(output)
 
     return {"status": "ok"}
+
+
+@router.websocket("/ws/terminal/{mac}/{session_id}")
+async def ws_terminal(websocket: WebSocket, mac: str, session_id: str):
+    client = state.get_client(mac)
+    if not client:
+        await websocket.close(code=4004)
+        return
+
+    await websocket.accept()
+
+    # Abre sessão PTY no agent
+    port = random.randint(7600, 7699)
+    cmd = (
+        f"nohup sh -c 'LD_LIBRARY_PATH=$LIB/../bin "
+        f"$LIB/../bin/socat "
+        f"PTY,raw,echo=0 "
+        f"TCP-LISTEN:{port},reuseaddr' "
+        f"> /tmp/socat-{port}.log 2>&1 &"
+    )
+    await client.websocket.send_json({"type": "command", "command": cmd})
+    await asyncio.sleep(0.8)
+
+    # Conecta ao PTY via TCP
+    try:
+        reader, writer = await asyncio.open_connection(client.ip, port)
+    except Exception as e:
+        await websocket.send_text(f"\r\nErro ao conectar ao terminal: {e}\r\n")
+        await websocket.close()
+        return
+
+    async def ws_to_tcp():
+        try:
+            while True:
+                data = await websocket.receive_bytes()
+                writer.write(data)
+                await writer.drain()
+        except Exception:
+            pass
+
+    async def tcp_to_ws():
+        try:
+            while True:
+                data = await reader.read(1024)
+                if not data:
+                    break
+                await websocket.send_bytes(data)
+        except Exception:
+            pass
+
+    await asyncio.gather(ws_to_tcp(), tcp_to_ws())
+    writer.close()
+
+
