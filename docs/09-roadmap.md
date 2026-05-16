@@ -2,18 +2,17 @@
 
 ## Proximos passos — pipeline de deploy (em ordem)
 
-01. [ ] Solucao HTTP para comandos pontuais ao agent (substituir race condition do Future)
-02. [ ] Aba Backup — modo Avancado funcional (depende do item acima)
-03. [ ] Aba Backup — modo Minimo (lista programas instalados via manifesto)
-04. [ ] Aba Backup — Raw Image
-05. [ ] Backup seletivo via ntfsclone -> hot cache
-06. [ ] Compactacao zstd + replicacao para cold storage
-07. [ ] Formatacao e particionamento do disco alvo (sgdisk + mkfs)
-08. [ ] Instalacao Windows via wimlib-imagex
-09. [ ] Injecao de drivers SDIO
-10. [ ] Debloat
-11. [ ] Restauracao do backup
-12. [ ] Ciclo de vida automatizado (30 dias -> delecao)
+01. [ ] Aba Backup — modo Avancado funcional (forge-ls.sh pendente de fix)
+02. [ ] Aba Backup — modo Minimo (lista programas instalados via manifesto)
+03. [ ] Aba Backup — Raw Image
+04. [ ] Backup seletivo via ntfsclone -> hot cache
+05. [ ] Compactacao zstd + replicacao para cold storage
+06. [ ] Formatacao e particionamento do disco alvo (sgdisk + mkfs)
+07. [ ] Instalacao Windows via wimlib-imagex
+08. [ ] Injecao de drivers SDIO
+09. [ ] Debloat
+10. [ ] Restauracao do backup
+11. [ ] Ciclo de vida automatizado (30 dias -> delecao)
 
 ## Proximos passos — infraestrutura
 
@@ -21,8 +20,15 @@
        Arquivos prontos em server/forge.service e scripts/setup-user.sh
        Instrucoes de ativacao em docs/11-convencoes.md
 2. [ ] Pagina de configuracao do servidor (/server/config)
+       Inclui configuracao dinamica dos discos monitorados pelo I/O
 3. [ ] safe-reboot no agent (sync antes de reiniciar)
 4. [ ] NUT (Network UPS Tools) para shutdown gracioso automatico via USB do nobreak
+
+## Arquitetura — refatoracao planejada
+
+1. [ ] Inventario e SMART via REST (descarregar WebSocket)
+2. [ ] Actions tipadas no agent (substituir sh -c livre)
+3. [ ] Autenticacao (antes de ir para campo)
 
 ## Dashboard — polimento
 
@@ -32,17 +38,21 @@
 - [x] Anvil fase 2+ — element.js e builders.js (buildSummary, buildTable)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Tabela de discos com rows filhas colapsadas e toggle por clique
-- [ ] Aba Backup — modo Avancado funcional (race condition command/exec pendente)
+- [x] Monitor de I/O em tempo real (MB/s, barra de uso por disco)
+- [x] Pagina do cliente com abas Informacoes e Terminal
+- [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
+- [x] Sub-abas de terminal dinamicas por sessao
+- [x] Comandos pontuais via HTTP POST (sem race condition do Future)
+- [ ] Aba Backup — modo Avancado funcional
 - [ ] Aba Backup — modo Minimo
 - [ ] Aba Backup — Raw Image
 - [ ] Refactor server-storage.js para templates HTML
-- [ ] Console de comandos estilo terminal (prompt + historico)
-- [ ] Terminal interativo real (xterm.js) — pos-MVP
 - [ ] Indicador de progresso por etapa do deploy
 - [ ] Aviso visual para disco com sinais de degradacao (SMART)
 - [ ] Deteccao de portas do switch via SNMP (CRS326 + IF-MIB)
 - [ ] Wake-on-LAN via FORGE dashboard
 - [ ] ARP scan + leases dnsmasq para detectar dispositivos ligados nao-Alpine
+- [ ] Configuracao dinamica dos discos monitorados pelo I/O (pos /server/config)
 
 ## Hardware pendente
 
@@ -50,7 +60,7 @@
 - [ ] HDDs Seagate Ironwolf PRO NAS 4TB (cold storage futuro)
 - [ ] Upgrade CPU (Ryzen 7 PRO 5750G)
 - [x] Intel X520-DA2 + cabos DAC SFP+ — instalado e funcional (10GbE nas duas portas)
-- [ ] MikroTik CRS326-24G-2S+RM (ja comprado, aguardando chegada)
+- [x] MikroTik CRS326-24G-2S+RM — instalado e configurado
 
 ## Testes automatizados
 
@@ -71,4 +81,3 @@ manualmente maquina a maquina. Util para operacoes em campo com perfis padrao
 - [ ] ERP para lojas de informatica (alias por cliente, historico por MAC)
 - [ ] API REST para integracao com ERP externo (autenticacao, webhooks)
 - [ ] Multi-switch (operacao em campo, 20-30 maquinas simultaneas)
-- [ ] Terminal interativo SSH no dashboard (xterm.js) — pos-MVP
