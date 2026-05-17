@@ -12,6 +12,7 @@ async def ws_dashboard(websocket: WebSocket):
     await websocket.send_json({
         "type":    "snapshot",
         "clients": [c.to_summary() for c in state.clients.values()],
+        "devices": [d.to_summary() for d in state.devices.values()],
     })
     try:
         while True:

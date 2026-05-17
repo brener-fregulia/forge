@@ -24,6 +24,14 @@
     font-size: 0.85rem;
 }
 
+.device-card {
+    opacity: 0.5;
+    cursor: default;
+}
+.device-card:hover {
+    border-color: var(--border);
+}
+
 .mac      { color: var(--text-dim); font-family: monospace; }
 .hostname { font-size: 1.1rem; font-weight: 600; }
 .ip       { color: var(--text-dim); font-family: monospace; font-size: 0.9rem; }
