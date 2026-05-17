@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state
+from app.forge_log import forge_log
 
 router = APIRouter(tags=["deploy"])
 
@@ -24,7 +25,8 @@ async def create_deploy_plan(mac: str, plan: DeployPlan):
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
     client.deploy_plan = plan.model_dump()
-    client.status = "ready"
+    client.status = "online"
+    forge_log("agent", f"{mac} - plano de deploy configurado (disco: {plan.target_disk}, iso: {plan.windows_iso})")
 
     await state.broadcast_to_dashboard({
         "type": "client_update",
