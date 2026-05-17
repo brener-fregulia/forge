@@ -7,6 +7,7 @@ from app.state import state, Client
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine, update_machine_hardware
 from app.db.models import Client as DBClient, Machine as DBMachine  # noqa
+from app.forge_log import forge_log
 
 router = APIRouter()
 
@@ -35,16 +36,18 @@ def _handle_message(client: Client, msg: dict) -> None:
             client.hardware = hw
         client.users = msg.get("users") or client.users
         if msg_type == "inventory_base":
-            client.status = "ready"
+            client.status = "online"
+            forge_log("agent", f"{client.mac} — inventário base recebido (host: {client.hostname})")
         else:
             client.disks = msg.get("disks", [])
             client.smart = _parse_smart(msg.get("smart"))
-            client.status = "ready"
+            client.status = "online"
     elif msg_type == "inventory_disks":
         client.disks = msg.get("disks", [])
         client.smart = _parse_smart(msg.get("smart"))
         client.users = msg.get("users") or client.users
         client.drive_letters = msg.get("drive_letters", [])
+        forge_log("agent", f"{client.mac} — inventário de discos recebido ({len(client.disks)} discos)")
     elif msg_type == "status":
         client.status   = msg.get("status", client.status)
         client.progress = msg.get("progress", client.progress)
@@ -61,6 +64,7 @@ async def ws_agent(websocket: WebSocket, mac: str):
 
     client = Client(mac=mac, ip=ip, websocket=websocket)
     state.add_client(client)
+    forge_log("agent", f"{mac} conectado (ip: {ip})")
 
     async with AsyncSessionLocal() as db:
         machine = await get_or_create_machine(db, mac=mac)
@@ -76,6 +80,7 @@ async def ws_agent(websocket: WebSocket, mac: str):
                 msg = json.loads(data)
             except json.JSONDecodeError:
                 client.log.append(f"[raw] {data[:200]}")
+                forge_log("agent", f"{mac} — JSON inválido: {data[:80]}")
                 continue
 
             _handle_message(client, msg)
@@ -111,7 +116,7 @@ async def ws_agent(websocket: WebSocket, mac: str):
                 })
 
     except WebSocketDisconnect:
-        pass
+        forge_log("agent", f"{mac} desconectado")
     finally:
         state.remove_client(mac)
         await state.broadcast_to_dashboard({"type": "client_disconnected", "mac": mac})
