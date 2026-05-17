@@ -3,6 +3,7 @@ import asyncio
 import random
 from fastapi import APIRouter, HTTPException
 from app.state import state
+from app.forge_log import forge_log
 
 router = APIRouter(tags=["terminal"])
 
@@ -24,7 +25,9 @@ async def open_terminal(mac: str):
 
     try:
         await client.websocket.send_json({"type": "command", "command": cmd})
+        forge_log("agent", f"{mac} - terminal PTY aberto na porta {port}")
     except Exception as e:
+        forge_log("error", f"{mac} - erro ao abrir terminal PTY: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
     await asyncio.sleep(0.8)
