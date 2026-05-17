@@ -42,7 +42,7 @@ CMD=$(printf '%s' "$BODY" | awk -F'"command":"' '{
 [ -z "$CMD" ] && printf 'HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\n\r\n{"error":"missing command"}' && exit 1
 
 OUTPUT=$(sh -c "$CMD" 2>&1)
-ESC=$(printf '%s' "$OUTPUT" | sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g')
+ESC=$(printf '%s' "$OUTPUT" | sed ':a;N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\t/\\t/g;s/\r/\\r/g;s/\n/\\n/g')
 BODY_OUT="{\"output\":\"$ESC\"}"
 LEN=$(printf '%s' "$BODY_OUT" | wc -c | tr -d ' ')
 
