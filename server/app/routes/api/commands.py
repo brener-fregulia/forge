@@ -4,6 +4,7 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state
+from app.forge_log import forge_log
 
 router = APIRouter(tags=["commands"])
 
@@ -19,7 +20,9 @@ async def send_command(mac: str, payload: CommandRequest):
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     try:
         await client.websocket.send_json({"type": "command", "command": payload.command})
+        forge_log("agent", f"{mac} - comando enviado: {payload.command[:80]}")
     except Exception as e:
+        forge_log("error", f"{mac} - erro ao enviar comando: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
     return {"status": "sent", "command": payload.command}
 
@@ -41,13 +44,16 @@ async def exec_command(mac: str, payload: CommandRequest):
             "command": payload.command,
             "id":      cmd_id,
         })
+        forge_log("agent", f"{mac} - exec: {payload.command[:80]}")
     except Exception as e:
         del client.pending_commands[cmd_id]
+        forge_log("error", f"{mac} - erro ao executar comando: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao enviar: {e}")
 
     try:
         output = await asyncio.wait_for(future, timeout=30.0)
     except asyncio.TimeoutError:
+        forge_log("agent", f"{mac} - timeout no comando: {payload.command[:80]}")
         output = ""
     finally:
         client.pending_commands.pop(cmd_id, None)
