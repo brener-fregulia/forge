@@ -4,11 +4,13 @@ from app.state import state
 from app.routes.api.switch import get_mac_port_map
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine
+from app.forge_log import forge_log
 
 POLL_INTERVAL = 5.0
 
 
 async def switch_monitor_loop() -> None:
+    forge_log("switch", "monitor iniciado")
     while True:
         try:
             mac_port = await get_mac_port_map()
@@ -23,17 +25,21 @@ async def switch_monitor_loop() -> None:
             offline_macs = seen_macs - active_macs
 
             for mac in offline_macs:
+                is_new = mac not in state.devices
                 device = state.upsert_device(mac, mac_port[mac])
                 if device and not device.alias:
                     async with AsyncSessionLocal() as db:
                         machine = await get_or_create_machine(db, mac=mac)
                         device.alias    = machine.alias
                         device.hostname = machine.hostname
+                if is_new:
+                    forge_log("switch", f"dispositivo detectado: {mac} em {mac_port[mac]}")
 
             # Remove DevicePresence de MACs que sumiram do switch
             vanished = set(state.devices.keys()) - seen_macs
             for mac in vanished:
                 state.remove_device(mac)
+                forge_log("switch", f"dispositivo sumiu: {mac}")
                 await state.broadcast_to_dashboard({
                     "type": "device_disconnected",
                     "mac":  mac,
@@ -49,6 +55,6 @@ async def switch_monitor_loop() -> None:
                     })
 
         except Exception as e:
-            print(f"[switch_monitor] erro: {e}")
+            forge_log("switch", f"erro: {e}")
 
         await asyncio.sleep(POLL_INTERVAL)
