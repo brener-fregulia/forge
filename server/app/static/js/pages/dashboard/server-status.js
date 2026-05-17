@@ -89,8 +89,10 @@ async function updateStatus() {
         // RAID
         const raidItem = qs("#ss-item-raid");
         if (raidItem) _toggleDisplay(raidItem, mode === "hot_cold_raid");
-        if (mode === "hot_cold_raid" && s.cold_storage) {
-            _setStorage("ss-item-cold", s.cold_storage.used, s.cold_storage.total, s.cold_storage.error);
+        if (mode === "hot_cold_raid" && s.raid_status) {
+            const raidCls = s.raid_status === "healthy" ? "ok"
+                          : s.raid_status === "syncing"  ? "warn" : "critical";
+            set("ss-raid", s.raid_status, raidCls);
         }
 
         // Uptime
@@ -146,6 +148,15 @@ async function _updateDiskIO() {
     } catch (e) {
         console.warn("[FORGE] disk-io error:", e);
     }
+}
+
+function _setStorage(itemId, used, total, error) {
+    const pct = total > 0 ? Math.round(used / total * 100) : 0;
+    const text = error
+        ? "indisponível"
+        : `${formatBytes(used)} / ${formatBytes(total)} (${pct}%)`;
+    const cls = pct > 90 ? "critical" : pct > 75 ? "warn" : "";
+    set(`ss-${itemId.replace("ss-item-", "")}`, text, cls);
 }
 
 function _setIOBar(item, pct) {
