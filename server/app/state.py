@@ -25,6 +25,7 @@ class Client:
         self.deploy_plan: dict | None = None
         self.drive_letters: list[dict] = []
         self.pending_commands: dict[str, asyncio.Future] = {}
+        self.switch_port: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -43,6 +44,7 @@ class Client:
             "alias": self.alias,
             "deploy_plan": self.deploy_plan,
             "drive_letters": self.drive_letters,
+            "switch_port": self.switch_port,
         }
 
     def to_summary(self) -> dict[str, Any]:
@@ -55,6 +57,7 @@ class Client:
             "alias":        self.alias,
             "connected_at": self.connected_at.isoformat(),
             "last_seen":    self.last_seen.isoformat(),
+            "switch_port": self.switch_port,
         }
 
 

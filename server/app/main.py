@@ -8,13 +8,18 @@ from app.config import APP_TITLE, APP_VERSION, STATIC_DIR
 from app.routes import pages, api
 from app.routes.ws import router as ws_router
 from app.disk_io import io_monitor_loop
+from app.switch_monitor import switch_monitor_loop
 
 
 @asynccontextmanager
 async def lifespan(app):
-    task = asyncio.create_task(io_monitor_loop())
+    tasks = [
+        asyncio.create_task(io_monitor_loop()),
+        asyncio.create_task(switch_monitor_loop()),
+    ]
     yield
-    task.cancel()
+    for task in tasks:
+        task.cancel()
 
 
 app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
