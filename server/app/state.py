@@ -14,7 +14,7 @@ class Client:
         self.websocket = websocket
         self.connected_at = datetime.now()
         self.last_seen = datetime.now()
-        self.status = "online"  # online | busy | done | error
+        self.status = "booting"  # booting | online | busy | error
         self.hostname: str | None = None
         self.hardware: dict[str, Any] = {}
         self.disks: list[dict[str, Any]] = []

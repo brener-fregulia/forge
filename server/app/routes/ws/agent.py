@@ -36,8 +36,8 @@ def _handle_message(client: Client, msg: dict) -> None:
             client.hardware = hw
         client.users = msg.get("users") or client.users
         if msg_type == "inventory_base":
-            client.status = "online"
-            forge_log("agent", f"{client.mac} — inventário base recebido (host: {client.hostname})")
+            client.status = "booting"
+            forge_log("agent", f"{client.mac} - inventário base recebido (host: {client.hostname})")
         else:
             client.disks = msg.get("disks", [])
             client.smart = _parse_smart(msg.get("smart"))
@@ -47,15 +47,18 @@ def _handle_message(client: Client, msg: dict) -> None:
         client.smart = _parse_smart(msg.get("smart"))
         client.users = msg.get("users") or client.users
         client.drive_letters = msg.get("drive_letters", [])
-        forge_log("agent", f"{client.mac} — inventário de discos recebido ({len(client.disks)} discos)")
+        client.status = "online"
+        forge_log("agent", f"{client.mac} - inventário de discos recebido ({len(client.disks)} discos)")
     elif msg_type == "status":
-        client.status   = msg.get("status", client.status)
+        incoming = msg.get("status", "")
+        # alive é heartbeat — não altera status visível
+        if incoming not in ("alive",):
+            client.status = incoming
         client.progress = msg.get("progress", client.progress)
     elif msg_type == "log":
         client.log.append(msg.get("line", ""))
     elif msg_type == "command_output":
         client.log.append(f"[cmd] {msg.get('output', '')}")
-
 
 @router.websocket("/ws/agent/{mac}")
 async def ws_agent(websocket: WebSocket, mac: str):
