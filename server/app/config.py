@@ -23,6 +23,8 @@ STORAGE_MODE = os.getenv("STORAGE_MODE", "hot_cold_raid")
 SERVER_IP   = os.getenv("SERVER_IP", "192.168.100.1")
 PXE_NETWORK = os.getenv("PXE_NETWORK", "192.168.100.0/24")
 SERVER_PORT = int(os.getenv("SERVER_PORT", "8080"))
+SWITCH_IP        = os.getenv("SWITCH_IP", "192.168.100.3")
+SWITCH_COMMUNITY = os.getenv("SWITCH_SNMP_COMMUNITY", "public")
 
 # Portas de debug
 DEBUG_PORT_IN     = int(os.getenv("DEBUG_PORT_IN", "9997"))
