@@ -1,6 +1,6 @@
 # Dashboard
 
-## Pagina principal
+## Pagina principal (/)
 
 - Barra de status do servidor: CPU (nome, uso%, temp), RAM, Hot Cache, Cold Storage, RAID, Uptime
 - Barra de I/O em tempo real para Hot Cache e Cold Storage (MB/s leitura/escrita, % do teto por tipo)
@@ -9,11 +9,21 @@
   - RAM: slots, fabricante, velocidade, largura
   - Hot Cache / Cold Storage: discos, modelo, serial, temp, horas, saude SMART + botao SMART
 - Grid de clientes em tempo real via WebSocket
-- Badge de status por cliente (connected, ready, alive, error)
+- Cards de clientes online (clicaveis) e offline (nao clicaveis, detectados via SNMP)
+- Sistema de status: offline | booting | online | busy
 - Alias do cliente exibido no card quando definido
 - Deteccao automatica de desconexao (~5s ping/pong)
+- Botoes de navegacao no header: Logs (🖥) e Config (⚙)
 
-## Pagina de cliente
+## Pagina de logs (/logs)
+
+- Grid de consoles por categoria: switch, disk_io, agent, system, error
+- Polling a cada 2s via GET /api/server/logs
+- Scroll automatico para ultima linha
+- Botao limpar por console (local, nao persiste no servidor)
+- Buffer de 200 linhas por categoria no servidor
+
+## Pagina de cliente (/client/{mac})
 
 A pagina do cliente e dividida em duas abas principais:
 
@@ -63,10 +73,31 @@ A pagina do cliente e dividida em duas abas principais:
 - MAC, IP, Status sempre visiveis
 - Botoes Configurar Deploy e Executar
 
-## Endpoints de terminal
+## Sistema de status dos clientes
+
+| Status | Condicao |
+|---|---|
+| offline | MAC detectado via SNMP, sem WebSocket ativo |
+| booting | (reservado — DHCP recebido mas agent nao conectou) |
+| online | WebSocket conectado + inventario recebido |
+| busy | Deploy em andamento |
+
+## Deteccao via SNMP
+
+- switch_monitor faz polling da MAC table do CRS326 a cada 5s
+- MACs do switch e do servidor sao filtrados automaticamente (OUI + sysfs)
+- DevicePresence criada para MACs sem WebSocket ativo
+- Dados do banco (alias, hostname) populam o card offline quando disponiveis
+- switch_port disponivel em Client e DevicePresence
+
+## Endpoints relevantes
 
 | Endpoint | Descricao |
 |---|---|
+| GET /api/switch/ports | MAC table filtrada do switch |
+| GET /api/server/logs | Todos os logs por categoria |
+| GET /api/server/logs?category=X | Logs de uma categoria |
+| GET /api/server/logs/categories | Lista de categorias disponiveis |
 | POST /api/clients/{mac}/terminal/open | Abre sessao PTY no agent via socat TCP |
 | WS /ws/terminal/{mac}/{session_id}/{port} | Bridge bidirecional WS <-> TCP |
 
@@ -108,6 +139,9 @@ A pagina do cliente e dividida em duas abas principais:
 - [x] Saude SMART por disco (status + temperatura + modal com atributos)
 - [x] Usuarios Windows via ntfs-3g
 - [x] Dashboard com grid de clientes em tempo real
+- [x] DevicePresence — cards offline para dispositivos detectados via SNMP
+- [x] switch_monitor — polling SNMP a cada 5s, switch_port no estado do cliente
+- [x] forge_log — logger centralizado por categoria com buffer de 200 linhas
 - [x] Status do servidor em tempo real (CPU, RAM, storage, RAID, uptime)
 - [x] Monitor de I/O em tempo real (MB/s por disco, barra de uso)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage

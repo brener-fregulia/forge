@@ -43,15 +43,19 @@
 - [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
 - [x] Sub-abas de terminal dinamicas por sessao
 - [x] Comandos pontuais via HTTP POST (sem race condition do Future)
+- [x] SNMP no CRS326 — MAC table via snmpwalk, endpoint /api/switch/ports
+- [x] DevicePresence — card offline no dashboard para dispositivos detectados via SNMP
+- [x] switch_monitor — polling SNMP a cada 5s, switch_port no estado do cliente
+- [x] forge_log — logger centralizado por categoria (switch, disk_io, agent, system, error)
+- [x] Pagina de logs (/logs) — consoles por categoria com polling a cada 2s
+- [x] Botoes de navegacao no header (logs, config)
 - [ ] Aba Backup — modo Avancado funcional
 - [ ] Aba Backup — modo Minimo
 - [ ] Aba Backup — Raw Image
 - [ ] Refactor server-storage.js para templates HTML
 - [ ] Indicador de progresso por etapa do deploy
 - [ ] Aviso visual para disco com sinais de degradacao (SMART)
-- [ ] Deteccao de portas do switch via SNMP (CRS326 + IF-MIB)
 - [ ] Wake-on-LAN via FORGE dashboard
-- [ ] ARP scan + leases dnsmasq para detectar dispositivos ligados nao-Alpine
 - [ ] Configuracao dinamica dos discos monitorados pelo I/O (pos /server/config)
 
 ## Hardware pendente

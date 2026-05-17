@@ -30,10 +30,12 @@
       env.py
       versions/
     app/
-      main.py                  <- entrypoint FastAPI + lifespan (disk_io)
-      config.py                <- carrega .env (paths, IPs, portas)
-      state.py                 <- estado em memoria (Client.to_dict, to_summary, State)
+      main.py                  <- entrypoint FastAPI + lifespan (disk_io + switch_monitor)
+      config.py                <- carrega .env (paths, IPs, portas, switch)
+      state.py                 <- Client, DevicePresence, State
       disk_io.py               <- monitor de I/O em tempo real (/proc/diskstats)
+      switch_monitor.py        <- monitor SNMP do switch (DevicePresence, polling 5s)
+      forge_log.py             <- logger centralizado por categoria (buffer 200 linhas)
       db/
         base.py                <- engine asyncpg, AsyncSessionLocal
         models/
@@ -42,28 +44,31 @@
         services/
           machine.py           <- get_or_create_machine, set_machine_alias
       routes/
-        pages.py               <- rotas HTML
+        pages.py               <- rotas HTML (/, /client/{mac}, /logs, /server/config)
         api/
           __init__.py          <- agrega routers
           machines.py          <- GET/POST /api/clients (identidade, alias)
           commands.py          <- POST /api/clients/{mac}/command* e log
           deploy.py            <- POST /api/clients/{mac}/deploy/plan
           terminal.py          <- POST /api/clients/{mac}/terminal/open
+          switch.py            <- GET /api/switch/ports (MAC table filtrada)
           server/
             __init__.py
             status.py          <- /api/server/status
             cpu.py             <- /api/server/cpu
             ram.py             <- /api/server/ram
             storage.py         <- /api/server/storage, disk-io, isos
+            logs.py            <- /api/server/logs, /api/server/logs/categories
         ws/
           __init__.py          <- agrega routers WS
           agent.py             <- /ws/agent/{mac} — inventario, heartbeat, comandos
           dashboard.py         <- /ws/dashboard — snapshot e updates para o browser
           terminal.py          <- /ws/terminal/{mac}/{session}/{port} — bridge PTY
       templates/
-        base.html
+        base.html              <- header com botoes Logs (🖥) e Config (⚙)
         dashboard.html
         client.html
+        logs.html              <- grid de consoles por categoria
         partials/
           client/
             header.html        <- alias, MAC, IP, Status + botoes deploy/executar
@@ -84,7 +89,7 @@
       static/
         css/
           style.css            <- entry point (imports)
-          base.css             <- variaveis, reset, layout
+          base.css             <- variaveis, reset, layout, header-actions
           components.css       <- agregador de componentes
           modals.css           <- agregador de modais
           components/
@@ -104,6 +109,7 @@
             dashboard.css
             dashboard-server-status.css
             client.css
+            logs.css           <- grid de consoles, log-line, log-console
           modals/
             smart.css
             config-deploy/
@@ -138,8 +144,9 @@
             hardware-card.js   <- renderHardware + modal RAM
             smart-modal.js     <- initSmartModal + openSmartModal
           pages/
+            logs.js            <- polling + renderizacao dos consoles de log
             dashboard/
-              client-grid.js   <- grid de cards via WebSocket
+              client-grid.js   <- grid de cards (Client + DevicePresence) via WebSocket
               server-status.js <- polling status + modais + I/O de discos
               modals/
                 server-cpu.js
@@ -194,4 +201,5 @@
     10-problemas.md
     11-convencoes.md
     12-anvil.md
+    13-paginas.md
 ```
