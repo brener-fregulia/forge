@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}FORGE — Logs{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Logs do servidor</h2>
+    <div id="logs-grid" class="logs-grid">
+        {% for category in categories %}
+        <div class="log-console" data-category="{{ category }}">
+            <div class="log-console-header">
+                <span class="log-category">{{ category }}</span>
+                <span class="log-count" id="log-count-{{ category }}">0</span>
+                <button class="btn-small log-clear-btn" data-category="{{ category }}">Limpar</button>
+            </div>
+            <div class="log-lines" id="log-lines-{{ category }}"></div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<template id="log-line-tpl">
+    <div class="log-line"></div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/pages/logs.js"></script>
+<script>
+    document.querySelector('a[href="/logs"]')?.classList.add("active");
+</script>
+{% endblock %}
