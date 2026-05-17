@@ -178,8 +178,9 @@ function _setIOBar(item, pct) {
 }
 
 export function initServerStatus() {
+    initSmartModal();
     updateStatus();
-    setInterval(updateStatus, 5000);
+    setInterval(updateStatus, 3000);
     _updateDiskIO();
     setInterval(_updateDiskIO, 1000);
 }
