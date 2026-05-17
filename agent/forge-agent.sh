@@ -8,9 +8,12 @@ LIB="${LIB:-/usr/lib/forge}"
 . "$LIB/inventory.sh"
 . "$LIB/maintenance.sh"
 . "$LIB/websocket.sh"
+. "$LIB/http_server.sh"
 
 network_wait
 network_info
+
+start_http_server
 
 BASE_INVENTORY=$(inventory_collect_base)
 WS_URL="ws://$SERVER_IP:$SERVER_PORT/ws/agent/$MAC"
