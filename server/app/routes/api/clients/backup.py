@@ -2,8 +2,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state
-from app.backup_receiver import open_receiver
-from app.forge_log import forge_log
+from app.services.backup_receiver import open_receiver
+from app.services.forge_log import forge_log
 from app.config import SERVER_IP
 
 router = APIRouter(tags=["backup"])

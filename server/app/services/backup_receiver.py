@@ -3,7 +3,7 @@ import asyncio
 import json
 from pathlib import Path
 from datetime import datetime
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 RECEIVER_HOST = "0.0.0.0"
 PORT_RANGE = (9100, 9199)  # uma porta por job simultâneo

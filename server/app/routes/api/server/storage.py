@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from app.routes.api.server.status import disk_info
 from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH, HOT_CACHE_LABEL, COLD_STORAGE_LABEL, STORAGE_MODE
-from app.disk_io import get_io
+from app.services.disk_io import get_io
 
 router = APIRouter()
 

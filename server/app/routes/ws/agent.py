@@ -7,7 +7,7 @@ from app.state import state, Client
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine, update_machine_hardware
 from app.db.models import Client as DBClient, Machine as DBMachine  # noqa
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 router = APIRouter()
 

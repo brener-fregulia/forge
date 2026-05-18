@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import TEMPLATES_DIR
 from app.state import state
-from app.forge_log import CATEGORIES
+from app.services.forge_log import CATEGORIES
 
 router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(directory=TEMPLATES_DIR)

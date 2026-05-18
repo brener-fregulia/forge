@@ -3,7 +3,7 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 AGENT_HTTP_PORT = 8765
 AGENT_HTTP_TIMEOUT = 30.0

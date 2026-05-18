@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 router = APIRouter(tags=["deploy"])
 

@@ -1,7 +1,7 @@
 """Monitor de I/O de discos em tempo real via /proc/diskstats."""
 import asyncio
 from pathlib import Path
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 SECTOR_SIZE = 512
 

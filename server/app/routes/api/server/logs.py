@@ -1,6 +1,6 @@
 """Endpoint REST — logs do FORGE por categoria."""
 from fastapi import APIRouter
-from app.forge_log import get_logs, get_all_logs, CATEGORIES
+from app.services.forge_log import get_logs, get_all_logs, CATEGORIES
 
 router = APIRouter()
 

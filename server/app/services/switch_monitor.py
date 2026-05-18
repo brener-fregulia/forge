@@ -4,7 +4,7 @@ from app.state import state
 from app.routes.api.server.switch import get_mac_port_map
 from app.db.base import AsyncSessionLocal
 from app.db.services.machine import get_or_create_machine
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 POLL_INTERVAL = 5.0
 

@@ -3,7 +3,7 @@ import asyncio
 import random
 from fastapi import APIRouter, HTTPException
 from app.state import state
-from app.forge_log import forge_log
+from app.services.forge_log import forge_log
 
 router = APIRouter(tags=["terminal"])
 
