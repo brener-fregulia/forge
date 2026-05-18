@@ -11,14 +11,23 @@
         </div>
     </div>
     <div style="display:flex; gap:0.5rem; align-items:center">
-        <button id="deploy-btn" class="btn-secondary">⚙ Configurar Deploy</button>
-        <button id="execute-deploy-btn" class="btn-execute" disabled>▶ Executar</button>
+        <button id="deploy-btn" class="btn-secondary">
+            <img src="/static/vendor/icons/settings.svg" class="btn-icon" alt="">
+            Configurar Deploy
+        </button>
+        <button id="execute-deploy-btn" class="btn-execute" disabled>
+            <img src="/static/vendor/icons/player-play.svg" class="btn-icon" alt="">
+            Executar
+        </button>
     </div>
 </div>
 <div id="alias-form" style="display:none; margin-bottom:1rem">
     <form id="alias-edit-form">
         <input type="text" id="alias-input" placeholder="Nome do cliente" autocomplete="off" value="{{ client.alias or '' }}">
-        <button type="submit">💾 Salvar</button>
+        <button type="submit">
+            <img src="/static/vendor/icons/device-floppy.svg" class="btn-icon" alt="">
+            Salvar
+        </button>
         <button type="button" id="cancel-alias-btn" class="btn-small">Cancelar</button>
     </form>
 </div>
