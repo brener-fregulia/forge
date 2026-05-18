@@ -108,30 +108,39 @@ async function _loadChildren(container, device, path) {
 
     for (const line of lines) {
         const [type, ...nameParts] = line.split("\t");
-        const name = nameParts.join("\t");
-        const isDir = type === "d";
+        const name     = nameParts.join("\t");
+        const isDir    = type === "d";
         const fullPath = path ? `${path}/${name}` : name;
 
-        const node = cloneTemplate("cd-tree-node-tpl");
+        const node     = cloneTemplate("cd-tree-node-tpl");
         if (!node) continue;
-        const nodeEl = node.querySelector(".cd-tree-node");
+        const nodeEl   = node.querySelector(".cd-tree-node");
         const expandEl = node.querySelector(".cd-tree-expand");
-        const iconEl = node.querySelector(".cd-tree-icon");
-        const nameEl = node.querySelector(".cd-tree-name");
+        const iconEl   = node.querySelector(".cd-tree-icon");
+        const nameEl   = node.querySelector(".cd-tree-name");
         const children = node.querySelector(".cd-tree-children");
 
         setContent(nameEl, name);
-        setContent(iconEl, isDir ? "📁" : "📄");
-        setContent(expandEl, isDir ? "▶" : "");
-        nodeEl.dataset.path = fullPath;
 
-        _initCheck(node.querySelector(".cd-tree-check"), device, fullPath);
+        const img = document.createElement("img");
+        img.src       = isDir ? "/static/vendor/icons/folder.svg" : "/static/vendor/icons/file.svg";
+        img.className = "tree-icon";
+        img.alt       = "";
+        iconEl.appendChild(img);
 
         if (isDir) {
+            const chevron = document.createElement("img");
+            chevron.src       = "/static/vendor/icons/chevron-right.svg";
+            chevron.className = "tree-chevron";
+            chevron.alt       = "";
+            expandEl.appendChild(chevron);
+
             expandEl.addEventListener("click", () => {
                 const isOpen = children.style.display !== "none";
                 children.style.display = isOpen ? "none" : "block";
-                setContent(expandEl, isOpen ? "▶" : "▼");
+                chevron.src = isOpen
+                    ? "/static/vendor/icons/chevron-right.svg"
+                    : "/static/vendor/icons/chevron-down.svg";
                 if (!isOpen && !children.dataset.loaded) {
                     children.dataset.loaded = "1";
                     _loadChildren(children, device, fullPath);
@@ -139,6 +148,8 @@ async function _loadChildren(container, device, path) {
             });
         }
 
+        nodeEl.dataset.path = fullPath;
+        _initCheck(node.querySelector(".cd-tree-check"), device, fullPath);
         container.appendChild(node);
     }
 }

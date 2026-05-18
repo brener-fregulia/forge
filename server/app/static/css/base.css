@@ -118,3 +118,20 @@ pre {
 .btn-execute:not(:disabled) .btn-icon {
     filter: brightness(0) invert(0.1);
 }
+
+.tree-icon {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    filter: brightness(0) invert(0.5);
+    flex-shrink: 0;
+}
+
+.tree-chevron {
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+    filter: brightness(0) invert(0.4);
+    cursor: pointer;
+    flex-shrink: 0;
+}
