@@ -8,6 +8,7 @@
     overflow: hidden;
     flex-wrap: wrap;
 }
+
 .server-status-item {
     display: flex;
     flex-direction: column;
@@ -18,6 +19,7 @@
     position: relative;
 }
 .server-status-item:last-child { border-right: none; }
+
 .ss-label {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -25,6 +27,7 @@
     color: var(--text-dim);
     margin-bottom: 0.15rem;
 }
+
 .ss-value {
     font-size: 0.9rem;
     font-weight: 600;
@@ -40,25 +43,31 @@
     top: 0.4rem;
     right: 0.4rem;
     background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    font-size: 0.6rem;
-    font-style: italic;
-    font-weight: 700;
+    border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    line-height: 1;
 }
-.ss-info-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    opacity: 1;
+.ss-info-btn:hover { opacity: 1; }
+
+.info-icon {
+    width: 10px;
+    height: 10px;
+    filter: brightness(0) invert(0.4);
+    transition: filter 0.15s;
+    display: block;
+}
+.info-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(0.4);
+    transition: filter 0.15s;
+    display: block;
+}
+.ss-info-btn:hover .info-icon {
+    filter: brightness(0) invert(0.8) sepia(1) saturate(3) hue-rotate(320deg);
 }
 
 .ss-sublabel {
