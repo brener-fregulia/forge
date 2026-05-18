@@ -42,3 +42,9 @@ async def logs_page(request: Request):
         "logs.html",
         {"categories": list(CATEGORIES)},
     )
+
+
+@router.get("/backups", response_class=HTMLResponse)
+async def backups_page(request: Request):
+    return templates.TemplateResponse(request, "backups.html", {})
+

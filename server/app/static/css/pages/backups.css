@@ -1,0 +1,135 @@
+.backups-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    height: calc(100vh - 200px);
+    min-height: 400px;
+    align-items: stretch;
+}
+
+.backups-left {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.backups-right {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow-y: auto;
+    min-width: 0;
+}
+
+.backups-detail {
+    padding: 1rem;
+}
+
+.backups-detail-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+}
+
+.backup-detail-name {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--accent);
+}
+
+#backups-tree {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 0.75rem;
+    min-height: 0;
+}
+
+.backup-client {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.backup-client-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: monospace;
+    user-select: none;
+}
+.backup-client-header:hover { background: rgba(247,129,102,0.05); }
+
+.backup-client-arrow {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.backup-client-mac { color: var(--text); }
+
+.backup-client-items {
+    padding: 0;
+    border-top: 1px solid var(--border);
+}
+
+.backup-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+}
+
+.backup-item::before {
+    content: "└";
+    position: absolute;
+    left: 1rem;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+
+.backup-item:last-child { border-bottom: none; }
+
+.backup-item:hover { background: rgba(247,129,102,0.05); }
+
+.backup-item.selected {
+    background: rgba(247,129,102,0.08);
+    border-left: 3px solid var(--accent);
+    padding-left: calc(2.5rem - 3px);
+}
+
+.backup-item-mode {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    min-width: 80px;
+}
+
+.backup-item-name {
+    font-family: monospace;
+    color: var(--text-dim);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.backup-item-size {
+    font-family: monospace;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}

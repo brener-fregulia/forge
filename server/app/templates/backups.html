@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}FORGE — Backups{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Backups</h2>
+    <div id="backups-layout" class="backups-layout">
+        <div class="backups-left">
+            <div class="client-tabs-header">
+                <button class="tab-btn active" data-tab="hot">Hot Cache</button>
+                <button class="tab-btn" data-tab="cold">Cold Storage</button>
+            </div>
+            <div id="backups-tree"></div>
+        </div>
+        <div class="backups-right">
+            <div id="backups-detail" class="backups-detail">
+                <p class="empty">Selecione um backup para ver os detalhes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<template id="backup-client-tpl">
+    <div class="backup-client">
+        <div class="backup-client-header">
+            <span class="backup-client-arrow">▶</span>
+            <span class="backup-client-mac"></span>
+        </div>
+        <div class="backup-client-items" style="display:none"></div>
+    </div>
+</template>
+
+<template id="backup-item-tpl">
+    <div class="backup-item">
+        <span class="backup-item-mode"></span>
+        <span class="backup-item-name"></span>
+        <span class="backup-item-size"></span>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/pages/backups.js"></script>
+<script>
+    document.querySelector('a[href="/backups"]')?.classList.add("active");
+</script>
+{% endblock %}
