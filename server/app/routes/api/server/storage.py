@@ -136,3 +136,21 @@ async def disk_io(disks: str = ""):
     if not disk_list:
         return {}
     return get_io(disk_list)
+
+
+@router.get("/server/io-disks")
+async def io_disks_config():
+    """Retorna os nomes dos discos para monitoramento de I/O."""
+    hot_dev  = _resolve_dev(HOT_LABEL)
+    cold_dev = _resolve_dev(COLD_LABEL)
+
+    def _disk_name(dev):
+        if not dev:
+            return None
+        import re
+        return re.sub(r'p?\d+$', '', dev.replace('/dev/', ''))
+
+    return {
+        "hot":  _disk_name(hot_dev),
+        "cold": _disk_name(cold_dev),
+    }

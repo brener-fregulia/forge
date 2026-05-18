@@ -108,12 +108,6 @@ function _toggleDisplay(el, visible) {
     if (visible) show(el); else hide(el);
 }
 
-// discos fixos ainda - trazer de config futuramente
-const IO_DISKS = {
-    "ss-item-hot":  ["sda"],
-    "ss-item-cold": ["md127"],
-};
-
 let _ioInterval = null;
 
 async function _updateDiskIO() {
@@ -177,10 +171,20 @@ function _setIOBar(item, pct) {
     }
 }
 
-export function initServerStatus() {
+const IO_DISKS = {
+    "ss-item-hot":  [],
+    "ss-item-cold": [],
+};
+
+export async function initServerStatus() {
+    const res  = await fetch("/api/server/io-disks");
+    const devs = await res.json();
+    if (devs.hot)  IO_DISKS["ss-item-hot"]  = [devs.hot];
+    if (devs.cold) IO_DISKS["ss-item-cold"] = [devs.cold];
+
     initSmartModal();
     updateStatus();
-    setInterval(updateStatus, 3000);
+    setInterval(updateStatus, 5000);
     _updateDiskIO();
     setInterval(_updateDiskIO, 1000);
 }
