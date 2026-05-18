@@ -20,6 +20,7 @@ wget -qO "$RUNTIME_DIR/lib/json.sh"               "$FILES_SERVER/agent/lib/json.
 wget -qO "$RUNTIME_DIR/lib/forge-ls.sh"           "$FILES_SERVER/agent/lib/forge-ls.sh"
 wget -qO "$RUNTIME_DIR/lib/http_server.sh"        "$FILES_SERVER/agent/lib/http_server.sh"
 wget -qO "$RUNTIME_DIR/lib/http_handler.sh"       "$FILES_SERVER/agent/lib/http_handler.sh"
+wget -qO "$RUNTIME_DIR/lib/backup_minimal.sh" "$FILES_SERVER/agent/lib/backup_minimal.sh"
 mkdir -p "$RUNTIME_DIR/bin"
 wget -qO "$RUNTIME_DIR/bin/socat"              "$FILES_SERVER/agent/bin/socat"
 wget -qO "$RUNTIME_DIR/bin/libreadline.so.8"   "$FILES_SERVER/agent/bin/libreadline.so.8"

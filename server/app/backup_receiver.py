@@ -23,8 +23,7 @@ def _free_port() -> int | None:
     return None
 
 
-async def open_receiver(mac: str, device: str) -> dict:
-    """Abre um TCP receiver para um job de backup. Retorna porta e job_id."""
+async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
     port = _free_port()
     if port is None:
         raise RuntimeError("Nenhuma porta disponível para backup")
@@ -32,42 +31,66 @@ async def open_receiver(mac: str, device: str) -> dict:
     backup_dir = _backup_dir(mac)
     backup_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    job_id    = f"{mac.replace(':', '')}_{timestamp}"
-    part_path = backup_dir / f"backup_{timestamp}.img.part"
-    final_path = backup_dir / f"backup_{timestamp}.img"
+    timestamp  = datetime.now().strftime("%Y%m%d-%H%M%S")
+    job_id     = f"{mac.replace(':', '')}_{timestamp}"
+
+    if mode == "raw":
+        part_path  = backup_dir / f"backup_{timestamp}.img.part"
+        final_path = backup_dir / f"backup_{timestamp}.img"
+    else:
+        final_path = backup_dir / f"minimal_{timestamp}"
+        part_path  = None
 
     manifest = {
         "job_id":     job_id,
         "mac":        mac,
         "device":     device,
+        "mode":       mode,
         "status":     "receiving",
         "started_at": datetime.now().isoformat(),
         "port":       port,
-        "file":       final_path.name,
+        "file":       str(final_path.name),
         "bytes":      0,
     }
     _write_manifest(backup_dir, manifest)
-    forge_log("agent", f"{mac} - backup job {job_id} aberto na porta {port}")
+    forge_log("agent", f"{mac} - backup job {job_id} ({mode}) aberto na porta {port}")
 
     async def _handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         forge_log("agent", f"{mac} - stream conectado na porta {port}")
         bytes_received = 0
         last_log = 0
+
         try:
-            with open(part_path, "wb") as f:
+            if mode == "raw":
+                with open(part_path, "wb") as f:
+                    while True:
+                        chunk = await reader.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        bytes_received += len(chunk)
+                        if bytes_received - last_log >= 500 * 1024 * 1024:
+                            last_log = bytes_received
+                            manifest["bytes"] = bytes_received
+                            _write_manifest(backup_dir, manifest)
+                            forge_log("agent", f"{mac} - backup em progresso: {bytes_received / 1024 / 1024 / 1024:.2f} GB")
+                part_path.rename(final_path)
+            else:
+                # Modo minimal — recebe tar e extrai
+                final_path.mkdir(parents=True, exist_ok=True)
+                proc = await asyncio.create_subprocess_exec(
+                    "tar", "-xf", "-", "-C", str(final_path),
+                    stdin=asyncio.subprocess.PIPE,
+                )
                 while True:
                     chunk = await reader.read(65536)
                     if not chunk:
                         break
-                    f.write(chunk)
+                    proc.stdin.write(chunk)
                     bytes_received += len(chunk)
-                    # Atualiza manifest a cada 500MB
-                    if bytes_received - last_log >= 500 * 1024 * 1024:
-                        last_log = bytes_received
-                        manifest["bytes"] = bytes_received
-                        _write_manifest(backup_dir, manifest)
-                        forge_log("agent", f"{mac} - backup em progresso: {bytes_received / 1024 / 1024 / 1024:.2f} GB")
+                proc.stdin.close()
+                await proc.wait()
+
         except Exception as e:
             forge_log("error", f"{mac} - erro no stream: {e}")
             manifest["status"] = "failed"
@@ -75,12 +98,11 @@ async def open_receiver(mac: str, device: str) -> dict:
             writer.close()
             return
 
-        part_path.rename(final_path)
         manifest["status"]      = "completed"
         manifest["bytes"]       = bytes_received
         manifest["finished_at"] = datetime.now().isoformat()
         _write_manifest(backup_dir, manifest)
-        forge_log("agent", f"{mac} - backup concluido: {bytes_received / 1024 / 1024 / 1024:.2f} GB")
+        forge_log("agent", f"{mac} - backup concluido: {bytes_received / 1024 / 1024:.1f} MB")
 
         writer.close()
         server = _active_receivers.pop(port, None)

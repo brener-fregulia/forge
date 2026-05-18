@@ -51,3 +51,44 @@ async def start_backup(mac: str, payload: BackupRequest):
 
     forge_log("agent", f"{mac} - backup iniciado: /dev/{payload.device} -> porta {job['port']}")
     return {"status": "started", **job}
+
+
+class MinimalBackupRequest(BaseModel):
+    device: str
+    users: list[str] = []  # vazio = todos os usuarios
+
+
+@router.post("/clients/{mac}/backup/minimal/start")
+async def start_minimal_backup(mac: str, payload: MinimalBackupRequest):
+    """Abre TCP receiver e inicia backup mínimo no agent."""
+    client = state.get_client(mac)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    try:
+        job = await open_receiver(mac, payload.device, mode="minimal")
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    port = job["port"]
+    cmd = (
+        f"nohup sh -c '. $LIB/backup_minimal.sh && "
+        f"backup_minimal {payload.device} {port} $MAC' "
+        f"> /tmp/backup-minimal.log 2>&1 &"
+    )
+
+    try:
+        await client.websocket.send_json({"type": "command", "command": cmd})
+    except Exception as e:
+        forge_log("error", f"{mac} - erro ao iniciar backup mínimo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+    client.status = "backup"
+    await state.broadcast_to_dashboard({
+        "type":   "client_update",
+        "mac":    mac,
+        "client": client.to_summary(),
+    })
+
+    forge_log("agent", f"{mac} - backup mínimo iniciado: /dev/{payload.device} -> porta {port}")
+    return {"status": "started", **job}
