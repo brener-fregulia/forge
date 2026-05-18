@@ -13,6 +13,8 @@
 | infra: | configuracoes do servidor/rede |
 | docs: | documentacao |
 
+Separador nos commits: hifen simples `-` (nunca `—`)
+
 ## Padroes de codigo
 
 ### Python
@@ -26,22 +28,48 @@
 
 #### Organizacao de rotas
 
-Cada dominio tem seu proprio arquivo em routes/api/:
+Estrutura de dominios em routes/api/:
+routes/api/
+  clients/         <- tudo sobre o cliente PXE
+    init.py    <- agrega routers do dominio
+    machines.py    <- identidade e metadados
+    commands.py    <- execucao de comandos e log
+    deploys.py     <- plano de deploy
+    terminals.py   <- sessao PTY
+    execs.py       <- execucao REST direta no agent
+    backups.py     <- operacoes de backup no cliente
+  server/          <- tudo sobre o servidor FORGE
+    init.py    <- agrega routers do dominio
+    status.py      <- /api/server/status
+    cpu.py         <- /api/server/cpu
+    ram.py         <- /api/server/ram
+    storage.py     <- /api/server/storage, disk-io, isos
+    logs.py        <- /api/server/logs
+    backups.py     <- /api/server/backups (visualizacao)
+    switch.py      <- /api/server/switch (SNMP)
 
-- `machines.py` — identidade e metadados da maquina (GET /clients, alias)
-- `commands.py` — execucao de comandos e log
-- `deploy.py` — plano de deploy
-- `terminal.py` — abertura de sessao PTY
-- `server/` — metricas e status do servidor FORGE
+Regra de nomenclatura: nome do arquivo = recurso que gerencia, no plural.
+Contexto pelo diretorio (clients/ vs server/), recurso pelo nome do arquivo.
 
 WebSockets separados por contexto em routes/ws/:
+routes/ws/
+agent.py      <- /ws/agent/{mac}
+dashboard.py  <- /ws/dashboard
+terminal.py   <- /ws/terminal/{mac}/{session}/{port}
 
-- `agent.py` — /ws/agent/{mac}
-- `dashboard.py` — /ws/dashboard
-- `terminal.py` — /ws/terminal/{mac}/{session}/{port}
-
-Novo endpoint REST -> arquivo proprio no dominio correto em routes/api/
+Novo endpoint REST -> arquivo proprio no dominio correto (clients/ ou server/)
 Novo WebSocket -> arquivo proprio em routes/ws/
+
+#### Services
+
+Logica de negocio, monitores e I/O em app/services/:
+services/
+disk_io.py          <- monitor de I/O (/proc/diskstats)
+switch_monitor.py   <- polling SNMP do switch
+backup_receiver.py  <- TCP receiver para stream de backup
+forge_log.py        <- logger centralizado por categoria
+
+Regra: se nao e rota HTTP e nao e banco, e um service.
 
 #### to_dict() vs to_summary()
 
@@ -60,6 +88,14 @@ Novo WebSocket -> arquivo proprio em routes/ws/
 - Criacao de elementos via lib/anvil/element.js (el, append)
 - Componentes UI do FORGE via lib/ui/builders.js (buildSummary, buildTable)
 
+#### Icones SVG
+
+- Icones em static/vendor/icons/ (Tabler Icons, MIT)
+- Usar sempre via tag `<img>` com classe `forge-icon`, `btn-icon`, `tree-icon` ou `info-icon`
+- Nunca usar emojis de UI — apenas SVGs offline
+- Logo do FORGE e favicon: excecao permitida (🔥 enquanto SVG customizado nao existir)
+- Filtros CSS para colorir: `brightness(0) invert(0.4)` para dimmed, accent via hue-rotate
+
 #### Organizacao de lib/
 
 | Pasta | Conteudo |
@@ -71,19 +107,18 @@ Novo WebSocket -> arquivo proprio em routes/ws/
 #### Orientacao a paginas
 
 JS organizado por pagina, depois por feature dentro da pagina:
-
-    pages/
-      dashboard/
-        index.js (ou client-grid.js, server-status.js)
-        modals/
-      client/
-        alias.js, command.js, log.js
-        terminal/
-          index.js
-        deploy/
-          index.js
-          modal/
-            index.js, disco.js, backup.js, so.js, pos.js
+pages/
+  dashboard/
+    client-grid.js
+    server-status.js
+  modals/
+  client/
+    alias.js, command.js, log.js
+    terminal/
+    deploy/
+    modal/
+    logs.js
+    backups.js
 
 Regras:
 - Feature com um arquivo -> arquivo direto em pages/client/
@@ -110,6 +145,7 @@ Regras:
 - Constantes em UPPER_CASE no topo do arquivo
 - Funcoes privadas prefixadas com _ (ex: _renderTable, _calcHealth)
 - Funcoes publicas exportadas com nome descritivo
+- Nomes de arquivo em kebab-case (ex: backup-storage.js, server-status.js)
 
 #### Estado
 
@@ -137,6 +173,17 @@ Regras:
 - Agregadores: components.css, modals.css — importados por style.css
 - CSS de tabela em components/tables/ com base.css compartilhado
 - CSS de modal em modals/ com subpasta propria se tiver multiplos arquivos
+- Nomes de arquivo em kebab-case
+
+## Comunicacao agent - servidor
+
+| Canal | Quando usar |
+|---|---|
+| WebSocket | presenca, heartbeat, inventario, comandos de controle |
+| HTTP REST agent:8765 | execucao sincrona de comandos no agent |
+| TCP raw 9100-9199 | stream de dados grandes (backup, futuro) |
+
+Regra: se e dado grande ou sincrono, nao vai pelo WebSocket.
 
 ## Banco de dados
 
@@ -171,6 +218,26 @@ Durante desenvolvimento, usar run.sh diretamente (suporta --reload para html/css
 
 O usuario forge (sistema) tem sudo restrito para: smartctl, mdadm, dmidecode.
 O usuario brener pertence ao grupo forge para manter acesso de edicao via VSCode.
+
+## Checklist para nova feature
+
+Antes de implementar:
+- [ ] Qual dominio? clients/ ou server/ ou services/?
+- [ ] Nome do arquivo segue o recurso no plural?
+- [ ] Endpoint REST segue o padrao /api/{dominio}/{recurso}?
+- [ ] Canal de comunicacao correto? (WS vs REST vs TCP)
+
+Durante implementacao:
+- [ ] Logs via forge_log com categoria correta
+- [ ] Erros tratados e logados em categoria "error"
+- [ ] JS usa helpers do Anvil (qs, on, cloneTemplate)
+- [ ] Icones via SVG offline, nao emojis
+
+Ao finalizar:
+- [ ] Commit com prefixo correto e hifen simples
+- [ ] Documentar em 08-dashboard.md ou 09-roadmap.md se for feature
+- [ ] Documentar bug resolvido em 10-problemas.md
+- [ ] Pendencia aberta em 14-pendencias.md
 
 ## Testes
 
