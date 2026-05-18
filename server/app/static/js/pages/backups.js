@@ -76,21 +76,28 @@ function _renderTree(clients) {
     }
 
     for (const client of clients) {
-        const node = cloneTemplate("backup-client-tpl");
+        const node     = cloneTemplate("backup-client-tpl");
         const clientEl = node.querySelector(".backup-client");
-        const header = node.querySelector(".backup-client-header");
-        const arrow = node.querySelector(".backup-client-arrow");
-        const macEl = node.querySelector(".backup-client-mac");
-        const itemsEl = node.querySelector(".backup-client-items");
+        const header   = node.querySelector(".backup-client-header");
+        const arrow    = node.querySelector(".backup-client-arrow");
+        const macEl    = node.querySelector(".backup-client-mac");
+        const itemsEl  = node.querySelector(".backup-client-items");
 
         setContent(macEl, client.mac);
 
+        const chevron     = document.createElement("img");
+        chevron.src       = "/static/vendor/icons/chevron-right.svg";
+        chevron.className = "tree-chevron";
+        chevron.alt       = "";
+        arrow.innerHTML   = "";
+        arrow.appendChild(chevron);
+
         for (const backup of client.backups) {
             const itemNode = cloneTemplate("backup-item-tpl");
-            const itemEl = itemNode.querySelector(".backup-item");
-            const modeEl = itemNode.querySelector(".backup-item-mode");
-            const nameEl = itemNode.querySelector(".backup-item-name");
-            const sizeEl = itemNode.querySelector(".backup-item-size");
+            const itemEl   = itemNode.querySelector(".backup-item");
+            const modeEl   = itemNode.querySelector(".backup-item-mode");
+            const nameEl   = itemNode.querySelector(".backup-item-name");
+            const sizeEl   = itemNode.querySelector(".backup-item-size");
 
             setContent(modeEl, _modeLabel(backup.mode));
             modeEl.style.color = _modeColor(backup.mode);
@@ -99,7 +106,6 @@ function _renderTree(clients) {
 
             itemsEl.appendChild(itemNode);
 
-            // itemEl agora está no DOM — busca pelo nome único
             const mountedEl = itemsEl.lastElementChild;
             on(mountedEl, "click", () => {
                 qsa(".backup-item", qs("#backups-tree")).forEach(el => el.classList.remove("selected"));
@@ -111,7 +117,9 @@ function _renderTree(clients) {
         on(header, "click", () => {
             const isOpen = itemsEl.style.display !== "none";
             itemsEl.style.display = isOpen ? "none" : "block";
-            setContent(arrow, isOpen ? "▶" : "▼");
+            chevron.src = isOpen
+                ? "/static/vendor/icons/chevron-right.svg"
+                : "/static/vendor/icons/chevron-down.svg";
         });
 
         tree.appendChild(clientEl);
