@@ -26,6 +26,7 @@ _copy "$EXTRACT_DIR/bin/ntfs-3g"            usr/bin/ntfs-3g       ntfs-3g
 _copy "$EXTRACT_DIR/sbin/mount.ntfs-3g"     sbin/mount.ntfs-3g    mount.ntfs-3g
 _copy "$EXTRACT_DIR/usr/sbin/ntfsclone"     usr/sbin/ntfsclone    ntfsclone
 _copy "$EXTRACT_DIR/usr/sbin/mkfs.ntfs"     usr/sbin/mkfs.ntfs    mkfs.ntfs
+_copy "$EXTRACT_DIR/usr/sbin/mkntfs"        usr/sbin/mkntfs       mkntfs
 _copy "$EXTRACT_DIR/usr/bin/ntfsfix"        usr/bin/ntfsfix       ntfsfix
 _copy "$EXTRACT_DIR/usr/sbin/ntfslabel"     usr/sbin/ntfslabel    ntfslabel
 _copy "$EXTRACT_DIR/sbin/hdparm"            sbin/hdparm           hdparm
