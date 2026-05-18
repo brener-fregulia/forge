@@ -1,10 +1,10 @@
 import { qs, on, enable, disable } from "../../../../lib/anvil/dom.js";
 import { initModal } from "../../../../lib/ui/modal.js";
 import { initTabs } from "../../../../lib/ui/tabs.js";
-import { renderDisco, collectDisco } from "./disco.js";
+import { renderDisco, collectDisco } from "./disk.js";
 import { renderBackup, collectBackup, initBackup } from "./backup.js";
-import { renderSo, collectSo, onSoChange } from "./so.js";
-import { renderPos, collectPos } from "./pos.js";
+import { renderSo, collectSo, onSoChange } from "./os.js";
+import { renderPos, collectPos } from "./post-install.js";
 
 const TAB_ORDER = ["disco", "backup", "so", "pos"];
 
