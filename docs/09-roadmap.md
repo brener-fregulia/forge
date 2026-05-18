@@ -2,17 +2,14 @@
 
 ## Proximos passos — pipeline de deploy (em ordem)
 
-01. [ ] Aba Backup — modo Avancado funcional (forge-ls.sh pendente de fix)
-02. [ ] Aba Backup — modo Minimo (lista programas instalados via manifesto)
-03. [ ] Aba Backup — Raw Image
-04. [ ] Backup seletivo via ntfsclone -> hot cache
-05. [ ] Compactacao zstd + replicacao para cold storage
-06. [ ] Formatacao e particionamento do disco alvo (sgdisk + mkfs)
-07. [ ] Instalacao Windows via wimlib-imagex
-08. [ ] Injecao de drivers SDIO
-09. [ ] Debloat
-10. [ ] Restauracao do backup
-11. [ ] Ciclo de vida automatizado (30 dias -> delecao)
+01. [ ] Integrar backup ao botao Executar (raw, minimal, avancado)
+02. [ ] Compactacao zstd + replicacao para cold storage
+03. [ ] Formatacao e particionamento do disco alvo (sgdisk + mkfs)
+04. [ ] Instalacao Windows via wimlib-imagex
+05. [ ] Injecao de drivers SDIO
+06. [ ] Debloat
+07. [ ] Restauracao do backup
+08. [ ] Ciclo de vida automatizado (30 dias -> delecao)
 
 ## Proximos passos — infraestrutura
 
@@ -38,25 +35,27 @@
 - [x] Anvil fase 2+ — element.js e builders.js (buildSummary, buildTable)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Tabela de discos com rows filhas colapsadas e toggle por clique
-- [x] Monitor de I/O em tempo real (MB/s, barra de uso por disco)
+- [x] Monitor de I/O em tempo real (MB/s, barra de uso por disco, dinamico)
 - [x] Pagina do cliente com abas Informacoes e Terminal
 - [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
 - [x] Sub-abas de terminal dinamicas por sessao
-- [x] Comandos pontuais via HTTP POST (sem race condition do Future)
+- [x] Comandos REST sincronos direto no agent (porta 8765)
 - [x] SNMP no CRS326 — MAC table via snmpwalk, endpoint /api/switch/ports
 - [x] DevicePresence — card offline no dashboard para dispositivos detectados via SNMP
 - [x] switch_monitor — polling SNMP a cada 5s, switch_port no estado do cliente
 - [x] forge_log — logger centralizado por categoria (switch, disk_io, agent, system, error)
 - [x] Pagina de logs (/logs) — consoles por categoria com polling a cada 2s
 - [x] Botoes de navegacao no header (logs, config)
-- [ ] Aba Backup — modo Avancado funcional
-- [ ] Aba Backup — modo Minimo
-- [ ] Aba Backup — Raw Image
-- [ ] Refactor server-storage.js para templates HTML
+- [x] Backup Raw Image — ntfsclone -s stream TCP direto ao servidor
+- [x] Backup Minimo — tar Users + programs.txt stream TCP
+- [x] Backup Avancado — arvore de arquivos interativa via HTTP REST
+- [x] TCP receiver no servidor (portas 9100-9199) com manifest.json por job
+- [x] Mini-bootstrap no initramfs — atualizacoes sem rebuild
+- [ ] Throughput de rede no card do cliente durante backup
 - [ ] Indicador de progresso por etapa do deploy
 - [ ] Aviso visual para disco com sinais de degradacao (SMART)
 - [ ] Wake-on-LAN via FORGE dashboard
-- [ ] Configuracao dinamica dos discos monitorados pelo I/O (pos /server/config)
+- [ ] Refactor server-storage.js para templates HTML
 
 ## Hardware pendente
 

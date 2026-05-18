@@ -4,6 +4,7 @@
 
 - Barra de status do servidor: CPU (nome, uso%, temp), RAM, Hot Cache, Cold Storage, RAID, Uptime
 - Barra de I/O em tempo real para Hot Cache e Cold Storage (MB/s leitura/escrita, % do teto por tipo)
+- Discos monitorados carregados dinamicamente via /api/server/io-disks (sem hardcode)
 - Botao (i) por item abre modal detalhado:
   - CPU: uso por core, frequencia, fan RPM
   - RAM: slots, fabricante, velocidade, largura
@@ -13,7 +14,7 @@
 - Sistema de status: offline | booting | online | busy
 - Alias do cliente exibido no card quando definido
 - Deteccao automatica de desconexao (~5s ping/pong)
-- Botoes de navegacao no header: Logs (🖥) e Config (⚙)
+- Botoes de navegacao no header: Logs e Config
 
 ## Pagina de logs (/logs)
 
@@ -21,7 +22,7 @@
 - Polling a cada 2s via GET /api/server/logs
 - Scroll automatico para ultima linha
 - Botao limpar por console (local, nao persiste no servidor)
-- Buffer de 200 linhas por categoria no servidor
+- Buffer de 200 linhas por categoria no servidor (forge_log.py)
 
 ## Pagina de cliente (/client/{mac})
 
@@ -61,7 +62,9 @@ A pagina do cliente e dividida em duas abas principais:
 - Botao "Configurar Deploy" abre modal config-deploy com abas:
   - Disco alvo: lista discos fisicos com letra e label Windows (C:, D:, etc)
   - Backup: modos Sem backup / Minimo / Avancado / Raw Image
-    - Avancado: arvore de arquivos interativa por volume NTFS
+    - Avancado: arvore de arquivos interativa por volume NTFS via HTTP REST direto ao agent
+    - Minimo: Users selecionados + programs.txt via tar stream TCP
+    - Raw Image: ntfsclone -s stream via TCP direto ao servidor
   - Instalacao SO: lista ISOs por categoria (windows/, linux/), opcao "Nao instalar"
   - Pos-Instalacao: drivers SDIO, debloat, restaurar backup
 - Navegacao via botoes Anterior/Proximo/Salvar
@@ -73,14 +76,22 @@ A pagina do cliente e dividida em duas abas principais:
 - MAC, IP, Status sempre visiveis
 - Botoes Configurar Deploy e Executar
 
+## Comunicacao agent - servidor
+
+| Canal | Uso |
+|---|---|
+| WebSocket | presenca, heartbeat, inventario, comandos de controle |
+| HTTP REST (agent:8765) | execucao de comandos sincronos (forge-ls, etc) |
+| TCP raw (portas 9100-9199) | stream de backup (raw image, minimal, futuro) |
+
 ## Sistema de status dos clientes
 
 | Status | Condicao |
 |---|---|
 | offline | MAC detectado via SNMP, sem WebSocket ativo |
-| booting | (reservado — DHCP recebido mas agent nao conectou) |
+| booting | WebSocket conectado mas inventario ainda nao recebido |
 | online | WebSocket conectado + inventario recebido |
-| busy | Deploy em andamento |
+| busy | Deploy ou backup em andamento |
 
 ## Deteccao via SNMP
 
@@ -90,6 +101,17 @@ A pagina do cliente e dividida em duas abas principais:
 - Dados do banco (alias, hostname) populam o card offline quando disponiveis
 - switch_port disponivel em Client e DevicePresence
 
+## Backup
+
+| Modo | Mecanismo | Tamanho tipico |
+|---|---|---|
+| Raw Image | ntfsclone -s stream TCP | ~tamanho dos dados no disco |
+| Minimo | tar Users + programs.txt stream TCP | 10MB - 2GB |
+| Avancado | selecao manual via arvore NTFS + tar stream TCP | variavel |
+
+Armazenamento: /mnt/hot/forge/{mac}/ com manifest.json por job.
+Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
+
 ## Endpoints relevantes
 
 | Endpoint | Descricao |
@@ -98,15 +120,19 @@ A pagina do cliente e dividida em duas abas principais:
 | GET /api/server/logs | Todos os logs por categoria |
 | GET /api/server/logs?category=X | Logs de uma categoria |
 | GET /api/server/logs/categories | Lista de categorias disponiveis |
+| GET /api/server/io-disks | Discos monitorados pelo I/O (dinamico) |
+| POST /api/clients/{mac}/exec | Executa comando no agent via HTTP REST direto |
+| POST /api/clients/{mac}/backup/start | Inicia backup Raw Image (TCP stream) |
+| POST /api/clients/{mac}/backup/minimal/start | Inicia backup Minimo (TCP stream) |
 | POST /api/clients/{mac}/terminal/open | Abre sessao PTY no agent via socat TCP |
 | WS /ws/terminal/{mac}/{session_id}/{port} | Bridge bidirecional WS <-> TCP |
 
 ## Monitor de I/O
 
-- Endpoint GET /api/server/disk-io?disks=sda,md127
+- Endpoint GET /api/server/disk-io?disks=sdc,md127
 - Background task le /proc/diskstats a cada 1s
 - Teto calculado por tipo: NVMe 3000 MB/s, SSD 500 MB/s, HDD 150 MB/s
-- Discos configurados: sda (hot cache), md127 (cold storage RAID1)
+- Discos carregados dinamicamente via /api/server/io-disks (labels forge-hot, forge-cold)
 
 ## Status atual
 
@@ -129,11 +155,12 @@ A pagina do cliente e dividida em duas abas principais:
 
 ### FORGE Server + Agent
 - [x] Bootstrap minimo no initramfs — runtime baixado do servidor em tempo de boot
+- [x] Mini-bootstrap no initramfs — baixa bootstrap real do servidor sem rebuild
 - [x] Agent inicia automaticamente no boot PXE
 - [x] Inventario em duas fases (base imediato + discos/SMART/usuarios)
 - [x] Hardware auditavel: CPU, RAM fisica via DMI/SMBIOS, GPU via sysfs PCI
 - [x] Modulos RAM com fabricante, part number, velocidade, tipo e largura
-- [x] Comandos pontuais via HTTP POST /command/result (sem race condition)
+- [x] Execucao de comandos via HTTP REST direto no agent (porta 8765)
 - [x] Deteccao de desconexao via heartbeat (3s/2s) + watchdog 60s no agent
 - [x] Identificacao de discos por label (imune a mudanca de nome entre boots)
 - [x] Saude SMART por disco (status + temperatura + modal com atributos)
@@ -143,7 +170,7 @@ A pagina do cliente e dividida em duas abas principais:
 - [x] switch_monitor — polling SNMP a cada 5s, switch_port no estado do cliente
 - [x] forge_log — logger centralizado por categoria com buffer de 200 linhas
 - [x] Status do servidor em tempo real (CPU, RAM, storage, RAID, uptime)
-- [x] Monitor de I/O em tempo real (MB/s por disco, barra de uso)
+- [x] Monitor de I/O em tempo real (MB/s por disco, barra de uso, discos dinamicos)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Modais de detalhes do servidor (CPU, RAM, Hot Cache, Cold Storage)
 - [x] PostgreSQL + SQLAlchemy + Alembic (Client, Machine, Deploy, Snapshot)
@@ -153,17 +180,22 @@ A pagina do cliente e dividida em duas abas principais:
 - [x] Arquitetura CSS modular (components/, pages/, modals/, tables/)
 - [x] Arquitetura JS modular com Anvil (lib/anvil/, lib/ui/, components/, pages/)
 - [x] Templates HTML com partials por responsabilidade
-- [x] Agent modular (network.sh, inventory.sh, websocket.sh, json.sh)
+- [x] Agent modular (network.sh, inventory.sh, websocket.sh, json.sh, http_server.sh)
 - [x] Modal config-deploy com abas funcionais
 - [x] Tabela de discos com rows filhas colapsadas e toggle por clique
 - [x] Pagina do cliente com abas Informacoes e Terminal
 - [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
 - [x] Sub-abas de terminal dinamicas por sessao
+- [x] Servidor HTTP no agent (socat porta 8765) para comandos REST sincronos
+- [x] TCP receiver no servidor (portas 9100-9199) para stream de backup
+- [x] Backup Raw Image via ntfsclone -s stream TCP
+- [x] Backup Minimo via tar stream TCP (Users + programs.txt)
+- [x] Backup Avancado — arvore de arquivos interativa via HTTP REST
 
 ### Pipeline de deploy
-- [ ] Backup seletivo via ntfsclone -> hot cache
-- [ ] Compactacao zstd -> hot cache -> cold storage
-- [ ] Formatacao e particionamento do disco alvo
+- [ ] Integracao do backup ao botao Executar
+- [ ] Compactacao zstd -> cold storage
+- [ ] Formatacao e particionamento do disco alvo (sgdisk + mkfs)
 - [ ] Instalacao Windows via wimlib-imagex
 - [ ] Injecao de drivers SDIO
 - [ ] Debloat
