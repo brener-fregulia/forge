@@ -37,9 +37,11 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
     if mode == "raw":
         part_path  = backup_dir / f"backup_{timestamp}.img.part"
         final_path = backup_dir / f"backup_{timestamp}.img"
+        manifest_path = backup_dir / f"backup_{timestamp}.manifest.json"
     else:
         final_path = backup_dir / f"minimal_{timestamp}"
         part_path  = None
+        manifest_path = backup_dir / f"minimal_{timestamp}.manifest.json"
 
     manifest = {
         "job_id":     job_id,
@@ -52,7 +54,7 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
         "file":       str(final_path.name),
         "bytes":      0,
     }
-    _write_manifest(backup_dir, manifest)
+    _write_manifest(manifest_path, manifest)
     forge_log("agent", f"{mac} - backup job {job_id} ({mode}) aberto na porta {port}")
 
     async def _handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
@@ -72,7 +74,7 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
                         if bytes_received - last_log >= 500 * 1024 * 1024:
                             last_log = bytes_received
                             manifest["bytes"] = bytes_received
-                            _write_manifest(backup_dir, manifest)
+                            _write_manifest(manifest_path, manifest)
                             forge_log("agent", f"{mac} - backup em progresso: {bytes_received / 1024 / 1024 / 1024:.2f} GB")
                 part_path.rename(final_path)
             else:
@@ -94,14 +96,14 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
         except Exception as e:
             forge_log("error", f"{mac} - erro no stream: {e}")
             manifest["status"] = "failed"
-            _write_manifest(backup_dir, manifest)
+            _write_manifest(manifest_path, manifest)
             writer.close()
             return
 
         manifest["status"]      = "completed"
         manifest["bytes"]       = bytes_received
         manifest["finished_at"] = datetime.now().isoformat()
-        _write_manifest(backup_dir, manifest)
+        _write_manifest(manifest_path, manifest)
         forge_log("agent", f"{mac} - backup concluido: {bytes_received / 1024 / 1024:.1f} MB")
 
         writer.close()
@@ -116,6 +118,5 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
     return {"job_id": job_id, "port": port}
 
 
-def _write_manifest(backup_dir: Path, manifest: dict):
-    path = backup_dir / "manifest.json"
+def _write_manifest(path: Path, manifest: dict):
     path.write_text(json.dumps(manifest, indent=2))
