@@ -27,15 +27,30 @@ function _renderDetail(client, backup) {
     const m = backup.manifest || {};
     const detail = qs("#backups-detail");
 
+    let duration = "—";
+    let speed    = "—";
+    if (m.started_at && m.finished_at) {
+        const secs = (new Date(m.finished_at) - new Date(m.started_at)) / 1000;
+        const mins = Math.floor(secs / 60);
+        const s    = Math.round(secs % 60);
+        duration   = mins > 0 ? `${mins}m ${s}s` : `${s}s`;
+        if (secs > 0 && m.bytes) {
+            const mbps = (m.bytes / 1024 / 1024 / secs).toFixed(1);
+            speed = `${mbps} MB/s`;
+        }
+    }
+
     const rows = [
-        ["MAC", m.mac || client.mac],
-        ["Modo", _modeLabel(backup.mode)],
-        ["Dispositivo", m.device || "—"],
-        ["Status", m.status || "—"],
-        ["Tamanho", formatBytes(backup.size)],
-        ["Iniciado", m.started_at ? new Date(m.started_at).toLocaleString("pt-BR") : "—"],
-        ["Concluído", m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "—"],
-        ["Job ID", m.job_id || "—"],
+        ["MAC",         m.mac         || client.mac],
+        ["Modo",        _modeLabel(backup.mode)],
+        ["Dispositivo", m.device      || "—"],
+        ["Status",      m.status      || "—"],
+        ["Tamanho",     formatBytes(backup.size)],
+        ["Duração",     duration],
+        ["Velocidade",  speed],
+        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR")  : "—"],
+        ["Concluído",   m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "—"],
+        ["Job ID",      m.job_id      || "—"],
     ];
 
     const html = `
