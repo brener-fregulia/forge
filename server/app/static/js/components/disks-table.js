@@ -11,7 +11,7 @@ export function tryInitialRender() {
         try {
             const disks = JSON.parse(raw);
             if (disks?.length) renderDisks(disks, {}, []);
-        } catch {}
+        } catch { }
     }
 }
 
@@ -49,7 +49,7 @@ export function renderDisks(disks, smart, driveLetters) {
 
     for (const d of disks) {
         const isPart = d.type === "part";
-        const row    = cloneTemplate(isPart ? "disk-row-part-tpl" : "disk-row-main-tpl");
+        const row = cloneTemplate(isPart ? "disk-row-part-tpl" : "disk-row-main-tpl");
         if (!row) continue;
         const tr = row.querySelector("tr");
 
@@ -58,15 +58,16 @@ export function renderDisks(disks, smart, driveLetters) {
         const dlabel = _driveLabel(d.name, driveLetters, disks, !isPart);
 
         if (!isPart) {
-            const expand = document.createElement("span");
-            expand.className   = "disk-expand";
-            expand.textContent = "▶";
+            const expand = document.createElement("img");
+            expand.src = "/static/vendor/icons/chevron-right.svg";
+            expand.className = "disk-expand tree-chevron";
+            expand.alt = "";
             nameEl.appendChild(expand);
         }
         nameEl.appendChild(document.createTextNode(d.name));
         if (dlabel) {
             const span = document.createElement("span");
-            span.className   = "disk-drive-label";
+            span.className = "disk-drive-label";
             span.textContent = " " + dlabel;
             nameEl.appendChild(span);
         }
@@ -96,18 +97,18 @@ export function renderDisks(disks, smart, driveLetters) {
         if (isPart) {
             setContent(healthEl, "—");
         } else if (smart && smart[d.name] !== undefined) {
-            const s      = smart[d.name];
+            const s = smart[d.name];
             const passed = s.smart_status?.passed;
-            const temp   = s.temperature?.current;
-            const badge  = document.createElement("span");
-            badge.className   = passed === true  ? "health-badge health-ok"
-                              : passed === false ? "health-badge health-fail"
-                              : "health-badge health-unknown";
+            const temp = s.temperature?.current;
+            const badge = document.createElement("span");
+            badge.className = passed === true ? "health-badge health-ok"
+                : passed === false ? "health-badge health-fail"
+                    : "health-badge health-unknown";
             badge.textContent = passed === true ? "OK" : passed === false ? "FAIL" : "?";
             healthEl.prepend(badge);
             if (temp != null) {
                 const tempEl = document.createElement("span");
-                tempEl.className   = "health-temp";
+                tempEl.className = "health-temp";
                 tempEl.textContent = `${temp}°C`;
                 badge.after(tempEl);
             }
