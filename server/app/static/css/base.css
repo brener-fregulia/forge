@@ -75,3 +75,24 @@ pre {
     margin: 1rem 0;
     flex-wrap: wrap;
 }
+
+.forge-icon {
+    display: inline-block;
+    vertical-align: middle;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+    flex-shrink: 0;
+}
+
+.header-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    filter: brightness(0) invert(0.6);
+    transition: filter 0.15s;
+}
+.header-btn:hover .header-icon,
+.header-btn.active .header-icon {
+    filter: brightness(0) invert(0.8) sepia(1) saturate(3) hue-rotate(320deg);
+}
