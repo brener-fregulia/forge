@@ -1,205 +1,136 @@
 # Estrutura do Projeto
 
-```
-/opt/forge/
-  agent/
-    bootstrap.sh               <- bootstrap minimo embutido no initramfs
-    forge-agent.sh             <- entrypoint, orquestrador principal (baixado em runtime)
-    lib/
-      network.sh               <- aguarda rede, detecta IFACE/MAC
-      inventory.sh             <- orquestrador de inventario
-      inventory/
-        hardware.sh            <- CPU, RAM, GPU, slots de RAM
-        drives.sh              <- discos, SMART, drive letters, usuarios Windows
-      maintenance.sh           <- acoes pos-inventario (spindown HDDs, etc)
-      websocket.sh             <- loop WebSocket, FIFO, watchdog, comandos
-      json.sh                  <- escape JSON
-      forge-ls.sh              <- listagem de diretorios para o config-deploy
-    bin/                       <- .gitignored — binarios baixados pelo setup-agent-bins.sh
-      socat
-      libreadline.so.8
-      libreadline.so.8.3
+```text
+.
+├── agent/
+│   ├── bootstrap.sh               <- bootstrap mínimo embutido no initramfs
+│   ├── forge-agent.sh             <- entrypoint/orquestrador principal
+│   └── lib/
+│       ├── backup_minimal.sh      <- backup mínimo do cliente
+│       ├── forge-ls.sh            <- listagem de diretórios
+│       ├── format.sh              <- helpers de formatação
+│       ├── http_handler.sh        <- handler HTTP interno
+│       ├── http_server.sh         <- servidor HTTP leve
+│       ├── inventory.sh           <- orquestrador de inventário
+│       ├── json.sh                <- escape/manipulação JSON
+│       ├── maintenance.sh         <- ações pós-inventário
+│       ├── network.sh             <- detecção/rede
+│       ├── websocket.sh           <- loop WebSocket/FIFO/watchdog
+│       └── inventory/
+│           ├── drives.sh          <- discos, SMART e usuários
+│           └── hardware.sh        <- CPU, RAM, GPU e slots
 
-  server/
-    .env                       <- configuracao local (nao commitado)
-    .env.example               <- template de configuracao
-    forge.service              <- unit file systemd (producao)
-    run.sh                     <- uvicorn launcher (desenvolvimento)
-    requirements.txt
-    alembic/                   <- migrations PostgreSQL
-      env.py
-      versions/
-    app/
-      main.py                  <- entrypoint FastAPI + lifespan (disk_io + switch_monitor)
-      config.py                <- carrega .env (paths, IPs, portas, switch)
-      state.py                 <- Client, DevicePresence, State
-      disk_io.py               <- monitor de I/O em tempo real (/proc/diskstats)
-      switch_monitor.py        <- monitor SNMP do switch (DevicePresence, polling 5s)
-      forge_log.py             <- logger centralizado por categoria (buffer 200 linhas)
-      db/
-        base.py                <- engine asyncpg, AsyncSessionLocal
-        models/
-          client.py            <- Client, Machine
-          deploy.py            <- Deploy (DeployStatus), Snapshot
-        services/
-          machine.py           <- get_or_create_machine, set_machine_alias
-      routes/
-        pages.py               <- rotas HTML (/, /client/{mac}, /logs, /server/config)
-        api/
-          __init__.py          <- agrega routers
-          machines.py          <- GET/POST /api/clients (identidade, alias)
-          commands.py          <- POST /api/clients/{mac}/command* e log
-          deploy.py            <- POST /api/clients/{mac}/deploy/plan
-          terminal.py          <- POST /api/clients/{mac}/terminal/open
-          switch.py            <- GET /api/switch/ports (MAC table filtrada)
-          server/
-            __init__.py
-            status.py          <- /api/server/status
-            cpu.py             <- /api/server/cpu
-            ram.py             <- /api/server/ram
-            storage.py         <- /api/server/storage, disk-io, isos
-            logs.py            <- /api/server/logs, /api/server/logs/categories
-        ws/
-          __init__.py          <- agrega routers WS
-          agent.py             <- /ws/agent/{mac} — inventario, heartbeat, comandos
-          dashboard.py         <- /ws/dashboard — snapshot e updates para o browser
-          terminal.py          <- /ws/terminal/{mac}/{session}/{port} — bridge PTY
-      templates/
-        base.html              <- header com botoes Logs (🖥) e Config (⚙)
-        dashboard.html
-        client.html
-        logs.html              <- grid de consoles por categoria
-        partials/
-          client/
-            header.html        <- alias, MAC, IP, Status + botoes deploy/executar
-            hardware.html      <- barra CPU/RAM/GPU + modal RAM
-            disks.html         <- tabela de discos + templates
-            users.html         <- tabela de usuarios + templates
-            log.html           <- log + limpar
-            terminal.html      <- container de terminal PTY
-          modals/
-            smart.html         <- modal SMART (em base.html, disponivel em todas as paginas)
-            config-deploy/
-              index.html       <- modal shell (overlay, header, footer)
-              tabs/
-                disco.html
-                backup.html
-                so.html
-                pos.html
-      static/
-        css/
-          style.css            <- entry point (imports)
-          base.css             <- variaveis, reset, layout, header-actions
-          components.css       <- agregador de componentes
-          modals.css           <- agregador de modais
-          components/
-            button.css
-            badge.css
-            form.css
-            modal.css
-            progress.css
-            loading.css
-            tabs.css
-            summary.css
-            tables/
-              base.css
-              disks.css
-              users.css
-          pages/
-            dashboard.css
-            dashboard-server-status.css
-            client.css
-            logs.css           <- grid de consoles, log-line, log-console
-          modals/
-            smart.css
-            config-deploy/
-              base.css
-              backup.css
-              disco.css
-              so.css
-              pos.css
-        js/
-          dashboard.js         <- entrypoint dashboard
-          client.js            <- entrypoint client
-          lib/
-            anvil/
-              dom.js           <- helpers DOM (qs, qsa, on, show, hide, cloneTemplate, etc)
-              state.js         <- estado reativo (createStore)
-              element.js       <- helpers de criacao de elementos (el, append)
-            ui/
-              builders.js      <- componentes UI FORGE (buildSummary, buildTable)
-              modal.js         <- utilitarios de modal reutilizaveis
-              tabs.js          <- componente de abas reutilizavel
-              clipboard.js     <- botao copiar
-            format.js          <- formatBytes — utilitario puro sem DOM
-            ws.js              <- wrapper WebSocket com reconexao automatica
-          vendor/
-            xterm/
-              xterm.js         <- terminal emulator (servido localmente, offline-safe)
-              xterm.css
-              xterm-addon-fit.js
-          components/
-            disks-table.js     <- renderDisks + toggle de particoes
-            users-table.js     <- renderUsers
-            hardware-card.js   <- renderHardware + modal RAM
-            smart-modal.js     <- initSmartModal + openSmartModal
-          pages/
-            logs.js            <- polling + renderizacao dos consoles de log
-            dashboard/
-              client-grid.js   <- grid de cards (Client + DevicePresence) via WebSocket
-              server-status.js <- polling status + modais + I/O de discos
-              modals/
-                server-cpu.js
-                server-ram.js
-                server-storage.js
-            client/
-              alias.js         <- editar alias da maquina
-              command.js       <- form de comando shell
-              log.js           <- limpar log
-              terminal/
-                index.js       <- inicializacao e sub-abas de terminal PTY
-              deploy/
-                index.js       <- botao executar + initDeploy
-                modal/
-                  index.js     <- orquestrador (modal, abas, navegacao)
-                  disco.js     <- aba disco alvo
-                  backup.js    <- aba backup (arvore de volumes)
-                  so.js        <- aba instalacao SO
-                  pos.js       <- aba pos-instalacao
+├── build/
+│   ├── .gitkeep
+│   └── .gitkeep-marker
 
-  scripts/
-    build-initramfs.sh         <- orquestrador do build
-    setup-agent-bins.sh        <- baixa e extrai binarios do agent (socat, readline)
-    setup-user.sh              <- cria usuario forge, permissoes e sudoers (producao)
-    initramfs/
-      env.sh                   <- variaveis compartilhadas
-      01-check.sh              <- verifica dependencias
-      02-prepare.sh            <- limpa e prepara workdir
-      03-extract.sh            <- extrai initramfs base
-      04-drivers.sh            <- monta modloop, copia drivers
-      05-packages.sh           <- extrai apks, copia binarios e libs
-      06-agent.sh              <- copia websocat e bootstrap
-      07-patch-init.sh         <- patcha o /init
-      08-repack.sh             <- reempacota e gera initramfs final
+├── docs/
+│   ├── 01-visao-geral.md
+│   ├── 02-hardware.md
+│   ├── 03-storage.md
+│   ├── 04-software.md
+│   ├── 05-estrutura.md
+│   ├── 06-configuracao.md
+│   ├── 07-initramfs.md
+│   ├── 08-dashboard.md
+│   ├── 09-roadmap.md
+│   ├── 10-problemas.md
+│   ├── 11-convencoes.md
+│   ├── 12-anvil.md
+│   ├── 13-paginas.md
+│   └── 14-pendencias.md
 
-  build/                       <- .gitignored
-    websocat                   <- binario estatico musl
-    *.apk                      <- pacotes Alpine baixados
-    initramfs-work/            <- workdir do build
+├── scripts/
+│   ├── build-initramfs.sh         <- build do initramfs
+│   ├── client-shell.sh            <- shell remoto do cliente
+│   ├── dump-context.sh            <- dump/debug de contexto
+│   ├── reload-agent.sh            <- reload do agent
+│   ├── setup-agent-bins.sh        <- setup de binários auxiliares
+│   ├── setup-user.sh              <- setup inicial de usuário
+│   └── initramfs/
+│       ├── 01-check.sh
+│       ├── 02-prepare.sh
+│       ├── 03-extract.sh
+│       ├── 04-drivers.sh
+│       ├── 05-packages.sh
+│       ├── 06-agent.sh
+│       ├── 07-patch-init.sh
+│       ├── 08-repack.sh
+│       └── env.sh
 
-  docs/
-    README.md
-    01-visao-geral.md
-    02-hardware.md
-    03-storage.md
-    04-software.md
-    05-estrutura.md
-    06-configuracao.md
-    07-initramfs.md
-    08-dashboard.md
-    09-roadmap.md
-    10-problemas.md
-    11-convencoes.md
-    12-anvil.md
-    13-paginas.md
+├── server/
+│   ├── .env.example
+│   ├── alembic.ini
+│   ├── forge.service
+│   ├── requirements.txt
+│   ├── run.sh
+│   ├── alembic/
+│   │   ├── env.py
+│   │   ├── README
+│   │   ├── script.py.mako
+│   │   └── versions/
+│   │       ├── 006a9e094af1_add_deploy_snapshot.py
+│   │       └── 05390c87a0be_init_client_machine_deploy_snapshot.py
+│   └── app/
+│       ├── __init__.py
+│       ├── config.py              <- configuração/env
+│       ├── main.py                <- entrypoint FastAPI
+│       ├── state.py               <- estado global do servidor
+│       ├── db/
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── models/
+│       │   │   ├── __init__.py
+│       │   │   ├── client.py
+│       │   │   └── deploy.py
+│       │   └── services/
+│       │       ├── __init__.py
+│       │       └── machine.py
+│       ├── routes/
+│       │   ├── __init__.py
+│       │   ├── pages.py
+│       │   ├── api/
+│       │   │   ├── __init__.py
+│       │   │   ├── clients/
+│       │   │   │   ├── backups.py
+│       │   │   │   ├── commands.py
+│       │   │   │   ├── deploys.py
+│       │   │   │   ├── execs.py
+│       │   │   │   ├── machines.py
+│       │   │   │   └── terminals.py
+│       │   │   └── server/
+│       │   │       ├── __init__.py
+│       │   │       ├── backups.py
+│       │   │       ├── cpu.py
+│       │   │       ├── logs.py
+│       │   │       ├── ram.py
+│       │   │       ├── status.py
+│       │   │       ├── storage.py
+│       │   │       └── switch.py
+│       │   └── ws/
+│       │       ├── __init__.py
+│       │       ├── agent.py
+│       │       ├── dashboard.py
+│       │       └── terminal.py
+│       ├── services/
+│       │   ├── __init__.py
+│       │   ├── backup_receiver.py
+│       │   ├── disk_io.py
+│       │   ├── forge_log.py
+│       │   └── switch_monitor.py
+│       ├── static/
+│       │   ├── css/
+│       │   └── js/
+│       └── templates/
+│           ├── backups.html
+│           ├── base.html
+│           ├── client.html
+│           ├── dashboard.html
+│           ├── logs.html
+│           └── partials/
+│               ├── client/
+│               └── modals/
+
+├── .gitignore
+└── README.md
 ```
