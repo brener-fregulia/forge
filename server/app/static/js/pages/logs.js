@@ -15,17 +15,22 @@ async function fetchLogs() {
     }
 }
 
+const _hidden = {};
+
 function _renderLines(category, lines) {
     const container = qs(`#log-lines-${category}`);
     const countEl   = qs(`#log-count-${category}`);
     if (!container) return;
 
-    const prev = _state[category] ?? 0;
-    if (lines.length === prev && prev > 0) return;
-    _state[category] = lines.length;
+    const skip    = _hidden[category] ?? 0;
+    const visible = lines.slice(skip);
+    const prev    = _state[category] ?? 0;
+
+    if (visible.length === prev && prev > 0) return;
+    _state[category] = visible.length;
 
     container.innerHTML = "";
-    for (const line of lines) {
+    for (const line of visible) {
         const node = cloneTemplate("log-line-tpl");
         if (!node) continue;
         const el = node.querySelector(".log-line");
@@ -33,19 +38,22 @@ function _renderLines(category, lines) {
         container.appendChild(node);
     }
 
-    setContent(countEl, String(lines.length));
+    setContent(countEl, String(visible.length));
     container.scrollTop = container.scrollHeight;
 }
 
-// Limpar categoria localmente (não persiste no servidor)
 qsa(".log-clear-btn").forEach(btn => {
     on(btn, "click", () => {
         const category = btn.dataset.category;
         const container = qs(`#log-lines-${category}`);
         const countEl   = qs(`#log-count-${category}`);
+
+        // Marca quantas linhas pular a partir de agora
+        _hidden[category] = (_hidden[category] ?? 0) + (_state[category] ?? 0);
+        _state[category]  = 0;
+
         if (container) container.innerHTML = "";
         if (countEl)   setContent(countEl, "0");
-        _state[category] = 0;
     });
 });
 
