@@ -1,14 +1,16 @@
 """Rotas das páginas HTML."""
 from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
-from app.config import TEMPLATES_DIR
+from app.config import TEMPLATES_DIR, SERVER_IP
 from app.state import state
 from app.services.forge_log import CATEGORIES
+from pathlib import Path
 
 router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
+BOOT_DIR = Path("/srv/tftp/boot")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -47,4 +49,13 @@ async def logs_page(request: Request):
 @router.get("/backups", response_class=HTMLResponse)
 async def backups_page(request: Request):
     return templates.TemplateResponse(request, "backups.html", {})
+
+
+@router.get("/boot/{mac}/grub.cfg", response_class=PlainTextResponse)
+async def grub_config(mac: str):
+    """Serve grub.cfg dinamico por MAC — WinPE durante deploy, 404 caso contrario."""
+    cfg_path = BOOT_DIR / mac / "grub.cfg"
+    if cfg_path.exists():
+        return PlainTextResponse(cfg_path.read_text())
+    raise HTTPException(status_code=404, detail="Sem config especifico para este MAC")
 
