@@ -5,6 +5,33 @@ Diferente do roadmap (orientado a features), este documento e orientado a proble
 
 ---
 
+## Em andamento
+
+### Boot dinâmico por MAC via grub
+
+Objetivo: FORGE controla o proximo boot do cliente sem intervencao humana.
+
+Fluxo planejado:
+1. grub.cfg principal sempre serve Alpine (fallback estatico)
+2. Durante deploy, servidor gera /srv/tftp/grub/boot/{mac}/grub.cfg com WinPE
+3. grub le o MAC via ${net_default_mac}, remove dois pontos via regexp e faz configfile
+4. Apos boot WinPE + instalacao Windows, servidor remove o arquivo e proximo boot volta Alpine
+
+Estado atual:
+- grub le MAC corretamente (net_default_mac funcionando)
+- regexp extrai octetos e monta mac_clean corretamente
+- configfile com URL HTTP absoluta nao funciona no grub
+- configfile com ($root) nao resolve corretamente em boot HTTP
+- Pendente: encontrar sintaxe correta para configfile com path HTTP dinamico no grub
+
+Arquivos envolvidos:
+- /srv/tftp/grub/grub.cfg
+- /srv/tftp/grub/boot/{mac}/grub.cfg (gerado pelo servidor)
+- server/app/routes/api/clients/deploys.py (endpoints /boot/winpe)
+- server/app/routes/pages.py (endpoint GET /boot/{mac}/grub.cfg)
+
+---
+
 ## Bugs de Funcionalidade
 
 | # | Descricao | Contexto | Prioridade |
