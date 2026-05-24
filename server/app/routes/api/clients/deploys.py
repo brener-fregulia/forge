@@ -14,7 +14,7 @@ WINPE_CFG = """set default=0
 set timeout=0
 
 menuentry "FORGE WinPE" {{
-    chainloader (http,{server_ip})/tftp/snponly.efi
+    chainloader (http,{server_ip})/tftp/ipxe.efi
 }}
 """
 
