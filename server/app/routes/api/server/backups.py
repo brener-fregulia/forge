@@ -1,8 +1,10 @@
 """Endpoints REST — visualizacao de backups no storage."""
 import json
+import shutil
 from pathlib import Path
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.config import HOT_CACHE_PATH, COLD_STORAGE_PATH
+from app.services.forge_log import forge_log
 
 router = APIRouter(tags=["storage"])
 
@@ -82,3 +84,29 @@ async def storage_hot():
 @router.get("/server/backups/cold")
 async def storage_cold():
     return {"clients": _scan_storage(COLD_STORAGE_PATH)}
+
+
+@router.delete("/server/backups/hot/{mac}/{name}")
+async def delete_backup_hot(mac: str, name: str):
+    """Remove um backup do hot cache."""
+    mac_dir = HOT_CACHE_PATH / "forge" / mac
+    item    = mac_dir / name
+
+    if not item.exists():
+        raise HTTPException(status_code=404, detail="Backup não encontrado")
+
+    try:
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
+
+        # Remove manifest associado
+        manifest = mac_dir / f"{name}.manifest.json"
+        manifest.unlink(missing_ok=True)
+
+        forge_log("system", f"backup removido: {mac}/{name}")
+        return {"status": "ok", "deleted": name}
+    except Exception as e:
+        forge_log("error", f"erro ao remover backup {mac}/{name}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

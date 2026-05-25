@@ -133,3 +133,30 @@
     font-size: 0.8rem;
     white-space: nowrap;
 }
+
+.backup-delete-btn {
+    margin-left: auto;
+    margin-right: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+.backup-delete-btn:hover {
+    background: var(--red);
+    opacity: 1;
+}
+.backup-delete-btn .btn-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(0.6) sepia(1) saturate(5) hue-rotate(300deg);
+}
+.backup-delete-btn:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}

@@ -104,6 +104,27 @@ function _renderTree(clients) {
             setContent(nameEl, backup.name);
             setContent(sizeEl, formatBytes(backup.size));
 
+            // Botão excluir
+            const deleteBtn     = document.createElement("button");
+            deleteBtn.className = "backup-delete-btn";
+            deleteBtn.title     = "Excluir backup";
+            const trashImg      = document.createElement("img");
+            trashImg.src        = "/static/vendor/icons/trash.svg";
+            trashImg.className  = "btn-icon";
+            trashImg.alt        = "";
+            deleteBtn.appendChild(trashImg);
+
+            on(deleteBtn, "click", async (e) => {
+                e.stopPropagation();
+                if (!confirm(`Excluir ${backup.name}?`)) return;
+                const res = await fetch(`/api/server/backups/${_currentTab}/${client.mac}/${backup.name}`, {
+                    method: "DELETE",
+                });
+                if (res.ok) loadTab(_currentTab);
+                else alert("Erro ao excluir backup");
+            });
+
+            itemEl.appendChild(deleteBtn);
             itemsEl.appendChild(itemNode);
 
             const mountedEl = itemsEl.lastElementChild;
