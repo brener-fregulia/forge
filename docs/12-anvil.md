@@ -1,31 +1,31 @@
-# Anvil — Framework UI do FORGE
+# Anvil - Framework UI do FORGE
 
 Anvil (Advanced Networked Virtual Infrastructure Layer) e o framework frontend proprio do FORGE.
 Vanilla JS puro, sem bundler, sem dependencias externas.
 
 ## Principios
 
-- Zero dependencias — apenas ES Modules nativos do browser
+- Zero dependencias - apenas ES Modules nativos do browser
 - Separacao clara entre logica (model), DOM (view) e HTTP (service)
 - Estado reativo simples via createStore
-- Helpers DOM centralizados em dom.js — nunca repetir querySelector inline
-- Testabilidade — logica em *.model.js nao toca o DOM
+- Helpers DOM centralizados em dom.js - nunca repetir querySelector inline
+- Testabilidade - logica em *.model.js nao toca o DOM
 
 ## Estrutura de arquivos
 
 ```
 lib/
   anvil/
-    dom.js        — helpers DOM (qs, qsa, show, hide, on, cloneTemplate, etc)
-    state.js      — gerenciador de estado reativo (createStore)
-    element.js    — helpers genéricos para criação de elementos (el, append)
+    dom.js        - helpers DOM (qs, qsa, show, hide, on, cloneTemplate, etc)
+    state.js      - gerenciador de estado reativo (createStore)
+    element.js    - helpers genéricos para criação de elementos (el, append)
   ui/
-    builders.js   — componentes UI do projeto (buildSummary, buildTable)
-    modal.js      — utilitarios de modal reutilizaveis
-    tabs.js       — componente de abas reutilizavel
-    clipboard.js  — botao copiar
-  format.js       — formatacao de dados (bytes, etc) — sem DOM
-  ws.js           — wrapper WebSocket com reconexao automatica — sem DOM
+    builders.js   - componentes UI do projeto (buildSummary, buildTable)
+    modal.js      - utilitarios de modal reutilizaveis
+    tabs.js       - componente de abas reutilizavel
+    clipboard.js  - botao copiar
+  format.js       - formatacao de dados (bytes, etc) - sem DOM
+  ws.js           - wrapper WebSocket com reconexao automatica - sem DOM
 ```
 
 ### Separacao de responsabilidades
@@ -47,12 +47,12 @@ lib/
 
 ## Regras de uso
 
-- Nunca usar `document.querySelector` ou `addEventListener` diretamente nas features — sempre via `dom.js`
-- Nunca usar `innerHTML` para renderizar listas ou componentes — usar `cloneTemplate` + `appendChild`
+- Nunca usar `document.querySelector` ou `addEventListener` diretamente nas features - sempre via `dom.js`
+- Nunca usar `innerHTML` para renderizar listas ou componentes - usar `cloneTemplate` + `appendChild`
 - `innerHTML` permitido apenas para strings simples de loading/erro em `openModal`
 - Funcoes que retornam elementos DOM devem retornar `HTMLElement` ou `DocumentFragment`, nunca string HTML
 - Ao appendar `DocumentFragment`, guardar referencias dos elementos filho ANTES do `appendChild`
-- `buildTable` e `buildSummary` aceitam `Node` nas celulas — nunca passar HTML como string
+- `buildTable` e `buildSummary` aceitam `Node` nas celulas - nunca passar HTML como string
 
 ## Padrao de componente
 
@@ -64,11 +64,11 @@ Todo componente que gerencia estado proprio deve:
 ## Exemplo
 
 ```js
-// deploy.model.js — logica pura, testavel
+// deploy.model.js - logica pura, testavel
 export function buildDeployPlan(disk, iso, pos) { ... }
 export function validatePlan(plan) { ... }
 
-// deploy.view.js — DOM, nao testavel
+// deploy.view.js - DOM, nao testavel
 import { buildDeployPlan } from "./deploy.model.js";
 import { qs, on } from "../../lib/anvil/dom.js";
 export function initDeployView(store) { ... }

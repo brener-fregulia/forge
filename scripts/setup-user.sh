@@ -1,5 +1,5 @@
 #!/bin/bash
-# FORGE — setup do usuário de sistema e permissões
+# FORGE - setup do usuário de sistema e permissões
 # Execute como root: sudo bash setup-user.sh
 set -e
 
@@ -23,7 +23,7 @@ echo "    OK"
 
 echo ">>> Instalando regras sudoers"
 cat > /etc/sudoers.d/forge << 'EOF'
-# FORGE — comandos privilegiados permitidos ao usuário forge
+# FORGE - comandos privilegiados permitidos ao usuário forge
 forge ALL=(ALL) NOPASSWD: /usr/sbin/smartctl
 forge ALL=(ALL) NOPASSWD: /usr/sbin/mdadm
 forge ALL=(ALL) NOPASSWD: /usr/sbin/dmidecode

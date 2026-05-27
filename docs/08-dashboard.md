@@ -33,7 +33,7 @@ A pagina do cliente e dividida em duas abas principais:
 #### Hardware (auditoria)
 - Barra com CPU (nome), RAM (total fisico via DMI), GPU (nome/label)
 - Modal (i) de RAM: slots, banco, tamanho, tipo (DDR4/DDR5/etc), velocidade MT/s,
-  largura bits, fabricante, part number — via offsets SMBIOS, independente de fabricante
+  largura bits, fabricante, part number - via offsets SMBIOS, independente de fabricante
 
 #### Discos
 - Tabela com hierarquia visual (disco -> particoes colapsadas, expansivel por clique)
@@ -53,7 +53,7 @@ A pagina do cliente e dividida em duas abas principais:
 ### Aba Terminal
 
 - Terminal PTY interativo via xterm.js
-- Sub-abas dinamicas — abre multiplos terminais por maquina via botao "+"
+- Sub-abas dinamicas - abre multiplos terminais por maquina via botao "+"
 - Cada sessao = socat PTY + TCP bridge no servidor + WebSocket dedicado
 - Suporte a cores ANSI, cursor, scrollback
 - xterm.js servido localmente (offline-safe) em static/vendor/xterm/
@@ -140,7 +140,7 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] DHCP + TFTP funcionando
 - [x] Boot UEFI via grub (grubx64.efi gerado via grub-mkimage)
 - [x] Alpine sobe em RAM (~42MB initramfs)
-- [x] NAT — clientes com internet
+- [x] NAT - clientes com internet
 - [x] Deteccao de discos NVMe e SATA
 - [x] lsblk Alpine com libs musl
 - [x] smartctl para saude dos discos
@@ -151,11 +151,11 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] Hot cache montado em /mnt/hot (SSD SATA 240GB, label forge-hot)
 - [x] Cold storage montado em /mnt/cold (RAID1 2x466GB, label forge-cold)
 - [x] Ambos persistidos no /etc/fstab por UUID
-- [x] ISOs movidas para /home/isos (symlink /srv/isos) — raiz NVMe em 15%
+- [x] ISOs movidas para /home/isos (symlink /srv/isos) - raiz NVMe em 15%
 
 ### FORGE Server + Agent
-- [x] Bootstrap minimo no initramfs — runtime baixado do servidor em tempo de boot
-- [x] Mini-bootstrap no initramfs — baixa bootstrap real do servidor sem rebuild
+- [x] Bootstrap minimo no initramfs - runtime baixado do servidor em tempo de boot
+- [x] Mini-bootstrap no initramfs - baixa bootstrap real do servidor sem rebuild
 - [x] Agent inicia automaticamente no boot PXE
 - [x] Inventario em duas fases (base imediato + discos/SMART/usuarios)
 - [x] Hardware auditavel: CPU, RAM fisica via DMI/SMBIOS, GPU via sysfs PCI
@@ -166,16 +166,16 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] Saude SMART por disco (status + temperatura + modal com atributos)
 - [x] Usuarios Windows via ntfs-3g
 - [x] Dashboard com grid de clientes em tempo real
-- [x] DevicePresence — cards offline para dispositivos detectados via SNMP
-- [x] switch_monitor — polling SNMP a cada 5s, switch_port no estado do cliente
-- [x] forge_log — logger centralizado por categoria com buffer de 200 linhas
+- [x] DevicePresence - cards offline para dispositivos detectados via SNMP
+- [x] switch_monitor - polling SNMP a cada 5s, switch_port no estado do cliente
+- [x] forge_log - logger centralizado por categoria com buffer de 200 linhas
 - [x] Status do servidor em tempo real (CPU, RAM, storage, RAID, uptime)
 - [x] Monitor de I/O em tempo real (MB/s por disco, barra de uso, discos dinamicos)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Modais de detalhes do servidor (CPU, RAM, Hot Cache, Cold Storage)
 - [x] PostgreSQL + SQLAlchemy + Alembic (Client, Machine, Deploy, Snapshot)
 - [x] Machine registrada automaticamente no banco ao conectar
-- [x] Alias editavel por maquina — persiste no banco
+- [x] Alias editavel por maquina - persiste no banco
 - [x] Modal de configuracao de deploy com plano persistido
 - [x] Arquitetura CSS modular (components/, pages/, modals/, tables/)
 - [x] Arquitetura JS modular com Anvil (lib/anvil/, lib/ui/, components/, pages/)
@@ -190,7 +190,7 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] TCP receiver no servidor (portas 9100-9199) para stream de backup
 - [x] Backup Raw Image via ntfsclone -s stream TCP
 - [x] Backup Minimo via tar stream TCP (Users + programs.txt)
-- [x] Backup Avancado — arvore de arquivos interativa via HTTP REST
+- [x] Backup Avancado - arvore de arquivos interativa via HTTP REST
 
 ### Pipeline de deploy
 - [ ] Integracao do backup ao botao Executar

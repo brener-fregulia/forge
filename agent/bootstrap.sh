@@ -1,5 +1,5 @@
 #!/bin/sh
-# FORGE Bootstrap — baixa e executa o runtime do agent
+# FORGE Bootstrap - baixa e executa o runtime do agent
 set -e
 
 SERVER_IP="192.168.100.1"

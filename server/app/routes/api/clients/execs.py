@@ -1,4 +1,4 @@
-"""Endpoint REST — execução direta no agent via HTTP."""
+"""Endpoint REST - execução direta no agent via HTTP."""
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -17,7 +17,7 @@ class ExecRequest(BaseModel):
 
 @router.post("/clients/{mac}/exec")
 async def exec_on_agent(mac: str, payload: ExecRequest):
-    """Executa comando no agent via HTTP REST direto — sem WebSocket."""
+    """Executa comando no agent via HTTP REST direto - sem WebSocket."""
     client = state.get_client(mac)
     if not client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")

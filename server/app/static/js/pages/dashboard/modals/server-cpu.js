@@ -9,12 +9,12 @@ export function renderCpuModal(d) {
 
     const el = document.createDocumentFragment();
     el.appendChild(buildSummary([
-        { label: "Modelo",      value: d.name || "—" },
+        { label: "Modelo",      value: d.name || "-" },
         { label: "Cores / Threads", value: `${d.physical_cores}c / ${d.logical_cores}t` },
-        { label: "Temperatura", value: d.temp !== null ? `${d.temp}°C` : "—" },
-        { label: "Fan",         value: d.fan_rpm !== null ? `${d.fan_rpm} RPM` : "—" },
-        { label: "Clock atual", value: d.freq_current ? `${d.freq_current} MHz` : "—" },
-        { label: "Clock máx",   value: d.freq_max ? `${d.freq_max} MHz` : "—" },
+        { label: "Temperatura", value: d.temp !== null ? `${d.temp}°C` : "-" },
+        { label: "Fan",         value: d.fan_rpm !== null ? `${d.fan_rpm} RPM` : "-" },
+        { label: "Clock atual", value: d.freq_current ? `${d.freq_current} MHz` : "-" },
+        { label: "Clock máx",   value: d.freq_max ? `${d.freq_max} MHz` : "-" },
     ]));
     el.appendChild(buildTable(
         ["Core", "Uso", ""],

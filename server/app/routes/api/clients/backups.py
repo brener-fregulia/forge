@@ -1,4 +1,4 @@
-"""Endpoints REST — backup de clientes."""
+"""Endpoints REST - backup de clientes."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state

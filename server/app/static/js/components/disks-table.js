@@ -26,7 +26,7 @@ function _driveLabel(name, driveLetters, disks, isDisk) {
         if (!children.length) return null;
         const letters = children.map(e => {
             const label = e.label || (e.letter === "C" ? "Windows" : "Dados");
-            return `${e.letter}: — ${label}`;
+            return `${e.letter}: - ${label}`;
         });
         return `(${letters.join(", ")})`;
     }
@@ -73,7 +73,7 @@ export function renderDisks(disks, smart, driveLetters) {
         }
 
         // Modelo / serial
-        setContent(qs(".disk-model", tr), [d.vendor, d.model].filter(Boolean).join(" ") || "—");
+        setContent(qs(".disk-model", tr), [d.vendor, d.model].filter(Boolean).join(" ") || "-");
         const serialEl = qs(".disk-serial", tr);
         if (d.serial) {
             serialEl.className = "disk-serial";
@@ -81,7 +81,7 @@ export function renderDisks(disks, smart, driveLetters) {
         }
 
         // Tamanho
-        setContent(qs(".disk-size", tr), d.size ? formatBytes(d.size) : "—");
+        setContent(qs(".disk-size", tr), d.size ? formatBytes(d.size) : "-");
 
         // Filesystem
         const fstypeEl = qs(".disk-fstype", tr);
@@ -89,13 +89,13 @@ export function renderDisks(disks, smart, driveLetters) {
             const isNtfs = d.fstype.toLowerCase() === "ntfs";
             fstypeEl.innerHTML = `<span class="fs-badge ${isNtfs ? "fs-ntfs" : "fs-other"}">${d.fstype}</span>`;
         } else {
-            setContent(fstypeEl, "—");
+            setContent(fstypeEl, "-");
         }
 
         // Saúde SMART
         const healthEl = qs(".disk-health", tr);
         if (isPart) {
-            setContent(healthEl, "—");
+            setContent(healthEl, "-");
         } else if (smart && smart[d.name] !== undefined) {
             const s = smart[d.name];
             const passed = s.smart_status?.passed;

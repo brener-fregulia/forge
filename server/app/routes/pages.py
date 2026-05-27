@@ -15,7 +15,7 @@ BOOT_DIR = Path("/srv/tftp/boot")
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    """Painel principal — grid de clientes."""
+    """Painel principal - grid de clientes."""
     return templates.TemplateResponse(
         request,
         "dashboard.html",
@@ -53,7 +53,7 @@ async def backups_page(request: Request):
 
 @router.get("/boot/{mac}/grub.cfg", response_class=PlainTextResponse)
 async def grub_config(mac: str):
-    """Serve grub.cfg dinamico por MAC — WinPE durante deploy, 404 caso contrario."""
+    """Serve grub.cfg dinamico por MAC - WinPE durante deploy, 404 caso contrario."""
     cfg_path = BOOT_DIR / mac / "grub.cfg"
     if cfg_path.exists():
         return PlainTextResponse(cfg_path.read_text())

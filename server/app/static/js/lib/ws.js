@@ -5,7 +5,7 @@ export function createWS(path, handlers, retryMs = 2000) {
         ws = new WebSocket(`ws://${location.host}${path}`);
         ws.onopen  = () => console.log(`[FORGE] WS conectado: ${path}`);
         ws.onclose = () => {
-            console.log(`[FORGE] WS desconectado: ${path} — reconectando em ${retryMs}ms`);
+            console.log(`[FORGE] WS desconectado: ${path} - reconectando em ${retryMs}ms`);
             setTimeout(connect, retryMs);
         };
         ws.onerror = (e) => console.error(`[FORGE] WS erro: ${path}`, e);

@@ -57,7 +57,7 @@ function _checkEmpty() {
 }
 
 function renderClientCard(c) {
-    const label = c.alias || c.hostname || "—";
+    const label = c.alias || c.hostname || "-";
     return `
         <a href="/client/${c.mac}" class="client-card" data-mac="${c.mac}">
             <div class="card-header">
@@ -75,7 +75,7 @@ function renderClientCard(c) {
 }
 
 function renderDeviceCard(d) {
-    const label = d.alias || d.hostname || "—";
+    const label = d.alias || d.hostname || "-";
     return `
         <div class="client-card device-card" data-mac="${d.mac}">
             <div class="card-header">
@@ -84,7 +84,7 @@ function renderDeviceCard(d) {
             </div>
             <div class="card-body">
                 <div class="hostname">${label}</div>
-                <div class="ip">${d.switch_port || "—"}</div>
+                <div class="ip">${d.switch_port || "-"}</div>
             </div>
         </div>`;
 }

@@ -6,7 +6,7 @@ echo ">>> Copiando websocat e mini-bootstrap"
 cp "$WEBSOCAT_BIN" usr/bin/websocat
 chmod +x usr/bin/websocat
 
-# Mini-bootstrap embutido no initramfs — só baixa e executa o bootstrap real
+# Mini-bootstrap embutido no initramfs - só baixa e executa o bootstrap real
 cat > usr/bin/forge-bootstrap << 'EOF'
 #!/bin/sh
 SERVER_IP="192.168.100.1"

@@ -1,4 +1,4 @@
-"""Endpoints REST — plano de deploy."""
+"""Endpoints REST - plano de deploy."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -61,7 +61,7 @@ async def set_boot_winpe(mac: str):
 
 @router.delete("/clients/{mac}/boot/winpe")
 async def clear_boot_winpe(mac: str):
-    """Remove config especifico — proximo boot volta para Alpine."""
+    """Remove config especifico - proximo boot volta para Alpine."""
     cfg = BOOT_DIR / mac.replace(":", "") / "grub.cfg"
     cfg.unlink(missing_ok=True)
     forge_log("agent", f"{mac} - boot resetado para Alpine")

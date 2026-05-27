@@ -1,4 +1,4 @@
-"""Logger centralizado do FORGE — buffer circular por categoria."""
+"""Logger centralizado do FORGE - buffer circular por categoria."""
 from collections import deque
 from datetime import datetime
 

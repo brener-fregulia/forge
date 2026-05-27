@@ -1,5 +1,5 @@
 [Unit]
-Description=FORGE — Fleet Orchestration & Recovery Global Engine
+Description=FORGE - Fleet Orchestration & Recovery Global Engine
 After=network.target postgresql.service
 Wants=postgresql.service
 

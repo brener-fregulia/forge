@@ -1,5 +1,5 @@
 /**
- * Anvil — gerenciador de estado reativo simples
+ * Anvil - gerenciador de estado reativo simples
  *
  * Uso:
  *   const store = createStore({ count: 0 });

@@ -103,7 +103,7 @@ async function updateStatus() {
     }
 }
 
-/** show/hide por booleano — toggle sem importar toggle do dom.js para evitar conflito de nome */
+/** show/hide por booleano - toggle sem importar toggle do dom.js para evitar conflito de nome */
 function _toggleDisplay(el, visible) {
     if (visible) show(el); else hide(el);
 }

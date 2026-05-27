@@ -1,5 +1,5 @@
 /**
- * Anvil DOM — helpers para manipulacao do DOM
+ * Anvil DOM - helpers para manipulacao do DOM
  * @module anvil/dom
  */
 

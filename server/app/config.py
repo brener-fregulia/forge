@@ -1,4 +1,4 @@
-"""Configurações centrais do FORGE — carregadas do .env."""
+"""Configurações centrais do FORGE - carregadas do .env."""
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -32,5 +32,5 @@ DEBUG_PORT_NC_IN  = int(os.getenv("DEBUG_PORT_NC_IN", "9998"))
 DEBUG_PORT_NC_OUT = int(os.getenv("DEBUG_PORT_NC_OUT", "9999"))
 
 # App
-APP_TITLE   = "FORGE — Fleet Orchestration & Recovery Global Engine"
+APP_TITLE   = "FORGE - Fleet Orchestration & Recovery Global Engine"
 APP_VERSION = "0.1.0"

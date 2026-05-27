@@ -1,4 +1,4 @@
-"""Monitor SNMP do switch — mantém DevicePresence para MACs offline."""
+"""Monitor SNMP do switch - mantém DevicePresence para MACs offline."""
 import asyncio
 from app.state import state
 from app.routes.api.server.switch import get_mac_port_map

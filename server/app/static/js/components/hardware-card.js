@@ -5,7 +5,7 @@ export function renderHardware(hw) {
 
     // CPU
     const cpuEl = qs("#hw-cpu");
-    if (cpuEl) setContent(cpuEl, hw.cpu || "—");
+    if (cpuEl) setContent(cpuEl, hw.cpu || "-");
 
     // RAM
     const ramEl = qs("#hw-ram");
@@ -22,7 +22,7 @@ export function renderHardware(hw) {
         const gpus = hw.gpu || [];
         setContent(gpuEl, gpus.length
             ? gpus.map(g => g.label || `${g.vendor} ${g.device_id}`).join(", ")
-            : "—");
+            : "-");
     }
 
     // Modal RAM
@@ -65,11 +65,11 @@ function _renderRamSlots(slots) {
         qs(".slot-locator",      tr).textContent = s.locator;
         qs(".slot-bank",         tr).textContent = s.bank;
         qs(".slot-size",         tr).textContent = s.size_mb === 0 ? "vazio" : `${(s.size_mb / 1024).toFixed(1)} GB`;
-        qs(".slot-type",         tr).textContent = s.type || "—";
-        qs(".slot-speed",        tr).textContent = s.speed_mts ? `${s.speed_mts} MT/s` : "—";
-        qs(".slot-width",        tr).textContent = s.width_bits ? `${s.width_bits} bits` : "—";
-        qs(".slot-manufacturer", tr).textContent = s.manufacturer || "—";
-        qs(".slot-part",         tr).textContent = s.part || "—";
+        qs(".slot-type",         tr).textContent = s.type || "-";
+        qs(".slot-speed",        tr).textContent = s.speed_mts ? `${s.speed_mts} MT/s` : "-";
+        qs(".slot-width",        tr).textContent = s.width_bits ? `${s.width_bits} bits` : "-";
+        qs(".slot-manufacturer", tr).textContent = s.manufacturer || "-";
+        qs(".slot-part",         tr).textContent = s.part || "-";
 
         tbody.appendChild(tr);
     }

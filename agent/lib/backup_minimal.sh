@@ -1,5 +1,5 @@
 #!/bin/sh
-# Backup mínimo — Users selecionados + programs.txt -> tar stream -> servidor TCP
+# Backup mínimo - Users selecionados + programs.txt -> tar stream -> servidor TCP
 
 SERVER_IP="${SERVER_IP:-192.168.100.1}"
 LIB="${LIB:-/usr/lib/forge}"

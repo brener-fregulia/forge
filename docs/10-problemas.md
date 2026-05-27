@@ -39,7 +39,7 @@
 | iPXE carregava mas vmlinuz dava Connection Reset | dhcp no boot.ipxe causava loop | Compilar iPXE com script embutido (EMBED=) |
 | Alpine bootava mas /sbin/init not found | initramfs sem modloop montado | Embutir modulos de kernel no initramfs |
 | forge-agent nao subia automaticamente | OpenRC em netboot tem ordering quirks | Injetar agent no /init do Alpine via patch Python |
-| PXE-E99 Unexpected network error com ipxe.efi | ipxe.efi usa drivers proprios incompativeis com chip 98DX3236 | Usar snponly.efi (SNP — driver do firmware UEFI) |
+| PXE-E99 Unexpected network error com ipxe.efi | ipxe.efi usa drivers proprios incompativeis com chip 98DX3236 | Usar snponly.efi (SNP - driver do firmware UEFI) |
 | allow-fast-path=no no CRS326 nao resolvia descarte de pacotes | hw=yes nas portas ainda causava problema | hw=no em todas as portas e bridge e obrigatorio |
 | bond 802.3ad causava delay no PXE boot | LACP precisava negociar antes do link subir | Usar active-backup no bond (sem LACP) |
 | snponly.efi travava intermitentemente ao carregar vmlinuz+initramfs | snponly.efi compartilha memoria com firmware UEFI, sem imgmem disponivel | Migrar de iPXE para grub (grubx64.efi via grub-mkimage) |

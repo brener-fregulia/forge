@@ -1,4 +1,4 @@
-"""Endpoints REST — visualizacao de backups no storage."""
+"""Endpoints REST - visualizacao de backups no storage."""
 import json
 import shutil
 from pathlib import Path

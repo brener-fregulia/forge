@@ -1,4 +1,4 @@
-"""WebSocket — bridge para terminal PTY via socat."""
+"""WebSocket - bridge para terminal PTY via socat."""
 import asyncio
 from fastapi import APIRouter, WebSocket
 from app.state import state

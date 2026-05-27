@@ -1,4 +1,4 @@
-"""Endpoints REST — comandos ao agent."""
+"""Endpoints REST - comandos ao agent."""
 import asyncio
 import uuid
 from fastapi import APIRouter, HTTPException

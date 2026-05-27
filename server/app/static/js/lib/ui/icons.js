@@ -1,5 +1,5 @@
 /**
- * Helper de ícones SVG — carrega inline do servidor.
+ * Helper de ícones SVG - carrega inline do servidor.
  * @module ui/icons
  */
 

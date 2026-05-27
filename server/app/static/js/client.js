@@ -36,7 +36,7 @@ async function loadInitialState() {
     }
 }
 
-// Renderiza campos estáticos (hardware, discos, users) — chamado uma vez
+// Renderiza campos estáticos (hardware, discos, users) - chamado uma vez
 function _renderStatic(c) {
     if (c.hardware && Object.keys(c.hardware).length > 0) {
         els.hw.textContent = JSON.stringify(c.hardware, null, 2);

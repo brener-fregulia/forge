@@ -13,7 +13,7 @@
 | infra: | configuracoes do servidor/rede |
 | docs: | documentacao |
 
-Separador nos commits: hifen simples `-` (nunca `—`)
+Separador nos commits: hifen simples `-` (nunca `-`)
 
 ## Padroes de codigo
 
@@ -23,7 +23,7 @@ Separador nos commits: hifen simples `-` (nunca `—`)
 - SQLAlchemy async (asyncpg) para banco
 - Variaveis de ambiente via python-dotenv + config.py centralizado
 - Funcoes auxiliares privadas com prefixo _ (ex: _disk_smart, _cpu_temp)
-- Nunca acessar banco diretamente nas rotas — sempre via servicos em db/services/
+- Nunca acessar banco diretamente nas rotas - sempre via servicos em db/services/
 - Migrations sempre via Alembic, nunca alterar tabelas manualmente
 
 #### Organizacao de rotas
@@ -73,13 +73,13 @@ Regra: se nao e rota HTTP e nao e banco, e um service.
 
 #### to_dict() vs to_summary()
 
-- `to_summary()` — broadcasts do dashboard e list_clients. Campos minimos para o card.
-- `to_dict()` — get_client e broadcasts de inventario. Todos os campos.
+- `to_summary()` - broadcasts do dashboard e list_clients. Campos minimos para o card.
+- `to_dict()` - get_client e broadcasts de inventario. Todos os campos.
 - Nunca usar to_dict() em broadcasts que so atualizam o grid do dashboard.
 
 ### JavaScript
 
-#### Anvil — framework UI proprio
+#### Anvil - framework UI proprio
 
 - Todos os arquivos JS devem usar os helpers de dom.js (qs, qsa, on, show, hide, etc)
 - Nunca usar document.querySelector, addEventListener ou classList diretamente nas features
@@ -92,7 +92,7 @@ Regra: se nao e rota HTTP e nao e banco, e um service.
 
 - Icones em static/vendor/icons/ (Tabler Icons, MIT)
 - Usar sempre via tag `<img>` com classe `forge-icon`, `btn-icon`, `tree-icon` ou `info-icon`
-- Nunca usar emojis de UI — apenas SVGs offline
+- Nunca usar emojis de UI - apenas SVGs offline
 - Logo do FORGE e favicon: excecao permitida (🔥 enquanto SVG customizado nao existir)
 - Filtros CSS para colorir: `brightness(0) invert(0.4)` para dimmed, accent via hue-rotate
 
@@ -129,16 +129,16 @@ Regras:
 
 #### Separacao de responsabilidades por sufixo
 
-- `*.model.js` — logica pura sem DOM, testavel
-- `*.view.js` — manipulacao DOM e renderizacao
-- `*.service.js` — chamadas HTTP/WS, retorna dados, sem DOM
-- sem sufixo — utilitarios genericos ou entrypoints
+- `*.model.js` - logica pura sem DOM, testavel
+- `*.view.js` - manipulacao DOM e renderizacao
+- `*.service.js` - chamadas HTTP/WS, retorna dados, sem DOM
+- sem sufixo - utilitarios genericos ou entrypoints
 
 #### Regras gerais
 
 - ES Modules (import/export) em todos os arquivos
 - Entrypoints: dashboard.js e client.js
-- Sem frameworks — vanilla JS + DOM API
+- Sem frameworks - vanilla JS + DOM API
 - HTML dinamico via template tags (<template>) quando possivel
 - innerHTML permitido apenas para strings simples de loading/erro
 - Eventos DOM via addEventListener, nunca via atributos onclick no HTML
@@ -150,27 +150,27 @@ Regras:
 #### Estado
 
 - Um objeto de estado por feature em vez de variaveis soltas no modulo
-- Funcoes de logica nao devem ter efeitos colaterais — recebem dados, retornam dados
+- Funcoes de logica nao devem ter efeitos colaterais - recebem dados, retornam dados
 - Reconexao automatica do WebSocket em ws.js (2s)
 
 ### Shell (agent)
 
-- POSIX sh — sem bashismos
+- POSIX sh - sem bashismos
 - Variaveis exportadas entre funcoes via export
 - Arquivos temporarios em /tmp/forge-*.tmp
 - JSON gerado via printf (nunca via echo com aspas aninhadas)
 - Offsets SMBIOS via od para leitura de DMI (independente de fabricante)
 - Separacao por responsabilidade: inventory/, maintenance.sh, forge-ls.sh
 - Scripts de build separados em scripts/initramfs/ com env.sh compartilhado
-- Binarios extras em agent/bin/ — nunca commitados, instalados via setup-agent-bins.sh
+- Binarios extras em agent/bin/ - nunca commitados, instalados via setup-agent-bins.sh
 
 ### CSS
 
 - Variaveis CSS em base.css (--accent, --bg, --border, etc)
-- Sem frameworks — CSS puro
+- Sem frameworks - CSS puro
 - Organizacao: components/ (inclui tables/), pages/, modals/
 - Cada responsabilidade em arquivo proprio
-- Agregadores: components.css, modals.css — importados por style.css
+- Agregadores: components.css, modals.css - importados por style.css
 - CSS de tabela em components/tables/ com base.css compartilhado
 - CSS de modal em modals/ com subpasta propria se tiver multiplos arquivos
 - Nomes de arquivo em kebab-case
@@ -189,7 +189,7 @@ Regra: se e dado grande ou sincrono, nao vai pelo WebSocket.
 
 - Migrations sempre via Alembic (nunca alterar tabelas manualmente)
 - Modelos em db/models/, servicos em db/services/
-- Nunca acessar banco diretamente nas rotas — sempre via servicos
+- Nunca acessar banco diretamente nas rotas - sempre via servicos
 
 ## Variaveis de ambiente
 
@@ -201,8 +201,8 @@ STORAGE_MODE define o perfil de storage: simple | hot_cold | hot_cold_raid
 ## Servico systemd (producao)
 
 Arquivos prontos mas nao ativados durante desenvolvimento:
-- `server/forge.service` — unit file do systemd
-- `scripts/setup-user.sh` — cria usuario forge, ajusta permissoes e sudoers
+- `server/forge.service` - unit file do systemd
+- `scripts/setup-user.sh` - cria usuario forge, ajusta permissoes e sudoers
 
 Ativar apenas quando o projeto estiver estavel para producao:
 
@@ -244,5 +244,5 @@ Ao finalizar:
 - Logica pura em *.model.js e funcoes Python sem side effects sao candidatos a teste
 - Aguardar estabilizacao do pipeline de deploy antes de implementar
 - Python: pytest + httpx para endpoints REST criticos
-- JS: testar apenas *.model.js — arquivos com DOM sao dificeis de testar unitariamente
+- JS: testar apenas *.model.js - arquivos com DOM sao dificeis de testar unitariamente
 - Shell: script dry-run para validar JSON do agent

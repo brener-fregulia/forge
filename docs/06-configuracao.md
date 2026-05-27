@@ -16,15 +16,15 @@
 Interfaces fixadas por MAC via systemd-network:
 
     /etc/systemd/network/10-eth0.link
-        eth0  — 3c:7c:3f:7b:23:b8 — interface cabeada (reserva)
+        eth0  - 3c:7c:3f:7b:23:b8 - interface cabeada (reserva)
 
     /etc/systemd/network/11-sfp0.link
-        sfp0  — 90:e2:ba:72:79:f4 — porta SFP+ 0 (Intel X520) — membro do bond0
+        sfp0  - 90:e2:ba:72:79:f4 - porta SFP+ 0 (Intel X520) - membro do bond0
 
     /etc/systemd/network/12-sfp1.link
-        sfp1  — 90:e2:ba:72:79:f5 — porta SFP+ 1 (Intel X520) — membro do bond0
+        sfp1  - 90:e2:ba:72:79:f5 - porta SFP+ 1 (Intel X520) - membro do bond0
 
-### bond0 — active-backup
+### bond0 - active-backup
 
     /etc/network/interfaces:
         auto bond0
@@ -61,7 +61,7 @@ Desabilita tx-checksum-ip-generic no bond0 para evitar problemas de checksum com
     iptables MASQUERADE em wlan0
     iptables FORWARD bond0 <-> wlan0
 
-## dnsmasq — /etc/dnsmasq.conf
+## dnsmasq - /etc/dnsmasq.conf
 
     interface=bond0
     bind-interfaces
@@ -71,7 +71,7 @@ Desabilita tx-checksum-ip-generic no bond0 para evitar problemas de checksum com
     enable-tftp
     tftp-root=/srv/tftp
 
-    # UEFI — snponly.efi obrigatorio para compatibilidade com CRS326 (chip 98DX3236)
+    # UEFI - snponly.efi obrigatorio para compatibilidade com CRS326 (chip 98DX3236)
     dhcp-match=set:efi-x86_64,option:client-arch,7
     dhcp-boot=tag:efi-x86_64,snponly.efi
     # Legacy BIOS
@@ -83,7 +83,7 @@ Desabilita tx-checksum-ip-generic no bond0 para evitar problemas de checksum com
 
 Nota: snponly.efi usa o driver SNP do firmware UEFI em vez dos drivers proprietarios do iPXE.
 ipxe.efi era incompativel com o chip 98DX3236 do CRS326.
-tftpd-hpa deve estar desabilitado — usar apenas o TFTP do dnsmasq.
+tftpd-hpa deve estar desabilitado - usar apenas o TFTP do dnsmasq.
 
 ## MikroTik CRS326-24G-2S+RM
 
@@ -105,7 +105,7 @@ Configuracao relevante para boot PXE funcionar:
 
 SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
 
-## nginx — /etc/nginx/sites-available/pxe
+## nginx - /etc/nginx/sites-available/pxe
 
     server {
         listen 80;
@@ -113,7 +113,7 @@ SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
         location / { root /srv; autoindex on; }
     }
 
-## iPXE — /srv/tftp/boot.ipxe
+## iPXE - /srv/tftp/boot.ipxe
 
     #!ipxe
     echo Iniciando FORGE Agent...
@@ -122,7 +122,7 @@ SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
     initrd http://192.168.100.1/tftp/alpine-initramfs-full
     boot
 
-## Variaveis de ambiente — server/.env
+## Variaveis de ambiente - server/.env
 
     SERVER_IP=192.168.100.1
     PXE_NETWORK=192.168.100.0/24
@@ -141,7 +141,7 @@ SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
 
 ## Acesso remoto
 
-Tailscale instalado no servidor — permite acesso SSH e ao dashboard de qualquer lugar sem IP publico.
+Tailscale instalado no servidor - permite acesso SSH e ao dashboard de qualquer lugar sem IP publico.
 
     curl -fsSL https://tailscale.com/install.sh | sh
     sudo tailscale up

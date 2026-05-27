@@ -5,7 +5,7 @@ export function initDeploy(mac) {
     initConfigDeploy(() => mac);
 
     on(qs("#execute-deploy-btn"), "click", () => {
-        alert("Execução do deploy em desenvolvimento — em breve!");
+        alert("Execução do deploy em desenvolvimento - em breve!");
     });
 }
 

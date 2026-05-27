@@ -2,9 +2,9 @@
 
 ## Filosofia
 
-- CPU-heavy no servidor — compressao e processamento pesado no servidor, nao nos clientes
-- Hot Cache -> Cold Storage — dois niveis com ciclo de vida automatizado
-- Hot cache exclusivo para backups — ISOs e tftp ficam no NVMe
+- CPU-heavy no servidor - compressao e processamento pesado no servidor, nao nos clientes
+- Hot Cache -> Cold Storage - dois niveis com ciclo de vida automatizado
+- Hot cache exclusivo para backups - ISOs e tftp ficam no NVMe
 
 ## Fluxo de dados do backup
 Cliente (ntfsclone stream via rede)
@@ -54,7 +54,7 @@ Identificacao de clientes: raiz por alias (ERP futuro), subpastas por MAC. Stand
 ## Configuracao RAID1 cold storage
 
 ```bash
-# Criado com mdadm — nome pode variar entre boots (md0, md127, etc)
+# Criado com mdadm - nome pode variar entre boots (md0, md127, etc)
 # Identificar sempre pelo label: /dev/disk/by-label/forge-cold
 sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdc
 

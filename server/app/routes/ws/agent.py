@@ -1,4 +1,4 @@
-"""WebSocket — comunicação com o agent Alpine."""
+"""WebSocket - comunicação com o agent Alpine."""
 import json
 from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -51,7 +51,7 @@ def _handle_message(client: Client, msg: dict) -> None:
         forge_log("agent", f"{client.mac} - inventário de discos recebido ({len(client.disks)} discos)")
     elif msg_type == "status":
         incoming = msg.get("status", "")
-        # alive é heartbeat — não altera status visível
+        # alive é heartbeat - não altera status visível
         if incoming not in ("alive",):
             client.status = incoming
         client.progress = msg.get("progress", client.progress)
@@ -83,7 +83,7 @@ async def ws_agent(websocket: WebSocket, mac: str):
                 msg = json.loads(data)
             except json.JSONDecodeError:
                 client.log.append(f"[raw] {data[:200]}")
-                forge_log("agent", f"{mac} — JSON inválido: {data[:80]}")
+                forge_log("agent", f"{mac} - JSON inválido: {data[:80]}")
                 continue
 
             _handle_message(client, msg)

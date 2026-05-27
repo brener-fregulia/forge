@@ -41,11 +41,11 @@ export function renderStorageModal(d, isRaid) {
     fragment.appendChild(buildTable(
         ["Disco", "Modelo", "Serial", "Temp", "Horas", "Saúde"],
         (d.disks || []).map(disk => [
-            disk.name || "—",
-            disk.model || "—",
-            disk.serial || "—",
-            disk.temp         != null ? `${disk.temp}°C`          : "—",
-            disk.power_on_hours != null ? `${disk.power_on_hours}h` : "—",
+            disk.name || "-",
+            disk.model || "-",
+            disk.serial || "-",
+            disk.temp         != null ? `${disk.temp}°C`          : "-",
+            disk.power_on_hours != null ? `${disk.power_on_hours}h` : "-",
             _healthBadge(disk.passed),
         ]),
         { style: "margin-top:1rem" }

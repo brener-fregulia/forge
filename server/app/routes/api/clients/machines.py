@@ -1,4 +1,4 @@
-"""Endpoints REST — máquinas PXE."""
+"""Endpoints REST - máquinas PXE."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.state import state

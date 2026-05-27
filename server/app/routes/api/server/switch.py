@@ -1,4 +1,4 @@
-"""SNMP — leitura da MAC table do MikroTik CRS326 via snmpwalk."""
+"""SNMP - leitura da MAC table do MikroTik CRS326 via snmpwalk."""
 import asyncio
 from pathlib import Path
 from app.config import SWITCH_IP, SWITCH_COMMUNITY
@@ -92,5 +92,5 @@ async def get_mac_port_map() -> dict[str, str]:
 
 @router.get("/switch/ports")
 async def switch_ports():
-    """MAC table do switch — {mac: port_name}."""
+    """MAC table do switch - {mac: port_name}."""
     return await get_mac_port_map()

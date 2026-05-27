@@ -5,7 +5,7 @@
 - Stack: Python 3.13 + FastAPI + WebSockets + Jinja2 + SQLAlchemy + PostgreSQL
 - Porta: http://192.168.100.1:8080 (tambem via Tailscale)
 - Heartbeat WebSocket: ping 3s, timeout 2s (deteccao de desconexao em ~5s)
-- Reload: uvicorn --reload apenas para html/css/js — Python requer restart manual
+- Reload: uvicorn --reload apenas para html/css/js - Python requer restart manual
 
 ### Banco de dados
 
@@ -28,7 +28,7 @@ PostgreSQL com SQLAlchemy async (asyncpg) e migrations via Alembic.
 
 Regra: se e dado grande ou operacao sincrona, nao vai pelo WebSocket.
 
-### Endpoints REST — clients
+### Endpoints REST - clients
 
 | Endpoint | Metodo | Arquivo | Descricao |
 |---|---|---|---|
@@ -45,7 +45,7 @@ Regra: se e dado grande ou operacao sincrona, nao vai pelo WebSocket.
 | /api/clients/{mac}/backup/start | POST | clients/backups.py | Inicia backup Raw Image (TCP stream) |
 | /api/clients/{mac}/backup/minimal/start | POST | clients/backups.py | Inicia backup Minimo (TCP stream) |
 
-### Endpoints REST — server
+### Endpoints REST - server
 
 | Endpoint | Metodo | Arquivo | Descricao |
 |---|---|---|---|
@@ -72,7 +72,7 @@ Regra: se e dado grande ou operacao sincrona, nao vai pelo WebSocket.
 
 Documentacao interativa disponivel em http://192.168.100.1:8080/docs (Swagger UI).
 
-### Separacao de responsabilidades — rotas
+### Separacao de responsabilidades - rotas
 routes/api/
 clients/
 machines.py   <- identidade e metadados da maquina
@@ -109,9 +109,9 @@ Logica de negocio, monitores e I/O em app/services/:
 
 O estado `Client` expoe dois formatos:
 
-- `to_summary()` — usado em list_clients, broadcasts do dashboard e grid de cards.
+- `to_summary()` - usado em list_clients, broadcasts do dashboard e grid de cards.
   Contem: mac, ip, hostname, status, progress, alias, switch_port, connected_at, last_seen
-- `to_dict()` — usado em get_client e broadcasts de inventario.
+- `to_dict()` - usado em get_client e broadcasts de inventario.
   Contem todos os campos incluindo hardware, disks, smart, users, log_tail, deploy_plan, drive_letters
 
 ### DevicePresence
@@ -126,10 +126,10 @@ Dispositivos detectados via SNMP sem WebSocket ativo:
 ## FORGE Agent
 
 - Stack: shell script modular + websocat + socat
-- Mini-bootstrap no initramfs — baixa bootstrap real do servidor sem rebuild
+- Mini-bootstrap no initramfs - baixa bootstrap real do servidor sem rebuild
 - Bootstrap real em /opt/forge/agent/bootstrap.sh, servido via nginx
 - Runtime em /opt/forge/agent/, servido pelo nginx via symlink /srv/agent
-- Binarios extras em /opt/forge/agent/bin/ (socat, libreadline) — .gitignored
+- Binarios extras em /opt/forge/agent/bin/ (socat, libreadline) - .gitignored
 - Reconexao automatica: backoff 3s + watchdog 60s + ping-interval 3s no websocat
 - Inventario em duas fases: base imediato + discos/SMART/usuarios (~15s)
 - Servidor HTTP proprio na porta 8765 (socat + http_handler.sh) para comandos sincronos
@@ -152,7 +152,7 @@ Para reload sem reboot (desenvolvimento):
 
 | Arquivo | Descricao |
 |---|---|
-| forge-agent.sh | Entrypoint — orquestra inicializacao |
+| forge-agent.sh | Entrypoint - orquestra inicializacao |
 | lib/network.sh | Aguarda rede, detecta IFACE/MAC |
 | lib/inventory.sh | Orquestrador de inventario |
 | lib/inventory/hardware.sh | CPU, RAM, GPU, slots de RAM via SMBIOS |
@@ -162,7 +162,7 @@ Para reload sem reboot (desenvolvimento):
 | lib/json.sh | Escape JSON |
 | lib/forge-ls.sh | Listagem de diretorios para config-deploy avancado |
 | lib/http_server.sh | Inicia servidor HTTP na porta 8765 via socat |
-| lib/http_handler.sh | Handler por conexao — executa comando e retorna output |
+| lib/http_handler.sh | Handler por conexao - executa comando e retorna output |
 | lib/backup_minimal.sh | Backup minimo: Users + programs.txt via tar stream TCP |
 | lib/format.sh | Formatacao do disco alvo por tipo de SO |
 

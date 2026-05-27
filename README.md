@@ -1,4 +1,4 @@
-# FORGE — Fleet Orchestration & Recovery Global Engine
+# FORGE - Fleet Orchestration & Recovery Global Engine
 **Referência Técnica do Projeto**
 
 > Sistema de deploy automatizado em rede local: PXE boot -> backup seletivo -> formatação -> instalação Windows -> restauração.
@@ -21,8 +21,8 @@
 | [09-roadmap.md](docs/09-roadmap.md) | Próximos passos do pipeline, infraestrutura, dashboard e integrações futuras |
 | [10-problemas.md](docs/10-problemas.md) | Histórico de problemas resolvidos com causa e solução |
 | [11-convencoes.md](docs/11-convencoes.md) | Prefixos de commit, padrões Python/JS/Shell/CSS, banco de dados, systemd |
-| [12-anvil.md](docs/12-anvil.md) | Framework UI próprio — princípios, estrutura, convenções, roadmap |
-| [13-paginas.md](docs/13-paginas.md) | Páginas do FORGE — responsabilidade, entrypoints JS, dados e navegação |
+| [12-anvil.md](docs/12-anvil.md) | Framework UI próprio - princípios, estrutura, convenções, roadmap |
+| [13-paginas.md](docs/13-paginas.md) | Páginas do FORGE - responsabilidade, entrypoints JS, dados e navegação |
 | [14-pendencias.md](docs/14-pendencias.md) | Bugs abertos, melhorias técnicas e limitações conhecidas por categoria |
 
 ---

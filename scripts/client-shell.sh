@@ -1,5 +1,5 @@
 #!/bin/bash
-# FORGE — Shell remota interativa para clientes Alpine
+# FORGE - Shell remota interativa para clientes Alpine
 # Uso: ./client-shell.sh <IP_CLIENTE>
 
 CLIENT_IP="${1:-}"
@@ -11,7 +11,7 @@ if [ -z "$CLIENT_IP" ]; then
     exit 1
 fi
 
-echo "FORGE Client Shell — $CLIENT_IP"
+echo "FORGE Client Shell - $CLIENT_IP"
 echo "Digite comandos (Ctrl+C para sair):"
 echo ""
 

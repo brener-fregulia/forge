@@ -115,32 +115,32 @@ function _renderHealthBlock(el, s) {
 
     setContent(statusEl, passed === false ? "Falha" : health.label);
     statusEl.className = `smart-health-status ${cls}`;
-    setContent(pctEl,   health.pct != null ? `${health.pct}%` : "—");
-    setContent(tempEl,  temp != null ? `${temp} °C` : "—");
+    setContent(pctEl,   health.pct != null ? `${health.pct}%` : "-");
+    setContent(tempEl,  temp != null ? `${temp} °C` : "-");
 }
 
 function _renderInfoGrid(el, disk, s) {
     const type = _detectType(s);
     const rows = [];
 
-    rows.push(["Modelo",        s.model_name || disk.model || "—"]);
-    rows.push(["Número Serial", s.serial_number || "—"]);
-    rows.push(["Firmware",      s.firmware_version || "—"]);
-    rows.push(["Capacidade",    s.user_capacity?.bytes ? formatBytes(s.user_capacity.bytes) : "—"]);
-    rows.push(["Horas ligado",  s.power_on_time?.hours != null ? `${s.power_on_time.hours} horas` : "—"]);
-    rows.push(["Vezes ligado",  s.power_cycle_count != null ? `${s.power_cycle_count} vezes` : "—"]);
+    rows.push(["Modelo",        s.model_name || disk.model || "-"]);
+    rows.push(["Número Serial", s.serial_number || "-"]);
+    rows.push(["Firmware",      s.firmware_version || "-"]);
+    rows.push(["Capacidade",    s.user_capacity?.bytes ? formatBytes(s.user_capacity.bytes) : "-"]);
+    rows.push(["Horas ligado",  s.power_on_time?.hours != null ? `${s.power_on_time.hours} horas` : "-"]);
+    rows.push(["Vezes ligado",  s.power_cycle_count != null ? `${s.power_cycle_count} vezes` : "-"]);
 
     if (type === "nvme") {
         rows.push(["Interface",  s.device?.protocol || "NVMe"]);
-        rows.push(["Padrão",     s.nvme_version?.string || "—"]);
+        rows.push(["Padrão",     s.nvme_version?.string || "-"]);
         const pciSpeed = s.pcie_link_speed?.current?.string;
         if (pciSpeed) rows.push(["Velocidade", pciSpeed]);
     } else {
         const iface = [s.sata_version?.string, s.interface_speed?.current?.string]
-            .filter(Boolean).join(" — ");
+            .filter(Boolean).join(" - ");
         rows.push(["Interface",     iface || "SATA"]);
-        rows.push(["Form Factor",   s.form_factor?.name || "—"]);
-        rows.push(["Rotation Rate", s.rotation_rate === 0 ? "— (SSD)" : s.rotation_rate ? `${s.rotation_rate} RPM` : "—"]);
+        rows.push(["Form Factor",   s.form_factor?.name || "-"]);
+        rows.push(["Rotation Rate", s.rotation_rate === 0 ? "- (SSD)" : s.rotation_rate ? `${s.rotation_rate} RPM` : "-"]);
         if (s.trim?.supported != null)
             rows.push(["TRIM", s.trim.supported ? "Suportado" : "Não suportado"]);
     }
@@ -188,7 +188,7 @@ function _renderTable(el, s) {
             const isCrit = name === "Critical Warning" && Number(val) > 0;
             const isWarn = name === "Media Errors"     && Number(val) > 0;
             dot.className = `smart-dot ${isCrit ? "dot-fail" : isWarn ? "dot-warn" : "dot-ok"}`;
-            setContent(qs(".smart-col-id",   tr), "—");
+            setContent(qs(".smart-col-id",   tr), "-");
             setContent(qs(".smart-col-name", tr), name);
             setContent(qs(".smart-col-raw",  tr), String(val));
             tbody.appendChild(tr);

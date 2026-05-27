@@ -18,7 +18,7 @@ content = content[:shebang_end] + marker + content[shebang_end:]
 
 target = 'if [ ! -x "${sysroot}${KOPT_init}" ]; then'
 
-inject = '''# FORGE Agent — start ANTES do switch_root falhar
+inject = '''# FORGE Agent - start ANTES do switch_root falhar
 echo "###### FORGE: chegou no ponto de injecao ######" > /dev/console 2>&1
 
 {

@@ -1,5 +1,5 @@
 /**
- * Anvil Element — helpers genéricos para criação de elementos DOM
+ * Anvil Element - helpers genéricos para criação de elementos DOM
  * @module anvil/element
  */
 

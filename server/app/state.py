@@ -1,4 +1,4 @@
-"""Estado global em memória — clientes conectados e suas telemetrias."""
+"""Estado global em memória - clientes conectados e suas telemetrias."""
 from datetime import datetime
 from typing import Any
 from fastapi import WebSocket
@@ -63,7 +63,7 @@ class Client:
 
 
 class DevicePresence:
-    """Dispositivo detectado via SNMP no switch — sem WebSocket ativo."""
+    """Dispositivo detectado via SNMP no switch - sem WebSocket ativo."""
 
     def __init__(self, mac: str, switch_port: str):
         self.mac = mac
@@ -96,7 +96,7 @@ class State:
 
     def add_client(self, client: Client) -> None:
         self.clients[client.mac] = client
-        # Se havia presença SNMP, remove — Client tem prioridade
+        # Se havia presença SNMP, remove - Client tem prioridade
         self.devices.pop(client.mac, None)
 
     def remove_client(self, mac: str) -> None:

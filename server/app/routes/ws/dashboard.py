@@ -1,4 +1,4 @@
-"""WebSocket — comunicação com o dashboard."""
+"""WebSocket - comunicação com o dashboard."""
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.state import state
 

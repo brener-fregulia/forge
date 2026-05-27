@@ -1,4 +1,4 @@
-"""Endpoints REST — sessões de terminal PTY."""
+"""Endpoints REST - sessões de terminal PTY."""
 import asyncio
 import random
 from fastapi import APIRouter, HTTPException

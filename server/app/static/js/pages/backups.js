@@ -11,7 +11,7 @@ async function fetchBackups(tab) {
 }
 
 function _formatDate(ts) {
-    if (!ts) return "—";
+    if (!ts) return "-";
     return new Date(ts * 1000).toLocaleString("pt-BR");
 }
 
@@ -27,8 +27,8 @@ function _renderDetail(client, backup) {
     const m = backup.manifest || {};
     const detail = qs("#backups-detail");
 
-    let duration = "—";
-    let speed    = "—";
+    let duration = "-";
+    let speed    = "-";
     if (m.started_at && m.finished_at) {
         const secs = (new Date(m.finished_at) - new Date(m.started_at)) / 1000;
         const mins = Math.floor(secs / 60);
@@ -43,14 +43,14 @@ function _renderDetail(client, backup) {
     const rows = [
         ["MAC",         m.mac         || client.mac],
         ["Modo",        _modeLabel(backup.mode)],
-        ["Dispositivo", m.device      || "—"],
-        ["Status",      m.status      || "—"],
+        ["Dispositivo", m.device      || "-"],
+        ["Status",      m.status      || "-"],
         ["Tamanho",     formatBytes(backup.size)],
         ["Duração",     duration],
         ["Velocidade",  speed],
-        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR")  : "—"],
-        ["Concluído",   m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "—"],
-        ["Job ID",      m.job_id      || "—"],
+        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR")  : "-"],
+        ["Concluído",   m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "-"],
+        ["Job ID",      m.job_id      || "-"],
     ];
 
     const html = `

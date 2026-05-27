@@ -7,7 +7,7 @@ from app.db.base import Base
 
 
 class Client(Base):
-    """Entidade cliente — pessoa física ou jurídica."""
+    """Entidade cliente - pessoa física ou jurídica."""
     __tablename__ = "clients"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -19,7 +19,7 @@ class Client(Base):
 
 
 class Machine(Base):
-    """Entidade máquina — identificada pelo MAC address."""
+    """Entidade máquina - identificada pelo MAC address."""
     __tablename__ = "machines"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

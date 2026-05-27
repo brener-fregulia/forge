@@ -1,5 +1,5 @@
 /**
- * Builders do FORGE — componentes UI específicos do design system
+ * Builders do FORGE - componentes UI específicos do design system
  */
 import { el, append } from "../anvil/element.js";
 
@@ -14,7 +14,7 @@ export function buildSummary(items) {
         const item   = el("div", { cls: "info-summary-item" });
         const strong = el("strong");
         if (value instanceof Node) strong.appendChild(value);
-        else strong.textContent = value ?? "—";
+        else strong.textContent = value ?? "-";
         append(item, strong, el("span", { text: label }));
         summary.appendChild(item);
     }
@@ -42,7 +42,7 @@ export function buildTable(headers, rows, { style } = {}) {
         const tr = el("tr");
         for (const col of cols) {
             const td = el("td");
-            if (col == null)             td.textContent = "—";
+            if (col == null)             td.textContent = "-";
             else if (col instanceof Node) td.appendChild(col);
             else                         td.textContent = String(col);
             tr.appendChild(td);

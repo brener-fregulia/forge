@@ -1,4 +1,4 @@
-"""FORGE Server — entrypoint da aplicação FastAPI."""
+"""FORGE Server - entrypoint da aplicação FastAPI."""
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager

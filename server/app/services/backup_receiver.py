@@ -1,4 +1,4 @@
-"""TCP receiver para stream de backup — porta temporária por job."""
+"""TCP receiver para stream de backup - porta temporária por job."""
 import asyncio
 import json
 from pathlib import Path
@@ -78,7 +78,7 @@ async def open_receiver(mac: str, device: str, mode: str = "raw") -> dict:
                             forge_log("agent", f"{mac} - backup em progresso: {bytes_received / 1024 / 1024 / 1024:.2f} GB")
                 part_path.rename(final_path)
             else:
-                # Modo minimal — recebe tar e extrai
+                # Modo minimal - recebe tar e extrai
                 final_path.mkdir(parents=True, exist_ok=True)
                 proc = await asyncio.create_subprocess_exec(
                     "tar", "-xf", "-", "-C", str(final_path),
