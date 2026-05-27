@@ -54,6 +54,7 @@ Arquivos envolvidos:
 | # | Descricao | Contexto | Prioridade |
 |---|---|---|---|
 | T01 | Testar ntfsclone com blocos maiores (ex: --output-transaction-size) para verificar se velocidade media melhora | backup raw | Media |
+| T02 | Já disponibilizar método de compactacao de forma manual no bkp do server | backup | Baixa |
 
 ---
 
