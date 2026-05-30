@@ -134,8 +134,34 @@
     white-space: nowrap;
 }
 
-.backup-delete-btn {
+.backup-compress-btn {
     margin-left: auto;
+    margin-right: 0.25rem;
+    background: transparent;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+.backup-compress-btn:hover {
+    background: var(--blue);
+    opacity: 1;
+}
+.backup-compress-btn .btn-icon {
+    width: 14px;
+    height: 14px;
+    filter: brightness(0) invert(0.5) sepia(1) saturate(5) hue-rotate(190deg);
+}
+.backup-compress-btn:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}
+
+.backup-delete-btn {
     margin-right: 0.5rem;
     background: transparent;
     border: 1px solid var(--red);
@@ -153,8 +179,8 @@
     opacity: 1;
 }
 .backup-delete-btn .btn-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     filter: brightness(0) invert(0.6) sepia(1) saturate(5) hue-rotate(300deg);
 }
 .backup-delete-btn:hover .btn-icon {

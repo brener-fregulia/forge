@@ -1,6 +1,5 @@
-import { qs, qsa, on, setContent, setHtml, cloneTemplate, toggleClass } from "../lib/anvil/dom.js";
+import { qs, qsa, on, setContent, setHtml, cloneTemplate } from "../lib/anvil/dom.js";
 import { formatBytes } from "../lib/format.js";
-import { initTabs } from "../lib/ui/tabs.js";
 
 let _currentTab = "hot";
 
@@ -8,11 +7,6 @@ async function fetchBackups(tab) {
     const res = await fetch(`/api/server/backups/${tab}`);
     const data = await res.json();
     return data.clients || [];
-}
-
-function _formatDate(ts) {
-    if (!ts) return "-";
-    return new Date(ts * 1000).toLocaleString("pt-BR");
 }
 
 function _modeLabel(mode) {
@@ -48,7 +42,7 @@ function _renderDetail(client, backup) {
         ["Tamanho",     formatBytes(backup.size)],
         ["Duração",     duration],
         ["Velocidade",  speed],
-        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR")  : "-"],
+        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR") : "-"],
         ["Concluído",   m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "-"],
         ["Job ID",      m.job_id      || "-"],
     ];
@@ -64,6 +58,18 @@ function _renderDetail(client, backup) {
         </table>
     `;
     setHtml(detail, html);
+}
+
+function _makeBtn(cls, title, iconSrc) {
+    const btn = document.createElement("button");
+    btn.className = cls;
+    btn.title     = title;
+    const img     = document.createElement("img");
+    img.src       = iconSrc;
+    img.className = "btn-icon";
+    img.alt       = "";
+    btn.appendChild(img);
+    return btn;
 }
 
 function _renderTree(clients) {
@@ -104,15 +110,26 @@ function _renderTree(clients) {
             setContent(nameEl, backup.name);
             setContent(sizeEl, formatBytes(backup.size));
 
-            // Botão excluir
-            const deleteBtn     = document.createElement("button");
-            deleteBtn.className = "backup-delete-btn";
-            deleteBtn.title     = "Excluir backup";
-            const trashImg      = document.createElement("img");
-            trashImg.src        = "/static/vendor/icons/trash.svg";
-            trashImg.className  = "btn-icon";
-            trashImg.alt        = "";
-            deleteBtn.appendChild(trashImg);
+            const compressBtn = _makeBtn("backup-compress-btn", "Compactar e replicar para cold storage", "/static/vendor/icons/device-floppy.svg");
+            const deleteBtn   = _makeBtn("backup-delete-btn", "Excluir backup", "/static/vendor/icons/trash.svg");
+
+            itemsEl.appendChild(itemNode);
+            const mountedEl = itemsEl.lastElementChild;
+
+            mountedEl.appendChild(compressBtn);
+            mountedEl.appendChild(deleteBtn);
+
+            on(compressBtn, "click", async (e) => {
+                e.stopPropagation();
+                if (!confirm(`Compactar e replicar ${backup.name} para cold storage?`)) return;
+                compressBtn.disabled = true;
+                const res = await fetch(`/api/server/backups/${_currentTab}/${client.mac}/${backup.name}/compress`, {
+                    method: "POST",
+                });
+                if (res.ok) loadTab(_currentTab);
+                else alert("Erro ao compactar backup");
+                compressBtn.disabled = false;
+            });
 
             on(deleteBtn, "click", async (e) => {
                 e.stopPropagation();
@@ -124,10 +141,6 @@ function _renderTree(clients) {
                 else alert("Erro ao excluir backup");
             });
 
-            itemEl.appendChild(deleteBtn);
-            itemsEl.appendChild(itemNode);
-
-            const mountedEl = itemsEl.lastElementChild;
             on(mountedEl, "click", () => {
                 qsa(".backup-item", qs("#backups-tree")).forEach(el => el.classList.remove("selected"));
                 mountedEl.classList.add("selected");
@@ -154,11 +167,6 @@ async function loadTab(tab) {
     _renderTree(clients);
 }
 
-initTabs("backups-layout", {
-    clickable: false,
-});
-
-// Tab manual pois o layout nao e um container de tabs padrao
 qsa(".tab-btn", qs(".client-tabs-header")).forEach(btn => {
     on(btn, "click", () => {
         if (btn.disabled) return;
