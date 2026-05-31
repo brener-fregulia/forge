@@ -42,7 +42,7 @@ function _renderDetail(client, backup) {
         ["Tamanho",     formatBytes(backup.size)],
         ["Duração",     duration],
         ["Velocidade",  speed],
-        ["Iniciado",    m.started_at  ? new Date(m.started_at).toLocaleString("pt-BR") : "-"],
+        ["Iniciado",    m.started_at ? new Date(m.started_at).toLocaleString("pt-BR") : _nameToDate(backup.name)],
         ["Concluído",   m.finished_at ? new Date(m.finished_at).toLocaleString("pt-BR") : "-"],
         ["Job ID",      m.job_id      || "-"],
     ];
@@ -158,6 +158,14 @@ function _renderTree(clients) {
 
         tree.appendChild(clientEl);
     }
+}
+
+function _nameToDate(name) {
+    const m = name.match(/(\d{8})-(\d{6})/);
+    if (!m) return "-";
+    const d = m[1], t = m[2];
+    const iso = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}T${t.slice(0,2)}:${t.slice(2,4)}:${t.slice(4,6)}`;
+    return new Date(iso).toLocaleString("pt-BR");
 }
 
 async function loadTab(tab) {
