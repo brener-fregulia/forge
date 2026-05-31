@@ -116,7 +116,7 @@ function _renderTree(clients) {
             itemsEl.appendChild(itemNode);
             const mountedEl = itemsEl.lastElementChild;
 
-            mountedEl.appendChild(compressBtn);
+            if (_currentTab === "hot") mountedEl.appendChild(compressBtn);
             mountedEl.appendChild(deleteBtn);
 
             on(compressBtn, "click", async (e) => {
