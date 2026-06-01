@@ -1,4 +1,3 @@
-cat > /opt/forge/scripts/dump-context.sh << 'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -203,5 +202,3 @@ done
 
 echo "Dump gerado em: $OUT"
 wc -l "$OUT"
-SCRIPT
-chmod +x /opt/forge/scripts/dump-context.sh
