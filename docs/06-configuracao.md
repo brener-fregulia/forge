@@ -46,7 +46,7 @@ Desabilita tx-checksum-ip-generic no bond0 para evitar problemas de checksum com
 
         [Service]
         Type=oneshot
-        ExecStart=/sbin/ethtool -K bond0 tx-checksum-ip-generic off
+        ExecStart=/sbin/ethtool -K bond0 tx-checksumming off
         RemainAfterExit=yes
 
         [Install]
@@ -71,19 +71,16 @@ Desabilita tx-checksum-ip-generic no bond0 para evitar problemas de checksum com
     enable-tftp
     tftp-root=/srv/tftp
 
-    # UEFI - snponly.efi obrigatorio para compatibilidade com CRS326 (chip 98DX3236)
+    # UEFI - grubx64.efi para todos os clientes UEFI x86_64
     dhcp-match=set:efi-x86_64,option:client-arch,7
-    dhcp-boot=tag:efi-x86_64,snponly.efi
-    # Legacy BIOS
+    dhcp-boot=tag:efi-x86_64,grubx64.efi
+    # Legacy BIOS (nao utilizado atualmente)
     dhcp-match=set:bios,option:client-arch,0
     dhcp-boot=tag:bios,undionly.kpxe
-    # iPXE chainload
-    dhcp-match=set:ipxe,175
-    dhcp-boot=tag:ipxe,http://192.168.100.1/tftp/boot.ipxe
 
-Nota: snponly.efi usa o driver SNP do firmware UEFI em vez dos drivers proprietarios do iPXE.
-ipxe.efi era incompativel com o chip 98DX3236 do CRS326.
-tftpd-hpa deve estar desabilitado - usar apenas o TFTP do dnsmasq.
+Nota: snponly.efi foi descartado. grubx64.efi gerado via grub-mkimage e o bootloader
+principal para todos os clientes UEFI. O fluxo iPXE antigo (boot.ipxe, snponly.efi)
+nao e mais utilizado.
 
 ## MikroTik CRS326-24G-2S+RM
 
@@ -103,7 +100,7 @@ Configuracao relevante para boot PXE funcionar:
     ether1-ether24 (portas dos clientes):
         hw=no
 
-SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
+SNMP v2c habilitado para deteccao de portas via IF-MIB.
 
 ## nginx - /etc/nginx/sites-available/pxe
 
@@ -113,14 +110,50 @@ SNMP v2c habilitado para futura deteccao de portas via IF-MIB (roadmap).
         location / { root /srv; autoindex on; }
     }
 
-## iPXE - /srv/tftp/boot.ipxe
+Arquivos servidos via nginx:
+- /srv/tftp/         - kernel, initramfs, grub, wimboot
+- /srv/agent/        - symlink para /opt/forge/agent (runtime do agent Alpine)
+- /srv/isos/         - symlink para /home/isos (ISOs Windows/Linux)
+- /srv/tftp/winpe/   - boot.wim para WinPE
+- /srv/win11pro/     - ISO Win11 Pro montada em /mnt/iso (instalacao Windows)
 
-    #!ipxe
-    echo Iniciando FORGE Agent...
-    dhcp
-    kernel http://192.168.100.1/tftp/vmlinuz modules=loop,squashfs,sd-mod,usb-storage,ext4,ahci,libata,nvme ip=dhcp quiet
-    initrd http://192.168.100.1/tftp/alpine-initramfs-full
-    boot
+## Boot PXE - grub
+
+Stack atual:
+    DHCP -> grubx64.efi (TFTP) -> grub/grub.cfg (HTTP) -> vmlinuz + initramfs (HTTP)
+
+grubx64.efi gerado via grub-mkimage com modulos http, tftp, net, efinet, linux, regexp.
+
+### grub/grub.cfg (principal)
+
+    set timeout=0
+    set default=0
+
+    # Boot dinamico por MAC - verifica se existe config especifica
+    regexp --set=mac_clean "[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}" \
+        ${net_default_mac}
+    if [ -n "$mac_clean" ]; then
+        configfile (http,192.168.100.1)/boot/${mac_clean}/grub.cfg
+    fi
+
+    menuentry "FORGE Alpine" {
+        linux (http,192.168.100.1)/tftp/vmlinuz \
+            modules=loop,squashfs,sd-mod,usb-storage,ext4,ahci,libata,nvme ip=dhcp quiet
+        initrd (http,192.168.100.1)/tftp/alpine-initramfs-full
+    }
+
+### grub/boot/{mac}/grub.cfg (gerado pelo servidor durante deploy)
+
+Arquivo gerado dinamicamente pelo FORGE em /srv/tftp/grub/boot/{mac}/grub.cfg.
+Quando presente, o grub principal faz configfile para ele antes de bootar Alpine.
+Removido pelo servidor apos a etapa que exigiu o boot alternativo.
+
+Exemplo para WinPE (futuro):
+    set timeout=0
+    set default=0
+    menuentry "FORGE WinPE" {
+        # chainload iPXE + wimboot para carregar boot.wim
+    }
 
 ## Variaveis de ambiente - server/.env
 
