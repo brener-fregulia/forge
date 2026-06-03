@@ -7,28 +7,32 @@ Diferente do roadmap (orientado a features), este documento e orientado a proble
 
 ## Em andamento
 
-### Boot dinâmico por MAC via grub
+### Boot WinPE via grub + wimboot
 
-Objetivo: FORGE controla o proximo boot do cliente sem intervencao humana.
+Objetivo: FORGE inicia WinPE automaticamente no cliente durante o deploy Windows,
+sem intervencao humana.
 
 Fluxo planejado:
 1. grub.cfg principal sempre serve Alpine (fallback estatico)
-2. Durante deploy, servidor gera /srv/tftp/grub/boot/{mac}/grub.cfg com WinPE
-3. grub le o MAC via ${net_default_mac}, remove dois pontos via regexp e faz configfile
-4. Apos boot WinPE + instalacao Windows, servidor remove o arquivo e proximo boot volta Alpine
+2. Durante deploy, servidor gera /srv/tftp/grub/boot/{mac}/grub.cfg com entrada WinPE
+3. grub le o MAC via ${net_default_mac}, faz configfile para o arquivo do MAC
+4. Config do MAC carrega iPXE + wimboot para servir boot.wim via HTTP
+5. Apos instalacao Windows, servidor remove o arquivo e proximo boot volta Alpine
 
 Estado atual:
-- grub le MAC corretamente (net_default_mac funcionando)
-- regexp extrai octetos e monta mac_clean corretamente
-- configfile com URL HTTP absoluta nao funciona no grub
-- configfile com ($root) nao resolve corretamente em boot HTTP
-- Pendente: encontrar sintaxe correta para configfile com path HTTP dinamico no grub
+- grub le MAC corretamente e faz configfile por MAC - funcionando
+- Tentativa de chainloader snponly.efi resulta em connection timeout no grub
+- snponly.efi descartado para WinPE - mesmo problema de memoria que afetou o Alpine
+- Proximo passo: carregar WinPE diretamente via grub (linux + initrd) ou via
+  iPXE embutido no grub, usando wimboot para servir boot.wim
 
 Arquivos envolvidos:
 - /srv/tftp/grub/grub.cfg
 - /srv/tftp/grub/boot/{mac}/grub.cfg (gerado pelo servidor)
+- /srv/tftp/wimboot
+- /srv/tftp/winpe/boot.wim (~577MB)
+- /srv/win11pro/ (ISO Win11 Pro montada em /mnt/iso)
 - server/app/routes/api/clients/deploys.py (endpoints /boot/winpe)
-- server/app/routes/pages.py (endpoint GET /boot/{mac}/grub.cfg)
 
 ---
 
@@ -54,7 +58,7 @@ Arquivos envolvidos:
 | # | Descricao | Contexto | Prioridade |
 |---|---|---|---|
 | T01 | Testar ntfsclone com blocos maiores (ex: --output-transaction-size) para verificar se velocidade media melhora | backup raw | Media |
-| T02 | Já disponibilizar método de compactacao de forma manual no bkp do server | backup | Baixa |
+| T02 | Disponibilizar compactacao manual de backup pelo painel do servidor | backup | Baixa |
 
 ---
 
