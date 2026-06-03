@@ -67,25 +67,50 @@ via setsid e sobrevive. O bootstrap baixa o runtime e executa o agent.
 ## Boot PXE
 
 Stack atual:
-    DHCP -> grubx64.efi (TFTP) -> grub.cfg (HTTP) -> vmlinuz + initramfs (HTTP)
+    DHCP -> grubx64.efi (TFTP) -> grub/grub.cfg (HTTP) -> vmlinuz + initramfs (HTTP)
 
 O grub foi adotado em substituicao ao iPXE/snponly.efi por limitacao de
 memoria do snponly.efi ao carregar kernel + initramfs (travamento intermitente).
+snponly.efi esta mantido em /srv/tftp/snponly.efi mas nao e mais usado no
+fluxo Alpine.
 
 Arquivos relevantes em /srv/tftp/:
-- grubx64.efi - gerado via grub-mkimage com modulos http, tftp, net, efinet, linux
-- grub/grub.cfg - script de boot (kernel params, initrd)
-- vmlinuz - kernel Alpine 6.x LTS
+- grubx64.efi          - gerado via grub-mkimage com modulos http, tftp, net, efinet, linux, regexp
+- grub/grub.cfg        - script de boot principal (deteccao de MAC, fallback Alpine)
+- grub/boot/{mac}/     - configs dinamicas por MAC geradas pelo servidor (deploy)
+- vmlinuz              - kernel Alpine 6.x LTS
 - alpine-initramfs-full - initramfs customizado FORGE (~42MB)
+- wimboot              - binario iPXE wimboot (~75KB) para boot WinPE (uso futuro)
+- winpe/boot.wim       - imagem WinPE (~577MB) para deploy Windows (uso futuro)
 
 grub/grub.cfg:
 
     set timeout=0
     set default=0
+
+    regexp --set=mac_clean "[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}" \
+        ${net_default_mac}
+    if [ -n "$mac_clean" ]; then
+        configfile (http,192.168.100.1)/boot/${mac_clean}/grub.cfg
+    fi
+
     menuentry "FORGE Alpine" {
-        linux (http,192.168.100.1)/tftp/vmlinuz modules=loop,squashfs,sd-mod,usb-storage,ext4,ahci,libata,nvme ip=dhcp quiet
+        linux (http,192.168.100.1)/tftp/vmlinuz \
+            modules=loop,squashfs,sd-mod,usb-storage,ext4,ahci,libata,nvme ip=dhcp quiet
         initrd (http,192.168.100.1)/tftp/alpine-initramfs-full
     }
+
+## Boot dinamico por MAC
+
+O grub principal verifica se existe /srv/tftp/grub/boot/{mac}/grub.cfg antes
+de bootar Alpine. Se existir, faz configfile para ele.
+
+O servidor gera e remove esse arquivo via endpoints REST:
+- POST /api/clients/{mac}/boot/winpe  - cria o config especifico
+- DELETE /api/clients/{mac}/boot/winpe - remove, voltando ao Alpine
+
+Isso permite que o FORGE controle o proximo boot de cada cliente sem
+intervencao humana e sem alterar o grub principal.
 
 ## Build reproduzivel
 
