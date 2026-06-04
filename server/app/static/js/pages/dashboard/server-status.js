@@ -6,18 +6,29 @@ import { renderStorageModal } from "./modals/server-storage.js";
 import { initSmartModal } from "../../components/smart-modal.js";
 
 // Modal genérico
-const modal     = qs("#server-modal");
+const modal      = qs("#server-modal");
 const modalTitle = qs("#server-modal-title");
 const modalBody  = qs("#server-modal-body");
 
-on(qs("#server-modal-close"), "click", () => removeClass(modal, "open"));
-on(modal, "click", (e) => { if (e.target === modal) removeClass(modal, "open"); });
-on(document, "keydown", (e) => { if (e.key === "Escape") removeClass(modal, "open"); });
+let _modalPollInterval = null;
 
-async function openModal(title, endpoint, renderer) {
-    setContent(modalTitle, title);
-    setHtml(modalBody, '<span class="loading"><span class="spinner"></span>Carregando…</span>');
-    addClass(modal, "open");
+function _stopModalPoll() {
+    if (_modalPollInterval) {
+        clearInterval(_modalPollInterval);
+        _modalPollInterval = null;
+    }
+}
+
+function _closeModal() {
+    removeClass(modal, "open");
+    _stopModalPoll();
+}
+
+on(qs("#server-modal-close"), "click", _closeModal);
+on(modal, "click", (e) => { if (e.target === modal) _closeModal(); });
+on(document, "keydown", (e) => { if (e.key === "Escape") _closeModal(); });
+
+async function _renderModal(endpoint, renderer) {
     try {
         const res    = await fetch(endpoint);
         const data   = await res.json();
@@ -30,8 +41,21 @@ async function openModal(title, endpoint, renderer) {
     }
 }
 
+async function openModal(title, endpoint, renderer, pollMs = null) {
+    _stopModalPoll();
+    setContent(modalTitle, title);
+    setHtml(modalBody, '<span class="loading"><span class="spinner"></span>Carregando…</span>');
+    addClass(modal, "open");
+
+    await _renderModal(endpoint, renderer);
+
+    if (pollMs) {
+        _modalPollInterval = setInterval(() => _renderModal(endpoint, renderer), pollMs);
+    }
+}
+
 // Bindings dos botões (i)
-on(qs("#ss-item-cpu .ss-info-btn"),  "click", () => openModal("CPU",          "/api/server/cpu",     renderCpuModal));
+on(qs("#ss-item-cpu .ss-info-btn"),  "click", () => openModal("CPU",          "/api/server/cpu",     renderCpuModal, 3000));
 on(qs("#ss-item-ram .ss-info-btn"),  "click", () => openModal("RAM",          "/api/server/ram",     renderRamModal));
 on(qs("#ss-item-hot .ss-info-btn"),  "click", () => openModal("Hot Cache",    "/api/server/storage", d => renderStorageModal(d.hot_cache,    false)));
 on(qs("#ss-item-cold .ss-info-btn"), "click", () => openModal("Cold Storage", "/api/server/storage", d => renderStorageModal(d.cold_storage, true)));
@@ -103,12 +127,9 @@ async function updateStatus() {
     }
 }
 
-/** show/hide por booleano - toggle sem importar toggle do dom.js para evitar conflito de nome */
 function _toggleDisplay(el, visible) {
     if (visible) show(el); else hide(el);
 }
-
-let _ioInterval = null;
 
 async function _updateDiskIO() {
     const allDisks = [...IO_DISKS["ss-item-hot"], ...IO_DISKS["ss-item-cold"]];
@@ -120,14 +141,12 @@ async function _updateDiskIO() {
             const item = qs(`#${itemId}`);
             if (!item) continue;
 
-            // Soma MB/s de todos os discos do grupo
             const total_mb  = disks.reduce((sum, d) => sum + (data[d]?.total_mb ?? 0), 0);
             const read_mb   = disks.reduce((sum, d) => sum + (data[d]?.read_mb  ?? 0), 0);
             const write_mb  = disks.reduce((sum, d) => sum + (data[d]?.write_mb ?? 0), 0);
             const pct       = Math.max(...disks.map(d => data[d]?.pct ?? 0));
             const ceiling   = data[disks[0]]?.ceiling ?? 150;
 
-            // Atualiza sublabel com MB/s
             let sublabel = qs(".ss-sublabel", item);
             if (!sublabel) {
                 sublabel = document.createElement("span");
@@ -136,7 +155,6 @@ async function _updateDiskIO() {
             }
             setContent(sublabel, `↑${write_mb.toFixed(1)} ↓${read_mb.toFixed(1)} MB/s`);
 
-            // Atualiza barra
             _setIOBar(item, pct);
         }
     } catch (e) {
@@ -184,7 +202,7 @@ export async function initServerStatus() {
 
     initSmartModal();
     updateStatus();
-    setInterval(updateStatus, 5000);
+    setInterval(updateStatus, 1000);
     _updateDiskIO();
     setInterval(_updateDiskIO, 1000);
 }
