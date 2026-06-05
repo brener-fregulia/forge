@@ -8,7 +8,6 @@ function _bar(pct) {
 }
 
 export function renderCpuModal(d) {
-    // Se o modal já foi renderizado, atualiza in-place sem recriar o DOM
     const existing = qs("#cpu-modal-root");
     if (existing) {
         _updateCpuModal(existing, d);
@@ -22,7 +21,6 @@ export function renderCpuModal(d) {
         { label: "Modelo",          value: d.name || "-" },
         { label: "Cores / Threads", value: `${d.physical_cores}c / ${d.logical_cores}t` },
         { label: "Temperatura",     value: d.temp !== null ? `${d.temp}°C` : "-" },
-        { label: "Fan",             value: d.fan_rpm !== null ? `${d.fan_rpm} RPM` : "-" },
         { label: "Clock atual",     value: d.freq_current ? `${d.freq_current} MHz` : "-" },
         { label: "Clock máx",       value: d.freq_max ? `${d.freq_max} MHz` : "-" },
     ]));
@@ -39,13 +37,11 @@ export function renderCpuModal(d) {
 }
 
 function _updateCpuModal(root, d) {
-    // Atualiza summary - segunda coluna de cada linha do info-summary
     const summaryValues = root.querySelectorAll(".info-summary-item strong");
     const newValues = [
         d.name || "-",
         `${d.physical_cores}c / ${d.logical_cores}t`,
         d.temp !== null ? `${d.temp}°C` : "-",
-        d.fan_rpm !== null ? `${d.fan_rpm} RPM` : "-",
         d.freq_current ? `${d.freq_current} MHz` : "-",
         d.freq_max ? `${d.freq_max} MHz` : "-",
     ];
@@ -53,13 +49,11 @@ function _updateCpuModal(root, d) {
         if (newValues[i] !== undefined) setContent(el, newValues[i]);
     });
 
-    // Atualiza linhas da tabela de cores
     const rows = root.querySelectorAll("#cpu-cores-table tbody tr");
     (d.per_core || []).forEach((p, i) => {
         const row = rows[i];
         if (!row) return;
         const cells = row.querySelectorAll("td");
-        // cells[1] = uso%, cells[2] = barra
         setContent(cells[1], `${p.toFixed(0)}%`);
         cells[2].innerHTML = "";
         cells[2].appendChild(_bar(p));

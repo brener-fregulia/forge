@@ -6,18 +6,6 @@ from app.routes.api.server.status import cpu_temp
 router = APIRouter()
 
 
-def _cpu_fan_rpm() -> int | None:
-    try:
-        fans = psutil.sensors_fans()
-        for entries in fans.values():
-            for entry in entries:
-                if entry.current > 0:
-                    return int(entry.current)
-    except Exception:
-        pass
-    return None
-
-
 def _cpu_name() -> str:
     try:
         for line in Path("/proc/cpuinfo").read_text().splitlines():
@@ -30,7 +18,6 @@ def _cpu_name() -> str:
 
 @router.get("/server/cpu")
 async def server_cpu():
-    # Coleta única com interval
     percent = psutil.cpu_percent(interval=0.5)
     per_cpu = psutil.cpu_percent(interval=None, percpu=True)
     freq = psutil.cpu_freq()
@@ -42,7 +29,6 @@ async def server_cpu():
         "percent": percent,
         "per_core": per_cpu,
         "temp": cpu_temp(),
-        "fan_rpm": _cpu_fan_rpm(),
         "freq_current": round(freq.current) if freq else None,
         "freq_max": round(freq.max) if freq else None,
         "times": {
