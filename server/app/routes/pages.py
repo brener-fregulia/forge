@@ -51,6 +51,12 @@ async def backups_page(request: Request):
     return templates.TemplateResponse(request, "backups.html", {})
 
 
+@router.get("/server/config", response_class=HTMLResponse)
+async def server_config(request: Request):
+    """Página de configuração do servidor."""
+    return templates.TemplateResponse(request, "config.html", {})
+
+
 @router.get("/boot/{mac}/grub.cfg", response_class=PlainTextResponse)
 async def grub_config(mac: str):
     """Serve grub.cfg dinamico por MAC - WinPE durante deploy, 404 caso contrario."""
@@ -58,4 +64,3 @@ async def grub_config(mac: str):
     if cfg_path.exists():
         return PlainTextResponse(cfg_path.read_text())
     raise HTTPException(status_code=404, detail="Sem config especifico para este MAC")
-
