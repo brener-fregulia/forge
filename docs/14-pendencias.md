@@ -41,6 +41,7 @@ Arquivos envolvidos:
 | # | Descricao | Contexto | Prioridade |
 |---|---|---|---|
 | F01 | Botao Limpar na pagina de logs limpa apenas o HTML - apos o polling os logs voltam a aparecer | /logs | Media |
+| F02 | Watchdog de 10s mata o websocat antes do inventario de discos completar em maquinas com multiplas particoes NTFS - cliente reconecta sem inventario de discos/usuarios/drive_letters | agent/lib/websocket.sh | Alta |
 
 ---
 
@@ -69,3 +70,4 @@ Arquivos envolvidos:
 | L01 | Backup Raw Image nao suporta retomada - se cair, recomeça do zero | Perda de tempo em backups grandes |
 | L02 | ntfsclone em modo stream nao e 100% sequencial - faz seeks no disco, limitando throughput a 8-50 MB/s mesmo em SSDs rapidos | Backup raw mais lento que o esperado |
 | L03 | Pagina de logs tem buffer de apenas 200 linhas por categoria - logs antigos sao descartados | Perda de historico em sessoes longas |
+| L04 | Backup Raw Image nao tem suporte a destino cold storage direto - receiver sempre grava em HOT_CACHE_PATH | Workaround manual via nc + sudo bash -c para gravar no cold |
