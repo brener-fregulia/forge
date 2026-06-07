@@ -36,6 +36,12 @@ function _driveLabel(name, driveLetters, disks, isDisk) {
     return `(${entry.letter}:)`;
 }
 
+function _freeBytes(name, driveLetters) {
+    const entry = (driveLetters || []).find(d => d.device === name);
+    if (!entry || entry.free_bytes == null) return null;
+    return entry.free_bytes;
+}
+
 export function renderDisks(disks, smart, driveLetters) {
     _disks = disks;
     _smart = smart;
@@ -82,6 +88,11 @@ export function renderDisks(disks, smart, driveLetters) {
 
         // Tamanho
         setContent(qs(".disk-size", tr), d.size ? formatBytes(d.size) : "-");
+
+        // Livre
+        const freeEl = qs(".disk-free", tr);
+        const free = _freeBytes(d.name, driveLetters);
+        setContent(freeEl, free != null ? formatBytes(free) : "-");
 
         // Filesystem
         const fstypeEl = qs(".disk-fstype", tr);

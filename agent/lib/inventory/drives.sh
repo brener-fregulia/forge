@@ -103,6 +103,10 @@ inventory_drive_letters() {
         mkdir -p "$MNT"
         ntfs-3g -o ro,noatime "/dev/$dev" "$MNT" 2>/dev/null || true
 
+        # Espaço livre em bytes via df (aproveita montagem já feita)
+        FREE_KB=$(df -k "$MNT" 2>/dev/null | awk 'NR==2{print $4}')
+        FREE_BYTES=$((${FREE_KB:-0} * 1024))
+
         if [ -f "$MNT/Windows/System32/winload.efi" ] || [ -f "$MNT/Windows/System32/winload.exe" ]; then
             LETTER="C"
         else
@@ -110,8 +114,8 @@ inventory_drive_letters() {
             NEXT_LETTER=$((NEXT_LETTER + 1))
         fi
 
-        printf '{"device":"%s","letter":"%s","label":"%s"},' \
-            "$dev" "$LETTER" "$LABEL" >> $LETTERS_TMP
+        printf '{"device":"%s","letter":"%s","label":"%s","free_bytes":%s},' \
+            "$dev" "$LETTER" "$LABEL" "$FREE_BYTES" >> $LETTERS_TMP
     done
 
     LETTERS_INNER=$(sed 's/,$//' $LETTERS_TMP)
