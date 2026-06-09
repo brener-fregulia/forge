@@ -16,10 +16,11 @@
 1. [ ] Servico systemd para FORGE iniciar no boot (adiado para pos-estabilizacao)
        Arquivos prontos em server/forge.service e scripts/setup-user.sh
        Instrucoes de ativacao em docs/11-convencoes.md
-2. [ ] Pagina de configuracao do servidor (/server/config)
-       Inclui configuracao dinamica dos discos monitorados pelo I/O
+2. [ ] Pagina de configuracao do servidor (/server/config) - estrutura criada, funcionalidades pendentes
+       Secoes planejadas: variaveis de ambiente, gerenciamento de storage/RAID, rede
 3. [ ] safe-reboot no agent (sync antes de reiniciar)
 4. [ ] NUT (Network UPS Tools) para shutdown gracioso automatico via USB do nobreak
+5. [ ] Corrigir watchdog do agent (F02) - aumentar timeout ou suspender watchdog durante inventario de discos
 
 ## Arquitetura - refatoracao planejada
 
@@ -35,7 +36,9 @@
 - [x] Anvil fase 2+ - element.js e builders.js (buildSummary, buildTable)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Tabela de discos com rows filhas colapsadas e toggle por clique
+- [x] Coluna Livre na tabela de discos do cliente
 - [x] Monitor de I/O em tempo real (MB/s, barra de uso por disco, dinamico)
+- [x] Modal de CPU com atualizacao em tempo real (polling 3s)
 - [x] Pagina do cliente com abas Informacoes e Terminal
 - [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
 - [x] Sub-abas de terminal dinamicas por sessao
@@ -51,6 +54,7 @@
 - [x] Backup Avancado - arvore de arquivos interativa via HTTP REST
 - [x] TCP receiver no servidor (portas 9100-9199) com manifest.json por job
 - [x] Mini-bootstrap no initramfs - atualizacoes sem rebuild
+- [x] Pagina de configuracoes do servidor (/server/config) - estrutura inicial
 - [ ] Throughput de rede no card do cliente durante backup
 - [ ] Indicador de progresso por etapa do deploy
 - [ ] Aviso visual para disco com sinais de degradacao (SMART)

@@ -6,7 +6,7 @@
 - Barra de I/O em tempo real para Hot Cache e Cold Storage (MB/s leitura/escrita, % do teto por tipo)
 - Discos monitorados carregados dinamicamente via /api/server/io-disks (sem hardcode)
 - Botao (i) por item abre modal detalhado:
-  - CPU: uso por core, frequencia, fan RPM
+  - CPU: uso por core, frequencia, temperatura - atualiza a cada 3s enquanto aberto
   - RAM: slots, fabricante, velocidade, largura
   - Hot Cache / Cold Storage: discos, modelo, serial, temp, horas, saude SMART + botao SMART
 - Grid de clientes em tempo real via WebSocket
@@ -24,6 +24,11 @@
 - Botao limpar por console (local, nao persiste no servidor)
 - Buffer de 200 linhas por categoria no servidor (forge_log.py)
 
+## Pagina de configuracoes (/server/config)
+
+- Estrutura inicial criada - pagina em desenvolvimento
+- Secoes planejadas: variaveis de ambiente, gerenciamento de storage/RAID, rede
+
 ## Pagina de cliente (/client/{mac})
 
 A pagina do cliente e dividida em duas abas principais:
@@ -37,7 +42,8 @@ A pagina do cliente e dividida em duas abas principais:
 
 #### Discos
 - Tabela com hierarquia visual (disco -> particoes colapsadas, expansivel por clique)
-- Colunas: nome, tamanho, tipo filesystem, saude SMART, modelo/serial
+- Colunas: nome, tamanho, livre, tipo filesystem, saude SMART, modelo/serial
+- Coluna Livre: espaco livre em bytes coletado via df na montagem NTFS ja existente do inventario
 - Badge de filesystem (NTFS destacado)
 - Saude SMART com spinner ate carregar (OK/FAIL/?) + temperatura
 - Botao SMART abre modal com atributos completos ATA/NVMe
@@ -171,6 +177,7 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] forge_log - logger centralizado por categoria com buffer de 200 linhas
 - [x] Status do servidor em tempo real (CPU, RAM, storage, RAID, uptime)
 - [x] Monitor de I/O em tempo real (MB/s por disco, barra de uso, discos dinamicos)
+- [x] Modal de CPU com atualizacao em tempo real (polling 3s)
 - [x] Botao SMART nos modais de Hot Cache e Cold Storage
 - [x] Modais de detalhes do servidor (CPU, RAM, Hot Cache, Cold Storage)
 - [x] PostgreSQL + SQLAlchemy + Alembic (Client, Machine, Deploy, Snapshot)
@@ -183,6 +190,7 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] Agent modular (network.sh, inventory.sh, websocket.sh, json.sh, http_server.sh)
 - [x] Modal config-deploy com abas funcionais
 - [x] Tabela de discos com rows filhas colapsadas e toggle por clique
+- [x] Coluna Livre na tabela de discos (free_bytes via df no inventario de drive_letters)
 - [x] Pagina do cliente com abas Informacoes e Terminal
 - [x] Terminal PTY interativo via socat + xterm.js + WebSocket dedicado
 - [x] Sub-abas de terminal dinamicas por sessao
@@ -191,6 +199,7 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [x] Backup Raw Image via ntfsclone -s stream TCP
 - [x] Backup Minimo via tar stream TCP (Users + programs.txt)
 - [x] Backup Avancado - arvore de arquivos interativa via HTTP REST
+- [x] Pagina de configuracoes do servidor (/server/config) - estrutura inicial
 
 ### Pipeline de deploy
 - [ ] Integracao do backup ao botao Executar
@@ -202,5 +211,4 @@ Receiver: TCP nas portas 9100-9199, uma por job simultaneo.
 - [ ] Restauracao do backup
 - [ ] Ciclo de vida automatizado (30 dias -> delecao)
 - [ ] safe-reboot no agent (sync antes de reiniciar)
-- [ ] Pagina de configuracao do servidor (/server/config)
 - [ ] Servico systemd para FORGE no boot
