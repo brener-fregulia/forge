@@ -7,7 +7,7 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://forge:forge_dev_pass@localhost/forge")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://forge:PASSWORD@localhost/forge")
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
