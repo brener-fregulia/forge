@@ -16,13 +16,13 @@
 Interfaces fixadas por MAC via systemd-network:
 
     /etc/systemd/network/10-eth0.link
-        eth0  - 3c:7c:3f:7b:23:b8 - interface cabeada (reserva)
+        eth0  - <eth0-mac> - interface cabeada (reserva)
 
     /etc/systemd/network/11-sfp0.link
-        sfp0  - 90:e2:ba:72:79:f4 - porta SFP+ 0 (Intel X520) - membro do bond0
+        sfp0  - <sfp0-mac> - porta SFP+ 0 (Intel X520) - membro do bond0
 
     /etc/systemd/network/12-sfp1.link
-        sfp1  - 90:e2:ba:72:79:f5 - porta SFP+ 1 (Intel X520) - membro do bond0
+        sfp1  - <sfp1-mac> - porta SFP+ 1 (Intel X520) - membro do bond0
 
 ### bond0 - active-backup
 
