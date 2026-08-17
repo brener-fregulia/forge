@@ -1,10 +1,18 @@
-# FORGE - Fleet Orchestration & Recovery Global Engine
-**Referência Técnica do Projeto**
+# README — introdução histórica
 
-> Sistema de deploy automatizado em rede local: PXE boot -> backup seletivo -> formatação -> instalação Windows -> restauração.
-> Futuro: integração com ERP para lojas de informática.
+# FORGE - Fleet Orchestration & Recovery Global Engine
+
+**Historical Proof of Concept / Referência Técnica do Projeto**
+
+> FORGE is the original proof of concept that validated the core ideas behind [Bamep](https://github.com/brener-fregulia/Bamep).
+> Development has moved to Bamep, a ground-up redesign with a specification-driven architecture.
+>
+> FORGE is preserved as a historical and technical reference. It is not a previous version of Bamep, and its architecture should not be considered authoritative for the current project.
+
+Sistema de deploy automatizado em rede local: PXE boot -> backup seletivo -> formatação -> instalação Windows -> restauração.
 
 ---
+
 
 ## Índice da documentação
 
