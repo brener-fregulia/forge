@@ -16,8 +16,8 @@ fi
 
 echo ">>> Ajustando dono do projeto"
 chown -R "$FORGE_USER":"$FORGE_USER" "$FORGE_DIR"
-# Permite que brener continue editando via VSCode/SSH
-usermod -aG "$FORGE_USER" brener
+# Permite que o usuário que executou via sudo continue editando via VSCode/SSH
+usermod -aG "$FORGE_USER" "$SUDO_USER"
 chmod -R g+rwX "$FORGE_DIR"
 echo "    OK"
 
@@ -33,4 +33,4 @@ echo "    /etc/sudoers.d/forge instalado"
 
 echo ""
 echo "=== Setup concluído ==="
-echo "Reinicie a sessão SSH do brener para o grupo ter efeito."
+echo "Reinicie a sessão SSH do $SUDO_USER para o grupo ter efeito."
