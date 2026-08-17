@@ -59,6 +59,6 @@ Identificacao de clientes: raiz por alias (ERP futuro), subpastas por MAC. Stand
 sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdc
 
 # UUID no fstab
-UUID=aac9b533-e808-4b69-b81a-6765824a82fb  /mnt/cold  ext4  defaults,nofail  0  2
-UUID=18e473ee-a15e-4815-ae78-34c3fafa1170  /mnt/hot   ext4  defaults,nofail  0  2
+UUID=<cold-storage-uuid>  /mnt/cold  ext4  defaults,nofail  0  2
+UUID=<hot-cache-uuid>  /mnt/hot   ext4  defaults,nofail  0  2
 ```
