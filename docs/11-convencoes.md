@@ -217,7 +217,7 @@ Durante desenvolvimento, usar run.sh diretamente (suporta --reload para html/css
     cd /opt/forge/server && bash run.sh
 
 O usuario forge (sistema) tem sudo restrito para: smartctl, mdadm, dmidecode.
-O usuario brener pertence ao grupo forge para manter acesso de edicao via VSCode.
+O usuario que executa o setup via sudo e adicionado ao grupo forge para manter acesso de edicao via VSCode.
 
 ## Checklist para nova feature
 
